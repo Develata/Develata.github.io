@@ -1,7 +1,7 @@
 ---
 title: VPS最速使用指南
 date: 2025-11-19 21:55
-description: VPS简单玩
+order: 1
 ---
 # 一、选择SSH工具
 ## 推荐tabby,多端需求选termius
