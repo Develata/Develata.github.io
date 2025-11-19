@@ -1,0 +1,21 @@
+/* docs/.vitepress/theme/custom.css */
+
+:root {
+  /* 默认是 272px，我们把它改窄一点，比如 220px */
+  --vp-sidebar-width: 220px; 
+}
+
+/* 针对大屏幕（宽屏显示器）的调整 */
+@media (min-width: 1440px) {
+  :root {
+    /* 在超大屏幕上，默认会变宽，我们也限制它 */
+    --vp-sidebar-width: 240px;
+  }
+}
+
+/* 可选：如果你觉得右侧大纲栏（On this page）也太宽，可以一起改 */
+/*
+:root {
+  --vp-right-sidebar-width: 200px; 
+}
+*/
