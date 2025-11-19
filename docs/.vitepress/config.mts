@@ -79,7 +79,7 @@ export default withMermaid(
     // ⚠️ 重要：请确保这个 base 和你的仓库名一致
     // 如果是 Homepage_template 仓库，保持现状
     // 如果是 Develata.github.io 主站，请改为 '/'
-    base: '/Homepage_template/',
+    base: '/',
     
     cleanUrls: true, // 开启纯净链接
 
