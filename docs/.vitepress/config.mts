@@ -19,13 +19,13 @@ export default withMermaid(
         {
           text: 'Knowledge',
           items: [
-            { text: 'Math', link: '/knowledge/math/' },
-            { text: 'Coding', link: '/knowledge/coding/' },
+            { text: 'Math', link: '/knowledge/math/intro' },
+            { text: 'Coding', link: '/knowledge/coding/setup' },
           ],
         },
-        { text: 'Blog', link: '/blog/' },
-        { text: 'Books', link: '/books/' },
-        { text: 'About', link: '/about/' },
+        { text: 'Blog', link: '/blog/list' },
+        { text: 'Books', link: '/books/index' },
+        { text: 'About', link: '/about/me' },
       ],
       sidebar: {
         '/knowledge/math/': [
@@ -49,7 +49,7 @@ export default withMermaid(
         provider: 'local',
       },
       socialLinks: [
-        { icon: 'github', link: 'https://github.com/placeholder' },
+        { icon: 'github', link: 'https://github.com/Develata' },
       ],
     },
   }),
