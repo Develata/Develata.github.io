@@ -92,6 +92,44 @@ export default withMermaid(
     lang: 'zh-CN',
     title: "Develata's Space",
     description: 'Math & Code',
+
+    // --------------------------------------------------
+    // Vite 插件配置：自动注入标题
+    // --------------------------------------------------
+    vite: {
+      plugins: [
+        {
+          name: 'auto-inject-title',
+          enforce: 'pre',
+          transform(code, id) {
+            // 仅处理 .md 文件，排除 node_modules
+            if (!id.endsWith('.md') || id.includes('node_modules')) return;
+
+            try {
+              const { data, content } = matter(code);
+              
+              // 排除首页 (layout: home) 和没有 title 的页面
+              if (data.layout === 'home' || !data.title) return;
+              
+              // 如果正文中已经包含一级标题 (# Title)，则跳过，避免重复
+              if (/^\s*#\s+.+/m.test(content)) return;
+
+              // 在 Frontmatter 之后插入一级标题
+              const match = code.match(/^(---[\s\S]*?---)/);
+              if (match) {
+                const frontmatterEnd = match[0].length;
+                return code.slice(0, frontmatterEnd) + `\n\n# ${data.title}\n\n` + code.slice(frontmatterEnd);
+              }
+              
+              // 无 Frontmatter 的情况（直接在头部添加）
+              return `# ${data.title}\n\n${code}`;
+            } catch (e) {
+              return; // 解析出错则忽略
+            }
+          }
+        }
+      ]
+    },
     
     markdown: {
       lineNumbers: true,
