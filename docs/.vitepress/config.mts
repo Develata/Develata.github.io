@@ -155,9 +155,12 @@ export default withMermaid(
       ],
 
       sidebar: {
+        // 自动解析 knowledge/math,coding,sharing目录下的书籍和章节
         '/knowledge/math/': resolveSidebarItems('knowledge/math', '/knowledge/math/'),
         '/knowledge/coding/': resolveSidebarItems('knowledge/coding', '/knowledge/coding/'),
         '/knowledge/sharing/': resolveSidebarItems('knowledge/sharing', '/knowledge/sharing/'),
+        
+        '/books/': resolveSidebarItems('books', '/books/'), // 自动解析 books 目录下的书籍和章节
         
         '/blog/': [
           {

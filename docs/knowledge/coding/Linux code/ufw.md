@@ -1,5 +1,5 @@
 ---
-title: ubuntu code
+title: ufw code
 date: 2025-11-23 23:15
 order: 3
 ---
