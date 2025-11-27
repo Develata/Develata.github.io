@@ -108,23 +108,17 @@ export default withMermaid(
             try {
               const { data, content } = matter(code);
               
-              // 排除首页 (layout: home) 和没有 title 的页面
-              if (data.layout === 'home' || !data.title) return;
+              // 排除首页和无标题页面
+              if (path.basename(id).toLowerCase() === 'index.md' || !data.title) return;
               
-              // 如果正文中已经包含一级标题 (# Title)，则跳过，避免重复
-              if (/^\s*#\s+.+/m.test(content)) return;
-
-              // 在 Frontmatter 之后插入一级标题
-              const match = code.match(/^(---[\s\S]*?---)/);
-              if (match) {
-                const frontmatterEnd = match[0].length;
-                return code.slice(0, frontmatterEnd) + `\n\n# ${data.title}\n\n` + code.slice(frontmatterEnd);
-              }
-              
-              // 无 Frontmatter 的情况（直接在头部添加）
-              return `# ${data.title}\n\n${code}`;
+              // 检查是否已有 H1 (排除 # 后面紧跟 # 的情况，即排除 ##, ### 等)
+              // 正则含义：行首 -> 可选空白 -> # -> 必须有空白 -> 内容
+              if (content.trimStart().startsWith('# ')) return;
+              // 使用 gray-matter 重组文件，比正则替换更稳定
+              // 这会自动处理 Frontmatter 的闭合和换行
+              return matter.stringify(`# ${data.title}\n\n${content}`, data);
             } catch (e) {
-              return; // 解析出错则忽略
+              return; 
             }
           }
         }
@@ -155,23 +149,20 @@ export default withMermaid(
       ],
 
       sidebar: {
-        // 自动解析 knowledge/math,coding,sharing目录下的书籍和章节
+        // 自动解析 knowledge/math,coding,sharing 目录
         '/knowledge/math/': resolveSidebarItems('knowledge/math', '/knowledge/math/'),
         '/knowledge/coding/': resolveSidebarItems('knowledge/coding', '/knowledge/coding/'),
         '/knowledge/sharing/': resolveSidebarItems('knowledge/sharing', '/knowledge/sharing/'),
         
-        '/books/': resolveSidebarItems('books', '/books/'), // 自动解析 books 目录下的书籍和章节
+        // 自动解析 books 目录
+        '/books/': resolveSidebarItems('books', '/books/'), 
         
+        // Blog 侧边栏：合并自动生成的分类 + 手动添加的归档
         '/blog/': [
-          {
-            text: '博客分类',
-            items: [
-              { text: '全部文章', link: '/blog/' },
-              { text: '指南', link: '/blog/tags/guide/' }, 
-            ],
-          },
+          ...resolveSidebarItems('blog', '/blog/'),
           {
             text: '归档',
+            collapsed: false,
             items: [
               { text: '2025', link: '/blog/archive/' },
             ],

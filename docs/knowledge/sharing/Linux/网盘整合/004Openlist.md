@@ -1,7 +1,7 @@
 ---
 title: Openlist
 date: 2025-11-24 22:44
-order: 3
+order: 4
 ---
 见openlist官方快速文档：[https://doc.oplist.org.cn/](https://doc.oplist.org.cn/)
 
@@ -43,3 +43,16 @@ curl -fsSL https://res.oplist.org/script/v4.sh > install-openlist-v4.sh && sudo 
 
 根据界面提示，输入``1``即可安装
 
+如果没有显示脚本界面则输入以下指令进入脚本界面：
+```
+sudo openlist
+```
+安装完成后，根据界面提示
+
+初始ID：admin
+
+安装完成后，根据脚本界面提示依次输入5和1生成随机密码
+
+然后利用初始ID：admin 和随机密码登入网址127.0.0.1:5244，如果有公网ip就把127.0.0.1换成公网ip
+
+之后进入面板修改账密

@@ -1,7 +1,7 @@
 ---
 title: 网络一键脚本搭建（YG）
 date: 2025-11-24 22:44
-order: 2
+order: 3
 ---
 YG一键脚本github网址：[https://github.com/yonggekkk/sing-box-yg](https://github.com/yonggekkk/sing-box-yg)
 

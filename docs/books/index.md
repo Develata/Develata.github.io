@@ -4,3 +4,5 @@
 [Ethics] - Ethics: Part I - Definitions & Axioms
 
 [Tractatus Logico-Philosophicus] - Tractatus: Prop. 1-2 (The World)
+
+[Novum Organum] - Novum Organum: The Four Idols
