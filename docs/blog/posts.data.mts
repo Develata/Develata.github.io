@@ -1,5 +1,7 @@
 import { createContentLoader } from 'vitepress'
 
+// 作用：在构建（Build）阶段，自动扫描 blog 目录下的所有 Markdown 文章，
+// 提取元数据（标题、日期、摘要），并按时间倒序排列，生成一个文章列表数据。
 interface Post {
   title: string
   url: string
