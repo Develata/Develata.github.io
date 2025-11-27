@@ -6,7 +6,7 @@ hero:
   actions:
     - theme: brand
       text: "Enter somewhere"
-      link: "/knowledge/math/"
+      link: "#randomjump"
     - theme: alt
       text: "About Me"
       link: "/about/me"
@@ -27,7 +27,7 @@ features:
     linkText: 查看分享笔记
 
   - title:  Reading
-    details: 分享我的书单。
+    details: 来读书吧。
     link: /books/
     linkText: 浏览书单
 
