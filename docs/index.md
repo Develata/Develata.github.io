@@ -35,4 +35,8 @@ features:
     details: 生活随笔。
     link: /blog/
     linkText: 阅读博客
+  - title:  Gaming
+    details: 来点小游戏。
+    link: /games/
+    linkText: 小游戏
 ---

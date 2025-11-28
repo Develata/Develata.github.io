@@ -145,6 +145,7 @@ export default withMermaid(
         },
         { text: 'Blog', link: '/blog/' },
         { text: 'Books', link: '/books/' },
+        { text: 'Games', link: '/games/' },
         { text: 'About', link: '/about/me' },
       ],
 
