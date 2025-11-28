@@ -9,7 +9,8 @@ import TicTacToe from './components/games/TicTacToe.vue'// 井字棋组件
 import Gomoku from './components/games/Gomoku.vue'// 五子棋组件
 import GameOfLife from './components/games/GameOfLife.vue'// 生命游戏组件
 import Minesweeper from './components/games/Minesweeper.vue'// 扫雷组件
-
+import Game2048 from './components/games/Game2048.vue'// 2048组件
+import Sudoku from './components/games/Sudoku.vue'// 数独组件
 
 export default {
   extends: DefaultTheme, // 使用 extends 继承默认主题
@@ -30,6 +31,8 @@ export default {
     app.component('Gomoku', Gomoku)// 五子棋
     app.component('GameOfLife', GameOfLife)// 生命游戏
     app.component('Minesweeper', Minesweeper)// 扫雷
+    app.component('Game2048', Game2048)// 2048
+    app.component('Sudoku', Sudoku)// 数独
   }
   
 }

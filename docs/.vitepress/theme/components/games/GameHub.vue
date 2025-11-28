@@ -42,7 +42,27 @@ const games = [
     link: '/games/minesweeper',
     tag: 'Puzzle',
     color: '#f59e0b',
-  }
+  },
+  {
+    id: '2048',
+    title: '2048',
+    enTitle: 'Join the Numbers',
+    desc: '滑动指尖，体验指数爆炸的数学快感。停不下来的数字合成之旅。',
+    icon: '🔢',
+    link: '/games/game2048',
+    tag: 'Puzzle',
+    color: '#eab308' // 黄色
+  },
+  {
+    id: 'sudoku',
+    title: '数独',
+    enTitle: 'Sudoku',
+    desc: '逻辑推理的巅峰，支持笔记模式和算法可视化求解。',
+    icon: '🧩',
+    link: '/games/sudoku',
+    tag: 'Logic',
+    color: '#06b6d4' // 青色
+  },
 ]
 </script>
 
