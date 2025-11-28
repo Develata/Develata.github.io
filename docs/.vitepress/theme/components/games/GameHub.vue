@@ -39,10 +39,9 @@ const games = [
     enTitle: 'Minesweeper',
     desc: '在数字的雷区中寻找真相，致敬 Windows 经典。',
     icon: '💣',
-    link: '#',
+    link: '/games/minesweeper',
     tag: 'Puzzle',
     color: '#f59e0b',
-    disabled: true
   }
 ]
 </script>

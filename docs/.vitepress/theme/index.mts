@@ -8,6 +8,7 @@ import GameHub from './components/games/GameHub.vue'// 游戏组件总汇
 import TicTacToe from './components/games/TicTacToe.vue'// 井字棋组件
 import Gomoku from './components/games/Gomoku.vue'// 五子棋组件
 import GameOfLife from './components/games/GameOfLife.vue'// 生命游戏组件
+import Minesweeper from './components/games/Minesweeper.vue'// 扫雷组件
 
 
 export default {
@@ -28,6 +29,7 @@ export default {
     app.component('GameHub', GameHub)// 游戏组件总汇
     app.component('Gomoku', Gomoku)// 五子棋
     app.component('GameOfLife', GameOfLife)// 生命游戏
+    app.component('Minesweeper', Minesweeper)// 扫雷
   }
   
 }
