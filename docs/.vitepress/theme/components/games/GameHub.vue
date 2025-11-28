@@ -29,10 +29,9 @@ const games = [
     enTitle: 'Game of Life',
     desc: '零玩家游戏，观察细胞在数学规则下的繁衍与生灭。',
     icon: '🧬',
-    link: '#',
+    link: '/games/gameoflife',
     tag: 'Simulation',
-    color: '#10b981',
-    disabled: true
+    color: '#10b981', 
   },
   {
     id: 'minesweeper',

@@ -7,6 +7,8 @@ import RandomJump from './components/RandomJump.vue'
 import GameHub from './components/games/GameHub.vue'// 游戏组件总汇
 import TicTacToe from './components/games/TicTacToe.vue'// 井字棋组件
 import Gomoku from './components/games/Gomoku.vue'// 五子棋组件
+import GameOfLife from './components/games/GameOfLife.vue'// 生命游戏组件
+
 
 export default {
   extends: DefaultTheme, // 使用 extends 继承默认主题
@@ -25,6 +27,7 @@ export default {
     app.component('TicTacToe', TicTacToe)// 井字棋
     app.component('GameHub', GameHub)// 游戏组件总汇
     app.component('Gomoku', Gomoku)// 五子棋
+    app.component('GameOfLife', GameOfLife)// 生命游戏
   }
   
 }
