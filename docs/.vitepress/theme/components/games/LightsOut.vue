@@ -1,323 +1,424 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue' // 移除未使用的 nextTick
+import { ref, computed, onMounted, nextTick } from 'vue'
 import confetti from 'canvas-confetti'
 
-// --- 状态管理 ---
-const mode = ref<'practice' | 'challenge'>('challenge')
+// --- 类型定义 ---
+type GameMode = 'practice' | 'challenge'
+
+// --- 状态 ---
+const mode = ref<GameMode>('challenge')
 const grid = ref<boolean[]>([])
 const isWin = ref(false)
+
+// 练习模式
+const customN = ref(5) // 输入框的值
+const activeN = ref(5) // 实际生效的 N (用于防止输入时布局跳动)
+const practiceMoves = ref(0)
 const isEditing = ref(false)
 
-// 游戏数据
-const level = ref(1)      // 闯关当前关卡 (N)
-const customN = ref(5)    // 练习模式输入值
-const activeN = ref(5)    // 练习模式实际生效值 (新增：防止输入时布局错乱)
-const moves = ref(0)      // 当前局步数
-const totalMoves = ref(0) // 闯关总步数
-
-// --- 计算属性 ---
-const isChallenge = computed(() => mode.value === 'challenge')
-// 修复：使用 activeN 而不是 customN，确保只有按下回车/失焦后才更新布局
-const size = computed(() => isChallenge.value ? level.value : activeN.value)
-
-// 动态网格样式
-const gridStyle = computed(() => ({
-  gridTemplateColumns: `repeat(${size.value}, 1fr)`,
-  gap: size.value > 10 ? '2px' : '5px'
-}))
+// 闯关模式
+const currentLevel = ref(1)
+const maxLevel = 20
+const levelMoves = ref(0)
+const totalMoves = ref(0)
 
 // --- 核心逻辑 ---
 
+// 计算当前维度
+const currentSize = computed(() => {
+  return mode.value === 'challenge' ? currentLevel.value : activeN.value
+})
+
+// 动态 Grid 样式：同时约束行和列，防止布局坍塌
+const gridStyle = computed(() => ({
+  gridTemplateColumns: `repeat(${currentSize.value}, 1fr)`,
+  gridTemplateRows: `repeat(${currentSize.value}, 1fr)`, // 关键修复：强制行高
+  gap: currentSize.value > 10 ? '2px' : '5px'
+}))
+
 // 初始化游戏
 function initGame(keepProgress = false) {
-  // 修复：处理小数和边界值，并同步到 activeN
-  if (!isChallenge.value) {
-    let n = Math.floor(customN.value) // 取整
-    if (isNaN(n)) n = 5
-    n = Math.max(2, Math.min(20, n))  // 限制范围 2-20
+  // 1. 如果是练习模式，先同步 activeN，确保尺寸正确
+  if (mode.value === 'practice') {
+    let n = Math.floor(customN.value)
+    if (isNaN(n) || n < 2) n = 2
+    if (n > 20) n = 20
     activeN.value = n
-    customN.value = n // 回填修正后的值到输入框
-  }
-
-  const s = size.value
-  const len = s * s
-  
-  // 1. 重置基础状态
-  grid.value = new Array(len).fill(false)
-  isWin.value = false
-  
-  // 2. 步数重置逻辑
-  if (!keepProgress && isChallenge.value) {
-    level.value = 1
-    totalMoves.value = 0
-  }
-  moves.value = 0
-
-  // 3. 生成盘面
-  if (isChallenge.value) {
-    // 闯关：强制全亮 (N=4,9,14 等均有解)
-    grid.value.fill(true)
+    customN.value = n
   } else {
-    // 练习：生成随机可解局
-    if (!keepProgress) scramble(s)
+    // 闯关模式：如果不是下一关操作，重置回 Level 1
+    if (!keepProgress) {
+      currentLevel.value = 1
+      totalMoves.value = 0
+    }
   }
-}
 
-// 逆向打乱：保证必解
-function scramble(s: number) {
-  // 确保从全灭开始打乱
-  grid.value.fill(false)
-  
-  const count = Math.max(5, s * 3)
-  let last = -1
-  for (let i = 0; i < count; i++) {
-    let idx
-    do { idx = Math.floor(Math.random() * s * s) } while (idx === last)
-    toggle(idx, s)
-    last = idx
-  }
-}
-
-// 切换灯状态 (核心算法)
-function toggle(idx: number, s: number) {
-  const r = Math.floor(idx / s)
-  const c = idx % s
-  // 上下左右 + 自己
-  const neighbors = [[0,0], [0,-1], [0,1], [-1,0], [1,0]]
-  
-  neighbors.forEach(([dr, dc]) => {
-    const nr = r + dr, nc = c + dc
-    if (nr >= 0 && nr < s && nc >= 0 && nc < s) {
-      const t = nr * s + nc
-      grid.value[t] = !grid.value[t]
+  // 2. 利用 nextTick 确保状态更新后再生成数据 (解决渲染闪烁/错位)
+  nextTick(() => {
+    const s = currentSize.value
+    const totalCells = s * s
+    
+    // 重置数据
+    grid.value = new Array(totalCells).fill(false)
+    isWin.value = false
+    
+    if (mode.value === 'practice') {
+      practiceMoves.value = 0
+      // 练习模式：逆向打乱
+      scrambleBoard(s)
+    } else {
+      levelMoves.value = 0
+      // 闯关模式：强制全亮
+      setAll(true)
     }
   })
 }
 
+// 逆向打乱 (练习模式专用)
+function scrambleBoard(s: number) {
+  const totalCells = s * s
+  grid.value.fill(false) 
+  
+  const scrambleCount = Math.max(5, s * 3)
+  let lastIdx = -1
+  
+  for (let i = 0; i < scrambleCount; i++) {
+    let randomIdx
+    do {
+      randomIdx = Math.floor(Math.random() * totalCells)
+    } while (randomIdx === lastIdx && totalCells > 1)
+    
+    toggleLogic(randomIdx, s)
+    lastIdx = randomIdx
+  }
+}
+
+function toggleLogic(index: number, s: number) {
+  const r = Math.floor(index / s)
+  const c = index % s
+  const neighbors = [
+    { r: 0, c: 0 }, { r: -1, c: 0 }, { r: 1, c: 0 }, { r: 0, c: -1 }, { r: 0, c: 1 }
+  ]
+
+  neighbors.forEach(offset => {
+    const nr = r + offset.r
+    const nc = c + offset.c
+    if (nr >= 0 && nr < s && nc >= 0 && nc < s) {
+      const targetIdx = nr * s + nc
+      grid.value[targetIdx] = !grid.value[targetIdx]
+    }
+  })
+}
+
+function toggleSingle(index: number) {
+  grid.value[index] = !grid.value[index]
+}
+
+function setAll(state: boolean) {
+  grid.value.fill(state)
+  isWin.value = false
+}
+
 // --- 交互处理 ---
 
-function handleClick(idx: number) {
+function handleClick(index: number) {
   if (isWin.value) return
 
-  // 编辑模式：仅切换单点
-  if (!isChallenge.value && isEditing.value) {
-    grid.value[idx] = !grid.value[idx]
+  // 编辑模式
+  if (mode.value === 'practice' && isEditing.value) {
+    toggleSingle(index)
     if (navigator.vibrate) navigator.vibrate(5)
     return
   }
 
   // 游戏模式
-  toggle(idx, size.value)
-  moves.value++
-  if (isChallenge.value) totalMoves.value++
+  toggleLogic(index, currentSize.value)
+  
+  if (mode.value === 'practice') practiceMoves.value++
+  else {
+    levelMoves.value++
+    totalMoves.value++
+  }
 
   if (navigator.vibrate) navigator.vibrate(15)
-  
-  // 胜利判定：全灭 (全是 false)
-  if (grid.value.every(v => !v)) {
+  checkWin()
+}
+
+function checkWin() {
+  if (isEditing.value) return
+  // 全灭即胜利
+  if (grid.value.every(isOn => !isOn)) {
     isWin.value = true
     fireConfetti()
     if (navigator.vibrate) navigator.vibrate([30, 50, 30])
   }
 }
 
-// 关卡控制
-function setMode(m: 'practice' | 'challenge') {
-  mode.value = m
-  isEditing.value = false
-  initGame()
-}
-
 function nextLevel() {
-  if (level.value < 20) {
-    level.value++
-    initGame(true) // 保留总步数
+  if (currentLevel.value < maxLevel) {
+    currentLevel.value++
+    levelMoves.value = 0
+    initGame(true)
   }
 }
 
-function applySize() {
-  // 仅调用 initGame，具体的数值修正逻辑在 initGame 内部处理
+function switchMode(newMode: GameMode) {
+  mode.value = newMode
+  isEditing.value = false // 切换模式时自动退出编辑
+  initGame()
+}
+
+function applyCustomSize() {
   initGame()
 }
 
 function fireConfetti() {
-  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#ffffff'] })
+  const end = Date.now() + 1500
+  ;(function frame() {
+    confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#eab308', '#ffffff'] })
+    confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#eab308', '#ffffff'] })
+    if (Date.now() < end) requestAnimationFrame(frame)
+  })()
 }
 
-onMounted(() => initGame())
+onMounted(() => {
+  initGame()
+})
 </script>
 
 <template>
-  <div class="lo-container">
-    <div class="tabs">
-      <button :class="{ active: isChallenge }" @click="setMode('challenge')">🏰 闯关模式</button>
-      <button :class="{ active: !isChallenge }" @click="setMode('practice')">🛠️ 自由练习</button>
+  <div class="lights-container">
+    
+    <div class="mode-tabs">
+      <button 
+        class="tab-btn" :class="{ active: mode === 'challenge' }" 
+        @click="switchMode('challenge')"
+      >🏰 闯关模式</button>
+      <button 
+        class="tab-btn" :class="{ active: mode === 'practice' }" 
+        @click="switchMode('practice')"
+      >🛠️ 自定义练习</button>
     </div>
 
-    <div class="panel">
-      <div v-if="isChallenge" class="info-row">
-        <div class="badge">Lv.{{ level }}</div>
-        <div class="stats">
-          <span>本关: <b>{{ moves }}</b></span>
-          <span class="total">总计: <b>{{ totalMoves }}</b></span>
+    <div class="header-card">
+      <div v-if="mode === 'challenge'" class="challenge-info">
+        <div class="level-badge">
+          LEVEL <span class="big-num">{{ currentLevel }}</span>
+          <span class="sub">/ {{ maxLevel }}</span>
+        </div>
+        <div class="grid-size-tag">{{ currentLevel }} × {{ currentLevel }}</div>
+        <div class="stats-group">
+          <div class="stat"><span class="label">本关</span><span class="val">{{ levelMoves }}</span></div>
+          <div class="stat total"><span class="label">总计</span><span class="val">{{ totalMoves }}</span></div>
         </div>
       </div>
 
-      <div v-else class="practice-row">
-        <div class="input-wrap">
-          <span>N:</span>
-          <!-- 修复：使用 .lazy 修饰符或仅在 change 时触发，避免输入过程中频繁重置 -->
-          <input 
-            type="number" 
-            v-model.number="customN" 
-            @change="applySize" 
-            @keydown.enter="applySize"
-            min="2" 
-            max="20"
-          >
+      <div v-else class="practice-wrapper">
+        <div class="practice-top">
+          <div class="input-group">
+            <label>Size (N)</label>
+            <div class="input-row">
+              <input 
+                type="number" 
+                v-model.number="customN" 
+                min="2" max="20" 
+                @keydown.enter="applyCustomSize"
+              >
+              <button class="apply-btn" @click="applyCustomSize">Go</button>
+            </div>
+          </div>
+          <div class="stat"><span class="label">MOVES</span><span class="val">{{ practiceMoves }}</span></div>
         </div>
-        <div class="tools">
-          <button class="tool-btn" :class="{ on: isEditing }" @click="isEditing = !isEditing">
-            {{ isEditing ? '✏️ 编辑中' : '✏️ 编辑' }}
-          </button>
+        <div class="edit-toolbar">
+          <button 
+            class="tool-btn edit-toggle" 
+            :class="{ active: isEditing }"
+            @click="isEditing = !isEditing"
+          >{{ isEditing ? '✏️ 编辑中' : '🎮 游玩中' }}</button>
           <template v-if="isEditing">
-            <button class="tool-btn" @click="grid.fill(true)">全亮</button>
-            <button class="tool-btn" @click="grid.fill(false)">全灭</button>
+            <button class="tool-btn" @click="setAll(true)">全亮</button>
+            <button class="tool-btn" @click="setAll(false)">全灭</button>
           </template>
           <button v-else class="tool-btn" @click="initGame()">重置</button>
         </div>
       </div>
     </div>
 
-    <div class="board-wrap" :class="{ editing: isEditing }">
+    <div class="board-container" :class="{ 'editing': isEditing }">
       <div class="board" :style="gridStyle">
         <div 
-          v-for="(on, i) in grid" 
-          :key="i" 
-          class="cell" 
-          :class="{ on }"
-          @click="handleClick(i)"
+          v-for="(isOn, index) in grid" 
+          :key="index" 
+          class="cell"
+          :class="{ 'is-on': isOn }"
+          @click="handleClick(index)"
         >
-          <div class="bulb"></div>
+          <div class="bulb-highlight"></div>
+          <div class="bulb-glow"></div>
         </div>
       </div>
-
-      <div v-if="isWin" class="win-mask">
-        <div class="win-box">
-          <h2>🎉 完美熄灭!</h2>
-          <p v-if="isChallenge && level < 20">下一关: {{ level + 1 }} × {{ level + 1 }}</p>
-          <p v-else>挑战完成！</p>
-          <button v-if="isChallenge && level < 20" class="btn-main" @click="nextLevel">下一关 ➜</button>
-          <button v-else class="btn-main" @click="initGame()">再来一局</button>
+      
+      <div v-if="isWin" class="win-overlay">
+        <div class="win-card">
+          <h2>🎉 Level Clear!</h2>
+          <p v-if="mode === 'challenge'">
+            <span v-if="currentLevel < maxLevel">下一关: {{ currentLevel + 1 }} × {{ currentLevel + 1 }}</span>
+            <span v-else>🏆 恭喜！你通关了所有维度！</span>
+          </p>
+          <p v-else>灯光已全部熄灭</p>
+          <button v-if="mode === 'challenge' && currentLevel < maxLevel" class="next-btn" @click="nextLevel">下一关 ➜</button>
+          <button v-else class="next-btn" @click="initGame()">再来一局</button>
         </div>
       </div>
     </div>
-    
-    <div v-if="isEditing" class="tip">💡 点击格子单独修改状态</div>
+
+    <div v-if="isEditing" class="hint-text">💡 点击格子单独修改状态</div>
+
   </div>
 </template>
 
 <style scoped>
-.lo-container {
-  display: flex; flex-direction: column; align-items: center; gap: 15px;
-  margin-top: 20px; font-family: sans-serif; user-select: none;
+.lights-container {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; margin-top: 20px; font-family: sans-serif;
+  user-select: none; touch-action: manipulation;
   width: 100%; max-width: 100vw;
 }
 
-/* 选项卡 */
-.tabs {
-  display: flex; background: var(--vp-c-bg-alt); padding: 4px; border-radius: 8px; gap: 5px;
-  border: 1px solid var(--vp-c-divider);
+/* 模式切换 */
+.mode-tabs {
+  display: flex; background: var(--vp-c-bg-alt);
+  padding: 4px; border-radius: 8px; border: 1px solid var(--vp-c-divider); gap: 6px;
 }
-.tabs button {
-  padding: 6px 14px; border-radius: 6px; font-size: 0.9rem; font-weight: 500;
-  color: var(--vp-c-text-2); transition: all 0.2s;
+.tab-btn {
+  padding: 6px 16px; font-size: 0.9rem; border-radius: 6px;
+  cursor: pointer; color: var(--vp-c-text-2); transition: all 0.2s; font-weight: 500;
 }
-.tabs button.active { background: var(--vp-c-brand); color: white; }
+.tab-btn.active { background: var(--vp-c-brand); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-/* 面板 */
-.panel {
-  width: 100%; max-width: 360px; padding: 12px 16px;
-  background: var(--vp-c-bg-soft); border-radius: 12px;
-  border: 1px solid var(--vp-c-divider);
+/* 头部卡片 */
+.header-card {
+  width: 100%; max-width: 380px;
+  background: var(--vp-c-bg-soft); border: 1px solid var(--vp-c-divider);
+  border-radius: 12px; padding: 12px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
-.info-row { display: flex; justify-content: space-between; align-items: center; }
-.badge { font-size: 1.2rem; font-weight: 800; color: var(--vp-c-brand); }
-.stats { display: flex; gap: 12px; font-size: 0.9rem; color: var(--vp-c-text-2); }
-.stats b { color: var(--vp-c-text-1); font-size: 1.1rem; }
-.stats .total b { color: var(--vp-c-brand); }
 
-.practice-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.input-wrap { display: flex; align-items: center; gap: 5px; font-size: 0.9rem; font-weight: bold; }
-.input-wrap input {
-  width: 50px; padding: 4px; text-align: center; border-radius: 4px;
-  border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg);
+.challenge-info { display: flex; justify-content: space-between; align-items: center; }
+.level-badge {
+  font-weight: 800; color: var(--vp-c-brand);
+  display: flex; flex-direction: column; line-height: 1; font-size: 0.8rem;
 }
-.tools { display: flex; gap: 6px; }
+.level-badge .big-num { font-size: 1.8rem; }
+.level-badge .sub { font-size: 0.8rem; opacity: 0.7; font-weight: normal; }
+.grid-size-tag {
+  background: var(--vp-c-bg-alt); border: 1px solid var(--vp-c-divider);
+  padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; color: var(--vp-c-text-2);
+}
+.stats-group { display: flex; gap: 15px; }
+.stat { display: flex; flex-direction: column; align-items: flex-end; }
+.stat .label { font-size: 0.7rem; color: var(--vp-c-text-3); text-transform: uppercase; }
+.stat .val { font-size: 1.2rem; font-weight: bold; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat.total .val { color: var(--vp-c-brand); }
+
+.practice-wrapper { display: flex; flex-direction: column; gap: 10px; }
+.practice-top { display: flex; justify-content: space-between; align-items: center; }
+.input-group label { font-size: 0.75rem; color: var(--vp-c-text-2); display: block; margin-bottom: 2px; }
+.input-row { display: flex; gap: 4px; }
+.input-row input {
+  width: 50px; padding: 4px; text-align: center;
+  border: 1px solid var(--vp-c-divider); border-radius: 4px;
+  background: var(--vp-c-bg); color: var(--vp-c-text-1);
+}
+.apply-btn {
+  background: var(--vp-c-brand); color: white; border: none;
+  padding: 0 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;
+}
+.edit-toolbar { display: flex; gap: 8px; border-top: 1px dashed var(--vp-c-divider); padding-top: 10px; }
 .tool-btn {
-  padding: 4px 10px; font-size: 0.8rem; border-radius: 4px;
-  border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg);
-  transition: all 0.2s;
+  flex: 1; padding: 6px; font-size: 0.85rem; border-radius: 6px;
+  border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg); cursor: pointer; transition: all 0.2s;
 }
-.tool-btn:hover { border-color: var(--vp-c-brand); }
-.tool-btn.on { background: #f59e0b; color: white; border-color: #f59e0b; }
+.edit-toggle.active { background: #f59e0b; color: white; border-color: #f59e0b; }
 
-/* 棋盘 */
-.board-wrap {
-  position: relative; padding: 10px; border-radius: 12px;
-  background: #222; border: 3px solid #333;
+.board-container {
+  position: relative; padding: 10px;
+  background: #222; /* 深色底座 */
+  border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  border: 4px solid #333;
   transition: border-color 0.3s;
 }
-.board-wrap.editing { border-color: #f59e0b; }
+.board-container.editing { border-color: #f59e0b; }
 
-.board { display: grid; width: 320px; height: 320px; }
+.board { display: grid; width: 340px; height: 340px; }
 
-/* 灯泡单元格 */
+/* 💡 灯泡样式 */
 .cell {
-  background: #3a3a3a; border-radius: 3px; cursor: pointer;
-  position: relative; overflow: hidden; transition: all 0.1s;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.8);
+  background: #444;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.15s;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5); 
 }
-/* 亮灯样式：琥珀色高光 */
-.cell.on {
+
+/* 亮灯：琥珀色 */
+.cell.is-on {
   background: #fbbf24;
-  box-shadow: 0 0 12px #fbbf24, inset 0 0 4px rgba(255,255,255,0.7);
+  box-shadow: 
+    0 0 15px #eab308, 
+    inset 0 0 10px rgba(255,255,255,0.6); 
+  border-color: #fde047;
   z-index: 1;
 }
-/* 内部高光点 */
-.bulb {
-  position: absolute; top: 15%; left: 15%; width: 30%; height: 30%;
-  background: radial-gradient(circle, rgba(255,255,255,0.9), transparent 70%);
+
+.bulb-highlight {
+  position: absolute; top: 15%; left: 15%;
+  width: 25%; height: 25%;
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
   border-radius: 50%; opacity: 0; transition: opacity 0.1s;
 }
-.cell.on .bulb { opacity: 1; }
+.cell.is-on .bulb-highlight { opacity: 1; }
 
-/* 胜利界面 */
-.win-mask {
-  position: absolute; inset: 0; background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(3px); border-radius: 10px; z-index: 10;
+.bulb-glow {
+  position: absolute; top: 50%; left: 50%;
+  width: 100%; height: 100%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(253, 224, 71, 0.4) 0%, rgba(0,0,0,0) 70%);
+  opacity: 0; transition: opacity 0.1s;
+}
+.cell.is-on .bulb-glow { opacity: 1; }
+
+.win-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(2px);
   display: flex; justify-content: center; align-items: center;
-  animation: fadeIn 0.3s;
+  border-radius: 8px; z-index: 10; animation: fadeIn 0.3s;
 }
-.win-box {
-  background: var(--vp-c-bg); padding: 20px; border-radius: 12px;
-  text-align: center; border: 1px solid var(--vp-c-divider);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+.win-card {
+  background: var(--vp-c-bg); padding: 20px 30px;
+  border-radius: 12px; text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid var(--vp-c-divider);
 }
-.btn-main {
-  margin-top: 10px; padding: 8px 20px; border-radius: 6px;
-  background: var(--vp-c-brand); color: white; font-weight: bold;
+.win-card h2 { color: var(--vp-c-brand); margin-bottom: 10px; }
+.next-btn {
+  background: var(--vp-c-brand); color: white; border: none;
+  padding: 10px 24px; border-radius: 6px; font-size: 1rem;
+  margin-top: 15px; cursor: pointer; font-weight: bold;
   animation: bounce 1s infinite;
 }
 
-.tip { font-size: 0.8rem; color: #f59e0b; margin-top: -10px; }
+.hint-text {
+  font-size: 0.85rem; color: #f59e0b; background: rgba(245, 158, 11, 0.1);
+  padding: 4px 12px; border-radius: 4px;
+}
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
 @media (max-width: 400px) {
   .board { width: 300px; height: 300px; }
-  .panel, .header { width: 320px; }
+  .header-card { padding: 10px; }
 }
 </style>
