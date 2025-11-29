@@ -1,4 +1,6 @@
 <script setup lang="ts">
+/// <reference types="vite/client" />
+
 /*
 ```
 # 使用说明```
@@ -29,33 +31,43 @@ import { onMounted, onUnmounted } from 'vue'
 const router = useRouter()
 
 // 1. 扫描 docs 目录下所有的 .md 文件
-const modules = import.meta.glob('../../../**/*.md')
+// 修改：使用数组语法，在扫描阶段直接排除 .vitepress, public 和 node_modules
+const modules = import.meta.glob([
+  '../../../**/*.md', 
+  '!../../../.vitepress/**', 
+  '!../../../public/**',
+  '!../../../node_modules/**'
+])
 
 // 2. 生成 URL 列表
 const urls: string[] = []
 
 for (const path in modules) {
-  // 排除 .vitepress 配置目录和 node_modules 依赖目录
-  if (path.includes('.vitepress') || path.includes('node_modules')) continue
+  // 下面的过滤逻辑可以简化，因为 glob 已经排除了一部分
   
   let url = path
-    .replace(/^(\.\.\/)+/, '/')  // 移除相对路径前缀 (../../)
-    .replace(/\.md$/, '')        // 移除 .md 后缀 (让路由自动处理 .html 或无后缀)
-    .replace(/\/index$/, '/')    // 将 /index 替换为 /
+    // 移除相对路径前缀
+    .replace(/^(\.\.\/)+/, '/')
+    // 移除扩展名
+    .replace(/\.md$/, '')
+    // 处理 index 文件
+    .replace(/\/index$/, '/')
+
+  // 修复：排除首页 (通常是 / )，防止随机跳回主页
+  if (url === '/') continue
 
   urls.push(url)
 }
 
-// 核心跳转逻辑
 function jumpRandom() {
-  const currentPath = router.route.path.replace(/\.html$/, '').replace(/\/$/, '')
+  // 获取当前路径，并标准化（移除 .html 和末尾斜杠，防止匹配失败）
+  const currentPath = router.route.path
+    .replace(/\.html$/, '')
+    .replace(/\/$/, '')
   
   const availableUrls = urls.filter(url => {
-    // 统一格式化进行比较：移除 .html 后缀和末尾斜杠
     const target = decodeURI(url).replace(/\.html$/, '').replace(/\/$/, '')
     const current = decodeURI(currentPath)
-    
-    // 只要不是当前页面，都可以跳转（包括首页）
     return target !== current
   })
 
@@ -67,7 +79,7 @@ function jumpRandom() {
   const randomIndex = Math.floor(Math.random() * availableUrls.length)
   const targetUrl = availableUrls[randomIndex]
 
-  // 如果目标是首页 '/'，withBase 会处理；如果是普通路径，确保格式正确
+  // 使用 router.go 进行跳转
   router.go(withBase(targetUrl))
 }
 

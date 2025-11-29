@@ -1,8 +1,21 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
 
-// 游戏数据列表
-const games = [
+// 👇 新增：定义接口以修复类型报错
+interface Game {
+  id: string
+  title: string
+  enTitle: string
+  desc: string
+  icon: string
+  link: string
+  tag: string
+  color: string
+  disabled?: boolean // 标记为可选属性
+}
+
+// 👇 修改：应用类型定义
+const games: Game[] = [
   {
     id: 'tictactoe',
     title: '井字棋',
