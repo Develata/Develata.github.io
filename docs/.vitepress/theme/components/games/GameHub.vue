@@ -63,6 +63,16 @@ const games = [
     tag: 'Logic',
     color: '#06b6d4' // 青色
   },
+  {
+    id: 'lightsout',
+    title: '关灯游戏',
+    enTitle: 'Lights Out',
+    desc: '点击方块反转状态，利用线性代数原理将所有灯光熄灭。',
+    icon: '💡',
+    link: '/games/lightsout',
+    tag: 'Math',
+    color: '#eab308' // 灯泡黄
+  },
 ]
 </script>
 
