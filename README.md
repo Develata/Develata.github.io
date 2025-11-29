@@ -1,183 +1,127 @@
-# 📘 VitePress Academic Template
+Develata's Space 🌌
+Mathematics, Coding, Thinking, and Gaming.
 
-> 一个极简、专业、且**原生支持数学公式**的个人知识库模版。
-> 完全利用 AI 基于 [VitePress](https://vitepress.dev/) 构建，自用无偿分享。
-> **声明：作者 0 代码基础，纯 AI 辅助构建，本项目仅供参考，不承诺修复 Bug。**
+欢迎来到 develata.me 的源码仓库。这里是一个数学系大学生的数字花园，记录了我学习编程、探索数学、阅读哲学的过程，同时也包含了一个基于 Vue 3 编写的互动游戏实验室。
 
-[![Deploy Status](https://github.com/Develata/Develata.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/Develata/Develata.github.io/actions)
-[![VitePress](https://img.shields.io/badge/VitePress-Vue3-42b883)](https://vitepress.dev/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+📖 项目简介
+本项目使用 VitePress 构建，充分利用了其“静态 Markdown + 动态 Vue 组件”的特性。这不仅是一个静态博客，更是一个集成了数学公式渲染、代码高亮和交互式应用的全功能个人站点。
 
-## ✨ 特性 (Features)
+✨ 核心特性
+数学友好：集成 markdown-it-mathjax3，完美支持 LaTeX 数学公式渲染。
 
-* **⚡️ 极速体验**：基于 Vue 3 + Vite，单页应用 (SPA) 体验，无刷新跳转。
-* **🧮 数学友好**：内置 **MathJax 3**，完美渲染 LaTeX 公式，支持深色模式反色。
-* **🌲 语雀风格**：支持**上下文感知侧边栏**，进入不同板块（如数学、编程）自动显示对应目录树。
-* **🎨 现代博客**：
-    * **卡片式布局**：美观的网格视图，支持响应式排列。
-    * **智能排序**：按日期+时间+文件名自动倒序。
-    * **独立侧边栏**：博客板块拥有独立的分类导航。
-* **📊 图表支持**：集成 **Mermaid**，直接在 Markdown 中绘制流程图、甘特图。
-* **🎨 样式定制**：预置自定义 CSS 接口，可轻松调整侧边栏宽度、间距等。
-* **🚀 自动部署**：预置 GitHub Actions 脚本，`git push` 即可自动发布到 GitHub Pages。
+互动组件：内置多个使用 Vue 3 编写的经典小游戏。
 
----
+图表支持：集成 Mermaid.js，支持绘制流程图与时序图。
 
-## 🛠️ 快速开始 (Quick Start)
+自动部署：配置了 GitHub Actions，提交代码即可自动构建并发布到 GitHub Pages。
 
-### 1. 克隆/Fork 本仓库
-点击右上角的 **Fork** 按钮，将本项目复制到你的 GitHub 账号下。或者直接克隆：
+动态侧边栏：编写了自定义脚本，自动根据文件目录生成侧边栏导航。
 
-```bash
-git clone [https://github.com/your-name/your-repo.git](https://github.com/your-name/your-repo.git)
-cd your-repo
-```
+🗂️ 内容板块
+内容主要分为以下几个领域：
 
-### 2\. 安装依赖
+1. 🧮 数学笔记 (Mathematics)
+记录我的专业课笔记与数学思考。
 
-本项目依赖 Node.js (推荐 v18+)。
+包含概率论（大偏差理论）等学术内容。
 
-```bash
-# 安装所有依赖 (VitePress, MathJax, Mermaid 等)
+支持复杂的 LaTeX 公式展示。
+
+2. 💻 编程与运维 (Coding & Linux)
+实用的服务器搭建与开发指南，涵盖：
+
+Linux 基础：Debian/Ubuntu 配置、UFW 防火墙设置。
+
+Web 服务：OpenResty & Nginx 配置、SSL 证书自动签发 (Acme.sh)。
+
+网络技术：VPS 选购指南、内网穿透 (EasyTier/Tailscale)、Sing-box 搭建、网盘整合。
+
+3. 🎮 游戏实验室 (Game Lab)
+完全由 Vue 3 编写的网页端小游戏，无需后端，纯前端逻辑：
+
+2048：经典的数字合并游戏，支持撤销。
+
+扫雷 (Minesweeper)：支持“智能和弦”操作（双击数字自动插旗/挖开）。
+
+数独 (Sudoku)：包含笔记模式、撤销及递归求解可视化动画。
+
+生命游戏 (Game of Life)：康威生命游戏，内置滑翔机、脉冲星等预设。
+
+关灯游戏 (Lights Out)：基于线性代数原理的解谜游戏。
+
+五子棋 (Gomoku)：包含 PVE（AI 对战）与 PVP 模式。
+
+井字棋 (Tic Tac Toe)：包含 Minimax 算法实现的 AI。
+
+4. 📚 阅读室 (Books)
+哲学经典阅读笔记与摘录：
+
+斯宾诺莎：《伦理学》(Ethics)
+
+培根：《新工具》(Novum Organum)
+
+维特根斯坦：《逻辑哲学论》(Tractatus)
+
+5. ✍️ 随笔 (Blog)
+生活记录、杂谈以及年度归档。
+
+🚀 快速开始 / 模板使用
+本项目提供了一个纯净的分支，去除了我的个人文章和笔记，保留了完整的架构、配置以及所有游戏组件。如果您喜欢这个站点的风格和功能，可以直接克隆该分支作为起点。
+
+方式一：克隆纯净模板 (推荐复用)
+如果您想使用本站架构搭建自己的博客：
+
+Bash
+
+# 克隆 template 分支
+git clone -b template https://github.com/Develata/develata.github.io.git my-blog
+
+cd my-blog
 npm install
-```
-
-### 3\. 本地预览
-
-启动本地开发服务器，实时预览修改效果（推荐）：
-
-```bash
 npm run dev
-```
+方式二：克隆完整内容 (查看源码)
+如果您想查看或参考我写的具体文章内容和配置细节：
 
-访问 `http://localhost:5173` 即可看到网站。
+Bash
 
------
+# 克隆默认分支 (main)
+git clone https://github.com/Develata/develata.github.io.git
 
-## 📂 目录结构 (Structure)
+cd develata.github.io
+npm install
+npm run dev
+🛠️ 技术栈
+框架: VitePress
 
-建议遵循以下结构来管理你的内容：
+语言: TypeScript / Markdown
 
-```text
+图表: Mermaid.js
+
+数学渲染: MathJax 3
+
+样式: 自定义 CSS 变量 (支持深色模式)
+
+📂 目录结构
+Plaintext
+
 .
 ├── docs/
-│   ├── .vitepress/          # [核心配置]
-│   │   ├── config.mts       # -> 网站配置 (导航栏、侧边栏)
-│   │   └── theme/           # -> 自定义样式
-│   │       ├── index.mts
-│   │       └── custom.css   # -> 修改侧边栏宽度等样式在这里
-│   │
-│   ├── public/              # [静态资源] (图片, PDF, CNAME)
-│   │
-│   ├── knowledge/           # [知识库] 板块
-│   │   ├── math/            # -> 数学笔记
-│   │   └── coding/          # -> 编程笔记
-│   │
-│   ├── blog/                # [博客] 板块
-│   │   ├── 2025/            # -> 按年份归档文章
-│   │   ├── posts.data.mts   # -> 博客数据加载脚本
-│   │   └── index.md         # -> 博客卡片列表页
-│   │
-│   └── index.md             # 网站首页
-│
-└── package.json
-```
+│   ├── .vitepress/        # 核心配置、主题与组件
+│   │   ├── config.mts     # VitePress 主配置文件 (含侧边栏生成逻辑)
+│   │   └── theme/
+│   │       ├── components/ # 存放所有游戏 Vue 组件 (Game2048, Sudoku 等)
+│   │       └── ...
+│   ├── about/             # "关于我"页面
+│   ├── blog/              # 博客文章与归档数据逻辑
+│   ├── books/             # 读书笔记
+│   ├── games/             # 游戏页面入口 (Markdown 引入 Vue 组件)
+│   ├── knowledge/         # 知识库 (Math, Coding, Sharing)
+│   └── index.md           # 网站首页
+├── package.json           # 项目依赖与脚本
+└── .github/workflows/     # 自动部署脚本
+📬 联系方式
+Author: Develata
 
------
+Email: develata@qq.com
 
-## ✍️ 写作指南 (Writing Guide)
-
-### 1\. 撰写数学公式
-
-支持行内公式 `$ ... $` 和块级公式 `$$...$$`。
-
-```markdown
-我们考虑泛函 $J[y]$ 的极值问题：
-$$
-J(y) = \int_{x_1}^{x_2} L(x, y, y') \, dx
-$$
-```
-
-### 2\. 撰写博客 (卡片式)
-
-在 `docs/blog/` 目录下新建 Markdown 文件。为了让卡片显示得更好看，**建议添加 `description` 字段**：
-
-```markdown
----
-title: 我的新文章
-date: 2025-11-19 20:30
-description: 这里是文章的摘要，将会显示在博客列表的卡片上。如果不填，将自动截取正文。
----
-
-这里是正文...
-```
-
-**排序逻辑：**
-
-1.  优先按 `date` 时间倒序（最新的在上面）。
-2.  如果时间相同，按**文件名**倒序排列。
-
-### 3\. 添加/修改侧边栏
-
-  * **知识库侧边栏**：当你新增笔记时，在 `config.mts` 的 `sidebar` -\> `/knowledge/.../` 下注册。
-  * **博客侧边栏**：在 `config.mts` 的 `sidebar` -\> `/blog/` 下管理博客分类。
-
-### 4\. 撰写知识库
------
-现在，你在 `knowledge/math` (或其他文件夹) 里写 Markdown 时，可以通过文件开头的 Frontmatter 控制一切：
-
-**1. 完整写法 (推荐)**
-```markdown
----
-title: 泛函分析基础
-order: 1
----
-```
-* **结果**：侧边栏显示“泛函分析基础”，排在第 1 位。
-
-**2. 不写排序 (默认排最后)**
-```markdown
----
-title: 高级变分法
----
-```
-* **结果**：侧边栏显示“高级变分法”，排在所有有序号的文章后面。如果有多个没序号的，按文件名排序。
-
-**3. 啥都不写**
-
-## ⚙️ 自定义与美化 (Customization)
-
-### 修改侧边栏宽度
-
-如果你觉得左侧目录太宽或太窄，请修改 `docs/.vitepress/theme/custom.css`：
-
-```css
-:root {
-  --vp-sidebar-width: 220px; /* 修改此数值 */
-}
-```
-
-### 修改核心配置
-
-所有核心配置均在 `docs/.vitepress/config.mts` 中：
-
-  * **修改标题**：修改 `title` 和 `description` 字段。
-  * **修改导航栏**：修改 `themeConfig.nav` 数组。
-  * **修改社交链接**：修改 `themeConfig.socialLinks`。
-
------
-
-## 🚀 部署上线 (Deployment)
-
-本项目已配置好 **GitHub Actions**。
-
-1.  将代码推送到 GitHub 仓库。
-2.  进入仓库 **Settings** -\> **Pages**。
-3.  在 **Build and deployment** 部分，将 Source 改为 **GitHub Actions**。
-4.  等待 Actions 跑完（约 1 分钟），你的网站就会上线到 `https://yourname.github.io`。
-
------
-
-## 📄 License
-
-[MIT](https://www.google.com/search?q=LICENSE) © 2025 Develata
+GitHub: Develata
