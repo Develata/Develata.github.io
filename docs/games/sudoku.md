@@ -1,16 +1,17 @@
 ---
 layout: page
-title: 数独
+title: Sudoku
 sidebar: false
 ---
 
-# 🔢 数独 (Sudoku)
+# 🔢 Sudoku
 
-> 逻辑推理的艺术。
+> 逻辑推理，填满九宫格。
 
 **操作指南：**
-* **填数**：选中格子，点击下方数字键（或键盘 1-9）。
-* **笔记**：点击 `✏️ Notes` 进入笔记模式，标记可能的数字。
-* **黑科技**：实在解不出来？点击 `🤖 Solve` 观看 AI 现场表演回溯算法。
+* 点击格子选中，使用数字键盘填入数字。
+* 开启 **Notes** 模式可以标记候选数。
 
-<Sudoku />
+<div class="game-wrapper">
+  <Sudoku />
+</div>

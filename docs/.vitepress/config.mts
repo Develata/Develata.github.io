@@ -33,6 +33,9 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
   const items: SidebarItem[] = [];
 
   for (const entry of entries) {
+    // 1. 过滤系统文件和隐藏文件
+    if (entry.name.startsWith('.')) continue; 
+
     const entryPath = path.join(absolutePath, entry.name);
     
     // 1. 处理文件夹 (分类)
@@ -67,15 +70,21 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
     else if (entry.isFile() && entry.name.endsWith('.md')) {
       if (entry.name.toLowerCase() === 'index.md') continue;
 
-      const { data } = matter(fs.readFileSync(entryPath, 'utf-8'));
-      const stem = entry.name.replace(/\.md$/u, '');
+      try {
+        const content = fs.readFileSync(entryPath, 'utf-8');
+        const { data } = matter(content);
+        const stem = entry.name.replace(/\.md$/u, '');
 
-      items.push({
-        text: data.title?.trim() || '~',
-        link: path.posix.join(baseUrl, stem),
-        order: typeof data.order === 'number' ? data.order : Number.POSITIVE_INFINITY,
-        name: stem
-      });
+        items.push({
+          text: data.title?.trim() || stem, // 如果没有 title，回退到文件名
+          link: path.posix.join(baseUrl, stem),
+          order: typeof data.order === 'number' ? data.order : Number.POSITIVE_INFINITY,
+          name: stem
+        });
+      } catch (e) {
+        console.warn(`[Config] Warning: Failed to parse ${entryPath}`, e);
+        // 出错时跳过该文件，而不是崩溃
+      }
     }
   }
 
@@ -92,7 +101,8 @@ export default withMermaid(
     lang: 'zh-CN',
     title: "Develata's Space",
     description: 'Math & Code',
-
+    base: '/', // 关键修改,解决上传以后排版问题
+    cleanUrls: true,
     // --------------------------------------------------
     // Vite 插件配置：自动注入标题
     // --------------------------------------------------

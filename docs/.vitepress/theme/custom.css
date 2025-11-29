@@ -19,3 +19,47 @@
   --vp-right-sidebar-width: 200px; 
 }
 */
+
+/* 全局修复：移动端下的 Grid 布局边距问题 */
+@media (max-width: 768px) {
+  /* 针对博客、书单等使用 Grid 的容器 */
+  .blog-grid, 
+  .book-grid, 
+  .game-grid { /* 👈 修改这里：将 .game-hub 改为 .game-grid */
+    grid-template-columns: 1fr !important;
+    padding-left: 0 !important;
+  }
+  
+  /* 单独处理 .game-hub 的内边距 */
+  .game-hub {
+    padding-left: 0 !important;
+  }
+
+  /* 针对五子棋等游戏容器的适配 */
+  .board-wrapper {
+    padding: 5px !important;
+  }
+}
+
+/* --- 游戏容器统一通用样式 --- */
+.game-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* 为井字棋单独定义一个特殊类，或者统一所有游戏风格 */
+.game-wrapper-bordered {
+  padding: 40px;
+  background: var(--vp-c-bg-alt);
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .game-wrapper-bordered {
+    padding: 20px; /* 手机端减小内边距 */
+  }
+}

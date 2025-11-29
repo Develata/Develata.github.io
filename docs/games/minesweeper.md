@@ -1,15 +1,17 @@
 ---
 layout: page
-title: 扫雷
+title: Minesweeper
 sidebar: false
 ---
 
-# 💣 扫雷 (Minesweeper)
+# 💣 Minesweeper
 
-> 经典中的经典。运用逻辑推理，避开所有地雷。
+> 经典扫雷，逻辑与运气的结合。
 
 **操作指南：**
-* **电脑端**：左键挖开，右键插旗，双击数字快速开周围。
-* **手机端**：使用顶部的开关切换 **[⛏️ 挖开]** 和 **[🚩 插旗]** 模式。
+* **左键 / 点击**：挖掘方块。
+* **右键 / 长按**：标记地雷 (🚩)。
 
-<Minesweeper />
+<div class="game-wrapper">
+  <Minesweeper />
+</div>

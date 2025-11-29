@@ -1,22 +1,13 @@
 ---
-title: 井字棋
 layout: page
+title: Tic Tac Toe
+sidebar: false
 ---
 
-# ⭕ 井字棋 (Tic-Tac-Toe)
+# ⭕ Tic Tac Toe ❌
 
-<div class="game-wrapper">
+> 最简单的博弈，谁先连成三子？
+
+<div class="game-wrapper game-wrapper-bordered">
   <TicTacToe />
 </div>
-
-<style>
-.game-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 40px;
-  padding: 40px;
-  background: var(--vp-c-bg-alt);
-  border-radius: 12px;
-  border: 1px solid var(--vp-c-divider);
-}
-</style>

@@ -386,6 +386,10 @@ onUnmounted(() => {
   font-family: monospace;
   touch-action: manipulation;
   user-select: none;
+  
+  /* 👇 新增：确保容器占满可用宽度 */
+  width: 100%;
+  max-width: 100%; 
 }
 
 /* --- 按钮与布局 --- */
@@ -495,6 +499,11 @@ canvas {
   font-size: 0.8rem;
   pointer-events: none;
   z-index: 2;
+  
+  /* 👇 新增以下三行，修复移动端排版错乱 */
+  width: max-content;   /* 确保宽度紧贴文字 */
+  max-width: 90%;       /* 防止超出屏幕 */
+  white-space: nowrap;  /* 强制不换行 */
 }
 
 @keyframes slideDown {

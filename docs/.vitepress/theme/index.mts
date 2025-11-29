@@ -1,16 +1,17 @@
-import { h } from 'vue'
+import { h, defineAsyncComponent } from 'vue' // 引入 defineAsyncComponent
 import DefaultTheme from 'vitepress/theme'
 import './custom.css' // 保留你的自定义样式
 // 引入随机跳转的组件
 import RandomJump from './components/RandomJump.vue' 
-//引入游戏组件
-import GameHub from './components/games/GameHub.vue'// 游戏组件总汇
-import TicTacToe from './components/games/TicTacToe.vue'// 井字棋组件
-import Gomoku from './components/games/Gomoku.vue'// 五子棋组件
-import GameOfLife from './components/games/GameOfLife.vue'// 生命游戏组件
-import Minesweeper from './components/games/Minesweeper.vue'// 扫雷组件
-import Game2048 from './components/games/Game2048.vue'// 2048组件
-import Sudoku from './components/games/Sudoku.vue'// 数独组件
+
+// 使用异步加载，只有当组件在页面上渲染时才会加载对应的 JS
+const GameHub = defineAsyncComponent(() => import('./components/games/GameHub.vue'))
+const TicTacToe = defineAsyncComponent(() => import('./components/games/TicTacToe.vue'))
+const Gomoku = defineAsyncComponent(() => import('./components/games/Gomoku.vue'))
+const GameOfLife = defineAsyncComponent(() => import('./components/games/GameOfLife.vue'))
+const Minesweeper = defineAsyncComponent(() => import('./components/games/Minesweeper.vue'))
+const Game2048 = defineAsyncComponent(() => import('./components/games/Game2048.vue'))
+const Sudoku = defineAsyncComponent(() => import('./components/games/Sudoku.vue'))
 
 export default {
   extends: DefaultTheme, // 使用 extends 继承默认主题
@@ -25,9 +26,9 @@ export default {
   enhanceApp({ app }) {
     // 注册全局RandomJump组件
     app.component('RandomJump', RandomJump)
-    // 注册全局游戏组件
-    app.component('TicTacToe', TicTacToe)// 井字棋
+    // 注册异步组件
     app.component('GameHub', GameHub)// 游戏组件总汇
+    app.component('TicTacToe', TicTacToe)// 井字棋
     app.component('Gomoku', Gomoku)// 五子棋
     app.component('GameOfLife', GameOfLife)// 生命游戏
     app.component('Minesweeper', Minesweeper)// 扫雷

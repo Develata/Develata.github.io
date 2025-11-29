@@ -6,14 +6,13 @@ sidebar: false
 
 # ⚫ 五子棋 (Gomoku)
 
+> 又名五子棋，是一种在交叉点上放置棋子的策略棋类游戏。
+
+**规则：**
+1. 两名玩家轮流在空白交叉点上放置自己的棋子（黑子或白子）。
+2. 先在任意方向（横向、纵向或斜向）上连续放置五个自己的棋子的一方获胜。
+3. 如果所有交叉点都被占据而没有玩家获胜，则为平局。
+
 <div class="game-wrapper">
   <Gomoku />
 </div>
-
-<style>
-.game-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-</style>
