@@ -182,7 +182,7 @@ function handleSmartChord(r: number, c: number) {
   }
 
   // 策略 A: 自动插旗 (Auto Flag)
-  // 如果周围所有未翻开的格子数量(closedCount) 等于 该格子的数字(cell.count)
+  // 如果周围未翻开的格子数量(closedCount) 等于 该格子的数字(cell.count)
   // 说明这些未翻开的格子全是雷，自动把没插旗的插上旗
   if (closedCount === cell.count && hiddenUnflaggedCount > 0) {
     neighbors.forEach(n => {
@@ -480,6 +480,11 @@ initGame()
   font-family: sans-serif;
   user-select: none;
   touch-action: manipulation; 
+  
+  /* 👇 新增这两行：彻底锁死宽度，防止撑破页面导致导航栏偏移 */
+  width: 100%;
+  max-width: 100vw; 
+  overflow: hidden; /* 隐藏溢出部分，具体滚动交给子元素 .board-wrapper */
 }
 
 /* 头部卡片 */
@@ -629,30 +634,36 @@ initGame()
   color: white;
 }
 
-/* 棋盘 */
+/* 棋盘容器 */
 .board-wrapper {
   width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow-x: auto; /* 允许横向滚动 */
   padding-bottom: 10px;
-  display: flex;
-  justify-content: center;
+  
+  /* 👇 修改：移除 flex 布局，改用 block + margin auto */
+  display: block; 
+  text-align: center; /* 让内部 inline-block 元素居中 */
 }
 
 @media (max-width: 600px) {
   .board-wrapper {
-    justify-content: flex-start;
-    padding-left: 10px;
-    padding-right: 10px;
+    /* 👇 修改：移除之前的 padding 设置，防止挤压 */
+    padding-left: 0;
+    padding-right: 0;
+    text-align: left; /* 手机上靠左对齐，方便从左往右滑 */
   }
 }
 
 .board {
-  display: grid;
+  display: inline-grid; /* 👇 修改：改为 inline-grid 以便被 text-align 控制 */
   gap: 2px;
   background: var(--vp-c-divider);
   padding: 4px;
   border-radius: 4px;
+  
+  /* 👇 新增：防止棋盘本身 margin 导致溢出 */
+  margin: 0 auto; 
 }
 
 .cell {

@@ -23,7 +23,7 @@ const PRESETS = {
     ]
   },
   'gun': {
-    name: '滑翔机枪',
+    name: '滑翔机枪（电脑体验最佳）',
     points: [
       [24,0],[22,1],[24,1],[12,2],[13,2],[20,2],[21,2],[34,2],[35,2],[11,3],[15,3],[20,3],[21,3],[34,3],[35,3],[0,4],[1,4],[10,4],[16,4],[20,4],[21,4],[0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],[10,6],[16,6],[24,6],[11,7],[15,7],[12,8],[13,8]
     ]
@@ -387,9 +387,10 @@ onUnmounted(() => {
   touch-action: manipulation;
   user-select: none;
   
-  /* 👇 新增：确保容器占满可用宽度 */
+  /* 👇 修改：彻底锁死宽度，防止撑破页面导致导航栏偏移 */
   width: 100%;
-  max-width: 100%; 
+  max-width: 100vw; 
+  overflow: hidden; 
 }
 
 /* --- 按钮与布局 --- */
@@ -449,12 +450,20 @@ onUnmounted(() => {
 .canvas-container {
   position: relative;
   width: 100%;
+  
+  /* 👇 修改：允许内部滚动，并移除 overflow: hidden 以便滚动条显示 */
+  max-width: 100%;
+  overflow-x: auto; 
+  
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
-  overflow: hidden;
-  background: var(--vp-c-bg-alt); /* 兜底背景 */
+  background: var(--vp-c-bg-alt); 
   line-height: 0;
   box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+  
+  /* 👇 新增：确保画布居中 */
+  display: flex;
+  justify-content: center;
 }
 
 /* 纯 CSS 网格背景，性能极高 */
