@@ -1,7 +1,7 @@
 ---
 title: Openlist
 date: 2025-11-24 22:44
-order: 4
+order: 1
 ---
 见openlist官方快速文档：[https://doc.oplist.org.cn/](https://doc.oplist.org.cn/)
 
