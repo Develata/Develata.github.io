@@ -2,6 +2,7 @@ import { h, defineAsyncComponent } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import './custom.css'
 import RandomJump from './components/RandomJump.vue'
+import FolderTree from './components/FolderTree.vue'
 
 // ⚡️ 封装一个带有 Loading 状态的异步加载器
 // 优化体验：当网络加载游戏代码时，显示一个加载提示，避免页面长时间空白
@@ -41,6 +42,7 @@ export default {
   },
   enhanceApp({ app }) {
     app.component('RandomJump', RandomJump)
+    app.component('FolderTree', FolderTree)
     
     app.component('GameHub', GameHub)
     app.component('TicTacToe', TicTacToe)
