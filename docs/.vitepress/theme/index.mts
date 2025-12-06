@@ -40,7 +40,7 @@ export default {
       'nav-bar-content-after': () => h(RandomJump)
     })
   },
-  enhanceApp({ app }) {
+  enhanceApp({ app }: any) {
     app.component('RandomJump', RandomJump)
     app.component('FolderTree', FolderTree)
     

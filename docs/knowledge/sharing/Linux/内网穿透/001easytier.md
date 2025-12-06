@@ -7,7 +7,7 @@ order: 1
 
 github仓库：[https://github.com/EasyTier/EasyTier](https://github.com/EasyTier/EasyTier)
 
-**Linux一键安装脚本安装**
+## **Linux一键安装脚本安装**
 
 一键脚本依赖 ``unzip``，请提前下载并安装
 
@@ -29,7 +29,7 @@ wget -O /tmp/easytier.sh "https://raw.githubusercontent.com/EasyTier/EasyTier/ma
 sudo nano /opt/easytier/config/default.conf
 ```
 
-如果是standalone模式（一般是这个），一般配置如下
+一般配置如下
 
 ```bash
 # 当前服务器名
@@ -58,6 +58,14 @@ rpc_portal = "0.0.0.0:0"
 network_name = "admin"
 network_secret = "password"
 
+# 连接目标的域名or网址or ipv4 +端口
+# 若为主服务器则不需要填写[[peer]]
+# 若需要依次访问多个服务端，那么就填多个[[peer]],url块,不是只添加url
+# 注意：IPv6 地址必须用方括号 [] 包起来
+
+# [[peer]]
+# uri = "tcp://public.easytier.top:11010"
+
 # 以下为默认配置
 [flags]
 default_protocol = "udp"
@@ -74,36 +82,6 @@ disable_p2p = false
 p2p_only = false
 relay_all_peer_rpc = false
 disable_udp_hole_punching = false
-```
-
-若需要连接到别的服务器，一般如下
-
-```bash
-# 当前设备名
-hostname = "hostname"
-# 是否开启DHCP，开启则删除ipv4行，false改为true
-ipv4 = "10.144.51.4/24"
-dhcp = false
-# 当前监听端口
-listeners = [
-    "tcp://0.0.0.0:11010",
-    "udp://0.0.0.0:11010",
-    "wg://0.0.0.0:11011",
-]
-# RPC 管理端口
-rpc_portal = "0.0.0.0:0"
-
-# 连接目标的账密
-[network_identity]
-network_name = "admin"
-network_secret = "password"
-
-# 连接目标的域名or网址or ipv4 +端口
-[[peer]]
-uri = "tcp://easytier.develata.me"
-# 以下为默认配置
-[flags]
-
 ```
 
 **防火墙记得放开端口11010**
@@ -129,3 +107,37 @@ sudo systemctl restart easytier@default
 
  使用 `systemctl` 可以让 EasyTier 在后台静默运行，并支持开机自启 ，**每次修改完配置文件都记得要重启才能生效。**
 
+## docker-compose
+```bash
+services:
+  watchtower: # 用于自动更新easytier镜像，若不需要请删除这部分
+    image: m.daocloud.io/docker.io/containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - WATCHTOWER_NO_STARTUP_MESSAGE
+      - DOCKER_API_VERSION=1.44
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 3600 --cleanup --label-enable
+  easytier:
+    image: m.daocloud.io/docker.io/easytier/easytier:latest
+    hostname: ali_ecs
+    container_name: easytier
+    labels:
+      com.centurylinklabs.watchtower.enable: 'true'
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - TZ=Asia/Shanghai
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - /etc/easytier:/root
+      - /etc/machine-id:/etc/machine-id:ali_ecs # 映射宿主机机器码
+    command: -d --network-name 你的用户名 --network-secret 你的密码 -p tcp://public.easytier.top:11010（官方服务器，-p可填多个，可以换成你自己的） -p 指定你的easytier服务器 -i 指定你的内网ipv4
+```
