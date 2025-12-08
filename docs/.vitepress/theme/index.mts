@@ -32,6 +32,7 @@ const Minesweeper = createGameComponent(() => import('./components/games/Mineswe
 const Game2048 = createGameComponent(() => import('./components/games/Game2048.vue'))
 const Sudoku = createGameComponent(() => import('./components/games/Sudoku.vue'))
 const LightsOut = createGameComponent(() => import('./components/games/LightsOut.vue'))
+const ConvergenceGame = createGameComponent(() => import('./components/games/convergence/GameEntry.vue'))
 
 export default {
   extends: DefaultTheme, 
@@ -52,5 +53,6 @@ export default {
     app.component('Game2048', Game2048)
     app.component('Sudoku', Sudoku)
     app.component('LightsOut', LightsOut)
+    app.component('ConvergenceGame', ConvergenceGame)
   }
 }

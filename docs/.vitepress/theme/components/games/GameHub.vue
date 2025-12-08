@@ -86,6 +86,16 @@ const games: Game[] = [
     tag: 'Math',
     color: '#eab308' // 灯泡黄
   },
+  {
+    id: 'convergence',
+    title: '收敛：梯度战争(AI在努力开发中)',
+    enTitle: 'Convergence: The Gradient War',
+    desc: '运用数学优化原理，击中目标，赢取胜利。',
+    icon: '🎯',
+    link: '/games/convergence',
+    tag: 'Rougelike',
+    color: '#8b5ff6' 
+  },
 ]
 </script>
 
