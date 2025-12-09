@@ -21,7 +21,7 @@ export default createContentLoader('news/**/*.md', {
       .map(({ url, frontmatter, excerpt }) => ({
         title: frontmatter.title,
         url,
-        excerpt,
+        excerpt: frontmatter.excerpt || (excerpt ? excerpt.replace(/<[^>]+>/g, '') : undefined),
         date: formatDate(frontmatter.date)
       }))
       .sort((a, b) => b.date.time - a.date.time) // 按日期倒序

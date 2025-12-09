@@ -94,6 +94,13 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
 
   // 排序：Order (小到大) -> Name (A-Z)
   return items.sort((a, b) => {
+    // 特殊处理：Other 文件夹永远排在最后
+    const isAOther = (a.name || '').toLowerCase() === 'other' || (a.text || '').toLowerCase() === 'other';
+    const isBOther = (b.name || '').toLowerCase() === 'other' || (b.text || '').toLowerCase() === 'other';
+    
+    if (isAOther && !isBOther) return 1;
+    if (!isAOther && isBOther) return -1;
+
     const orderDiff = (a.order ?? Infinity) - (b.order ?? Infinity);
     if (orderDiff !== 0) return orderDiff;
     return (a.name ?? '').localeCompare(b.name ?? '', 'en');
