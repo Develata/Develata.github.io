@@ -5,7 +5,7 @@ import { useRoute } from 'vitepress'
 
 // 当前页面路径信息
 const route = useRoute()
-const currentFolder = '/blog/生活/'
+const currentFolder = '/about/blog/生活/'
 
 // 需要排除的自身 URL 形态（含 index 形式）
 const selfUrls = new Set([

@@ -84,3 +84,87 @@
     min-height: 540px;
   }
 }
+
+/* ========================================================================
+   全局卡片透明化样式 (Glassmorphism Unified)
+   ======================================================================== */
+
+/* 我们将以下所有组件的背景样式合并处理：
+   1. .VPFeature: 首页的功能介绍卡片
+   2. .game-card: 游戏中心的卡片
+   3. .blog-card: 博客列表的卡片
+   4. .news-card: 新闻列表的卡片
+   5. .root-tree: 目录导航树的外框
+   6. .header-card: 扫雷/数独等游戏的头部计分板
+   7. .settings-panel, .game-over-panel: 游戏内的弹窗面板
+*/
+.VPFeature,
+.game-card,
+.blog-card,
+.news-card,
+.root-tree,
+.header-card,
+.settings-panel,
+.game-over-panel,
+.buff-panel,    /* 收敛游戏的Buff面板 */
+.network-panel  /* 收敛游戏的拓扑面板 */
+{
+  /* 1. 统一背景：极低透明度的蓝灰色，兼容深色/浅色模式 */
+  background-color: rgba(142, 150, 170, 0.1) !important;
+  
+  /* 2. 核心：毛玻璃模糊效果 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* 3. 统一边框：半透明白/灰线 */
+  border: 1px solid rgba(128, 128, 128, 0.15) !important;
+  
+  /* 4. 统一样式细节 */
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05); /* 轻微阴影增加层次感 */
+  transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* --- 交互状态：鼠标悬停效果 --- */
+/* 注意：排除了 .root-tree 和游戏面板，因为它们通常不需要悬停上浮 */
+.VPFeature:hover,
+.game-card:not(.is-disabled):hover,
+.blog-card:hover,
+.news-card:hover {
+  /* 悬停时背景稍微加深 */
+  background-color: rgba(142, 150, 170, 0.18) !important;
+  /* 边框变亮（品牌色） */
+  border-color: var(--vp-c-brand-1) !important;
+  /* 上浮效果 */
+  transform: translateY(-4px);
+  /* 阴影加重 */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 特殊微调 --- */
+
+/* 目录树内部不需要太强的阴影，保持扁平 */
+.root-tree {
+  box-shadow: none !important;
+  padding: 20px !important; /* 增加一点内边距让透明感更舒服 */
+}
+
+/* 游戏卡片的装饰背景球 (那个模糊的圆) 需要淡化，否则会透过透明背景显得太乱 */
+.game-card .card-bg-decoration {
+  opacity: 0.05 !important;
+}
+.game-card:hover .card-bg-decoration {
+  opacity: 0.15 !important;
+}
+
+/* 动态光晕背景 */
+body {
+  background-image: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+  background-attachment: fixed;
+  
+  /* 3. 防止背景重复 */
+  background-repeat: no-repeat;
+  
+  /* 4. 确保过渡平滑 (切换深色/浅色模式时) */
+  transition: background-image 0.5s ease;
+}

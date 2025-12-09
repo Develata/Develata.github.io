@@ -1,8 +1,9 @@
-import { h, defineAsyncComponent } from 'vue'
-import DefaultTheme from 'vitepress/theme'
-import './custom.css'
-import RandomJump from './components/RandomJump.vue'
-import FolderTree from './components/FolderTree.vue'
+import { h, defineAsyncComponent } from 'vue' // Vue 的核心函数
+import DefaultTheme from 'vitepress/theme' // 引入默认主题
+import './custom.css' // 引入自定义样式
+import RandomJump from './components/RandomJump.vue' // 引入随机跳转组件
+import FolderTree from './components/FolderTree.vue'// 引入文件夹树组件
+import ParticlesBg from './components/Background.vue' // 引入背景组件
 
 // ⚡️ 封装一个带有 Loading 状态的异步加载器
 // 优化体验：当网络加载游戏代码时，显示一个加载提示，避免页面长时间空白
@@ -34,25 +35,26 @@ const Sudoku = createGameComponent(() => import('./components/games/Sudoku.vue')
 const LightsOut = createGameComponent(() => import('./components/games/LightsOut.vue'))
 const ConvergenceGame = createGameComponent(() => import('./components/games/convergence/GameEntry.vue'))
 
+
 export default {
   extends: DefaultTheme, 
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      'nav-bar-content-after': () => h(RandomJump)
+      'nav-bar-content-after': () => h(RandomJump),// 导航栏后添加随机跳转按钮
+      'layout-bottom': () => h(ParticlesBg) //背景组件
     })
-  },
+  },// 注册全局组件
   enhanceApp({ app }: any) {
-    app.component('RandomJump', RandomJump)
-    app.component('FolderTree', FolderTree)
-    
-    app.component('GameHub', GameHub)
-    app.component('TicTacToe', TicTacToe)
-    app.component('Gomoku', Gomoku)
-    app.component('GameOfLife', GameOfLife)
-    app.component('Minesweeper', Minesweeper)
-    app.component('Game2048', Game2048)
-    app.component('Sudoku', Sudoku)
-    app.component('LightsOut', LightsOut)
-    app.component('ConvergenceGame', ConvergenceGame)
+    app.component('RandomJump', RandomJump)// 注册随机跳转组件
+    app.component('FolderTree', FolderTree)// 注册文件夹树组件
+    app.component('GameHub', GameHub)// 注册游戏中心组件
+    app.component('TicTacToe', TicTacToe)// 注册井字棋组件
+    app.component('Gomoku', Gomoku)// 注册五子棋组件
+    app.component('GameOfLife', GameOfLife)// 注册生命游戏组件
+    app.component('Minesweeper', Minesweeper)// 注册扫雷组件
+    app.component('Game2048', Game2048)// 注册2048组件
+    app.component('Sudoku', Sudoku)// 注册数独组件
+    app.component('LightsOut', LightsOut)// 注册熄灯组件
+    app.component('ConvergenceGame', ConvergenceGame)// 注册聚合游戏组件
   }
 }

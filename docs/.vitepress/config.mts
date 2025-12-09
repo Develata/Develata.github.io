@@ -166,7 +166,7 @@ export default withMermaid(
         { text: 'About',
           items: [
             { text: 'Me', link: '/about/me' },
-            { text: 'Blog', link: '/blog/' },
+            { text: 'Blog', link: '/about/blog/' },
           ]
         },
       ],
@@ -184,13 +184,13 @@ export default withMermaid(
         '/news/': resolveSidebarItems('news', '/news/'),
 
         // Blog 侧边栏：合并自动生成的分类 + 手动添加的归档
-        '/blog/': [
-          ...resolveSidebarItems('blog', '/blog/'),
+        '/about/blog/': [
+          ...resolveSidebarItems('about/blog', '/about/blog/'),
           {
             text: '归档',
             collapsed: false,
             items: [
-              { text: '2025', link: '/blog/archive/' },
+              { text: '2025', link: '/about/blog/archive/' },
             ],
           },
         ],

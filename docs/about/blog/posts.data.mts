@@ -15,13 +15,13 @@ interface Post {
 declare const data: Post[]
 export { data }
 
-export default createContentLoader('blog/**/*.md', {
+export default createContentLoader('about/blog/**/*.md', {
   excerpt: true,
   transform(raw): Post[] {
     return raw
       .filter(({ url }) => {
-        const isArchive = url.includes('/blog/archive/')
-        const isIndex = url === '/blog/' || url.endsWith('/') || url.endsWith('/index')
+        const isArchive = url.includes('/about/blog/archive/')
+        const isIndex = url === '/about/blog/' || url.endsWith('/') || url.endsWith('/index')
         return !isArchive && !isIndex
       })
       .map(({ url, frontmatter, excerpt }) => ({
