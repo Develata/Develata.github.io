@@ -1,5 +1,3 @@
-layout: page title: AI Daily News sidebar: false
-
 <script setup>
 import { data as newsList } from './news.data.mts'
 </script>
@@ -8,8 +6,8 @@ import { data as newsList } from './news.data.mts'
 
 <div class="news-header">
   <span class="kicker">DAILY DIGEST</span>
-  <h1>AI Chronicle</h1>
-  <p>捕捉人工智能的每一次脉动</p>
+  <h1>News</h1>
+  <p>捕捉世界的每一次脉动</p>
 </div>
 
 <!-- 时间轴容器 -->

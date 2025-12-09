@@ -73,6 +73,10 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
       try {
         const content = fs.readFileSync(entryPath, 'utf-8');
         const { data } = matter(content);
+        
+        // 如果 Frontmatter 中设置了 hideInSidebar: true，则跳过
+        if (data.hideInSidebar) continue;
+
         const stem = entry.name.replace(/\.md$/u, '');
 
         items.push({

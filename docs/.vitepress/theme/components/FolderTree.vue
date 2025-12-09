@@ -8,6 +8,7 @@ interface Item {
   link?: string
   items?: Item[]
   collapsed?: boolean
+  name?: string
 }
 
 // 接收外部传入的数据（如果是递归调用）
@@ -25,19 +26,53 @@ const currentDirItems = computed(() => {
 
   // 否则（是根节点调用），自动根据当前路径查找 sidebar 配置
   const sidebar = theme.value.sidebar
+  if (!sidebar) return []
+
+  // 处理单侧边栏情况 (sidebar 是数组)
+  if (Array.isArray(sidebar)) {
+    return sidebar as Item[]
+  }
+
   const path = page.value.relativePath.replace(/index\.md$/, '').replace(/\.md$/, '')
   
   // 尝试匹配 sidebar 中的 key
-  // 比如当前页面是 knowledge/math/index.md，路径就是 knowledge/math/
-  // 我们需要找到 key 为 '/knowledge/math/' 的那个配置项
-  const matchKey = Object.keys(sidebar).find(key => 
-    ('/' + path).startsWith(key) || key.startsWith('/' + path)
-  )
+  // 优先匹配最长的 key (最精确匹配)
+  const matchKey = Object.keys(sidebar)
+    .filter(key => ('/' + path).startsWith(key))
+    .sort((a, b) => b.length - a.length)[0]
 
   if (matchKey) {
-    // sidebar[key] 可能是一个对象或数组，我们需要标准化的数组
     const conf = sidebar[matchKey]
-    return Array.isArray(conf) ? conf : conf.items
+    // 强制类型转换为 Item[]，解决 TS 隐式 any 报错
+    let items = ((Array.isArray(conf) ? conf : conf.items) || []) as Item[]
+
+    // 获取当前文件所在的目录路径
+    const rawPath = page.value.relativePath
+    const parentDir = rawPath.split('/').slice(0, -1).join('/')
+    const currentFileDir = parentDir ? `/${parentDir}/` : '/'
+    
+    // 如果当前目录比 sidebar key 更深，需要向下查找
+    if (currentFileDir.startsWith(matchKey) && currentFileDir.length > matchKey.length) {
+       const relativePath = currentFileDir.slice(matchKey.length)
+       const segments = relativePath.split('/').filter(Boolean)
+       
+       for (const segment of segments) {
+         try {
+            const decodedSegment = decodeURIComponent(segment)
+            const found = items.find(item => (item.name === decodedSegment) || (item.text === decodedSegment))
+            if (found && found.items) {
+              items = found.items
+            } else {
+              break
+            }
+         } catch (e) {
+            // 忽略解码错误
+            break
+         }
+       }
+    }
+
+    return items
   }
   return []
 })
