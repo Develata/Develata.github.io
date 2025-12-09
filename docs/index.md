@@ -22,19 +22,20 @@ features:
     linkText: 查看编程笔记
 
   - title:  Sharing
-    details: 软件分享。
+    details: 指南分享。
     link: /knowledge/sharing/
-    linkText: 查看分享笔记
+    linkText: 查看分享
 
   - title:  Reading
     details: 来读书吧。
     link: /books/
     linkText: 浏览书单
 
-  - title:  Thinking
-    details: 生活随笔。
-    link: /blog/
-    linkText: 阅读博客
+  - title:  News
+    details: 时事新闻、科技大事。
+    link: /news/
+    linkText: 新闻
+    
   - title:  Gaming
     details: 来点小游戏。
     link: /games/

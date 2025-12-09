@@ -91,7 +91,6 @@ const indentStyle = computed(() => {
       <template v-if="item.items && item.items.length > 0">
         <details class="folder-details" :open="false">
           <summary class="folder-summary">
-            <span class="icon">📂</span>
             <span class="text folder-text">{{ item.text }}</span>
             <span class="count-badge">{{ item.items.length }}</span>
           </summary>
@@ -103,7 +102,6 @@ const indentStyle = computed(() => {
       <!-- 情况 B: 是文件 (有 link) -->
       <template v-else-if="item.link">
         <a :href="withBase(item.link)" class="file-link">
-          <span class="icon">📄</span>
           <span class="text">{{ item.text }}</span>
         </a>
       </template>

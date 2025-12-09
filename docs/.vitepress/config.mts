@@ -111,6 +111,9 @@ export default withMermaid(
     // Vite 插件配置：自动注入标题
     // --------------------------------------------------
     vite: {
+      build: {
+        chunkSizeWarningLimit: 2000
+      },
       plugins: [
         {
           name: 'auto-inject-title',
