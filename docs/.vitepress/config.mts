@@ -153,10 +153,15 @@ export default withMermaid(
             { text: 'Sharing', link: '/knowledge/sharing/' },
           ],
         },
-        { text: 'Blog', link: '/blog/' },
+        { text: 'News', link: '/news/' },
         { text: 'Books', link: '/books/' },
         { text: 'Games', link: '/games/' },
-        { text: 'About', link: '/about/me' },
+        { text: 'About',
+          items: [
+            { text: 'Me', link: '/about/me' },
+            { text: 'Blog', link: '/blog/' },
+          ]
+        },
       ],
 
       sidebar: {
@@ -167,7 +172,10 @@ export default withMermaid(
         
         // 自动解析 books 目录
         '/books/': resolveSidebarItems('books', '/books/'), 
-        
+
+        // 自动解析 news 目录
+        '/news/': resolveSidebarItems('news', '/news/'),
+
         // Blog 侧边栏：合并自动生成的分类 + 手动添加的归档
         '/blog/': [
           ...resolveSidebarItems('blog', '/blog/'),
