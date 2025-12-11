@@ -19,6 +19,7 @@ const docsRoot = path.resolve(__dirname, '..');
 interface SidebarItem extends DefaultTheme.SidebarItem {
   order?: number;
   name?: string; // 用于文件名排序
+  date?: number; // 用于日期排序 (时间戳)
 }
 
 /**
@@ -48,13 +49,27 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
 
       let title = entry.name;
       let order = Number.POSITIVE_INFINITY;
+      let date = 0;
 
       // 读取文件夹下的 index.md 获取元数据
       const indexFile = path.join(entryPath, 'index.md');
       if (fs.existsSync(indexFile)) {
-         const { data } = matter(fs.readFileSync(indexFile, 'utf-8'));
-         if (data.title) title = data.title;
+         const fileContent = fs.readFileSync(indexFile, 'utf-8');
+         const { data, content } = matter(fileContent);
+         
+         if (data.title) {
+            title = data.title;
+         } else {
+            // 尝试从内容中提取第一个 # 标题
+            const match = content.match(/^\s*#\s+(.+)\s*$/m);
+            if (match) title = match[1].trim();
+         }
+
          if (typeof data.order === 'number') order = data.order;
+         if (data.date) {
+            const d = new Date(data.date);
+            if (!isNaN(d.getTime())) date = d.getTime();
+         }
       }
 
       items.push({
@@ -62,7 +77,8 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
         collapsed: false,
         items: children,
         order,
-        name: entry.name
+        name: entry.name,
+        date
       });
     }
 
@@ -71,19 +87,41 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
       if (entry.name.toLowerCase() === 'index.md') continue;
 
       try {
-        const content = fs.readFileSync(entryPath, 'utf-8');
-        const { data } = matter(content);
+        const fileContent = fs.readFileSync(entryPath, 'utf-8');
+        const { data, content } = matter(fileContent);
         
         // 如果 Frontmatter 中设置了 hideInSidebar: true，则跳过
         if (data.hideInSidebar) continue;
 
         const stem = entry.name.replace(/\.md$/u, '');
+        
+        let date = 0;
+        if (data.date) {
+            const d = new Date(data.date);
+            if (!isNaN(d.getTime())) date = d.getTime();
+        }
+
+        // 优先使用 Frontmatter 中的 title
+        let title = '';
+        if (data && data.title) {
+            title = String(data.title).trim();
+        }
+
+        // 如果没有 Frontmatter title，尝试从内容中提取第一个 # 标题
+        if (!title) {
+            const match = content.match(/^\s*#\s+(.+)\s*$/m);
+            if (match) title = match[1].trim();
+        }
+        
+        // 最后回退到文件名
+        title = title || stem;
 
         items.push({
-          text: data.title?.trim() || stem, // 如果没有 title，回退到文件名
+          text: title,
           link: path.posix.join(baseUrl, stem),
           order: typeof data.order === 'number' ? data.order : Number.POSITIVE_INFINITY,
-          name: stem
+          name: stem,
+          date
         });
       } catch (e) {
         console.warn(`[Config] Warning: Failed to parse ${entryPath}`, e);
@@ -92,7 +130,7 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
     }
   }
 
-  // 排序：Order (小到大) -> Name (A-Z)
+  // 排序：Order (小到大) -> Date (新到旧) -> Name (A-Z)
   return items.sort((a, b) => {
     // 特殊处理：Other 文件夹永远排在最后
     const isAOther = (a.name || '').toLowerCase() === 'other' || (a.text || '').toLowerCase() === 'other';
@@ -101,10 +139,22 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
     if (isAOther && !isBOther) return 1;
     if (!isAOther && isBOther) return -1;
 
-    const orderDiff = (a.order ?? Infinity) - (b.order ?? Infinity);
-    if (orderDiff !== 0) return orderDiff;
+    const orderA = a.order ?? Number.POSITIVE_INFINITY;
+    const orderB = b.order ?? Number.POSITIVE_INFINITY;
+    
+    if (orderA !== orderB) {
+        return orderA - orderB;
+    }
+
+    // 按日期倒序 (新 -> 旧)
+    const dateA = a.date ?? 0;
+    const dateB = b.date ?? 0;
+    if (dateA !== dateB) {
+        return dateB - dateA;
+    }
+
     return (a.name ?? '').localeCompare(b.name ?? '', 'en');
-  }).map(({ order, name, ...rest }) => rest); // 清理内部属性
+  }).map(({ order, name, date, ...rest }) => rest); // 清理内部属性
 }
 
 export default withMermaid(
@@ -135,12 +185,18 @@ export default withMermaid(
               // 排除首页和无标题页面
               if (path.basename(id).toLowerCase() === 'index.md' || !data.title) return;
               
-              // 检查是否已有 H1 (排除 # 后面紧跟 # 的情况，即排除 ##, ### 等)
-              // 正则含义：行首 -> 可选空白 -> # -> 必须有空白 -> 内容
-              if (content.trimStart().startsWith('# ')) return;
-              // 使用 gray-matter 重组文件，比正则替换更稳定
-              // 这会自动处理 Frontmatter 的闭合和换行
-              return matter.stringify(`# ${data.title}\n\n${content}`, data);
+              // 检查是否已有 H1
+              const h1Regex = /^\s*#\s+(.*)$/m;
+              const hasH1 = h1Regex.test(content);
+
+              if (hasH1) {
+                // 如果已有 H1，强制替换为 Frontmatter 中的 title
+                const newContent = content.replace(h1Regex, `# ${data.title}`);
+                return matter.stringify(newContent, data);
+              } else {
+                // 如果没有 H1，自动注入
+                return matter.stringify(`# ${data.title}\n\n${content}`, data);
+              }
             } catch (e) {
               return; 
             }
