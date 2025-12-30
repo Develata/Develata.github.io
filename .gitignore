@@ -4,3 +4,4 @@ dist
 cache
 .vitepress/dist
 .vitepress/cache
+repomix-output.xml
