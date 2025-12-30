@@ -473,13 +473,6 @@ const nextPieceColor = computed(() => {
                         </div>
                     </div>
                 </div>
-
-                <div class="instructions desktop-only">
-                    <p>WASD / 方向键 移动</p>
-                    <p>↑ / W 旋转</p>
-                    <p>Space 硬降</p>
-                    <p>P / Esc 暂停</p>
-                </div>
             </div>
         </div>
 
@@ -698,11 +691,7 @@ const nextPieceColor = computed(() => {
     color: #fff;
 }
 
-.instructions {
-    font-size: 0.85rem;
-    color: var(--vp-c-text-3);
-    line-height: 1.6;
-}
+
 
 .desktop-only {
     display: block;

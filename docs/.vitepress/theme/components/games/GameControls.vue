@@ -95,8 +95,8 @@ defineProps<{
 }
 
 .d-btn {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     background: #374151;
     /* 深灰/黑 */
     border: none;
@@ -120,8 +120,8 @@ defineProps<{
 }
 
 .d-center {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     background: #374151;
     z-index: 1;
 }
@@ -166,8 +166,8 @@ defineProps<{
 }
 
 .action-btn {
-    width: 45px;
-    height: 45px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
     border: none;
     background: #ef4444;
