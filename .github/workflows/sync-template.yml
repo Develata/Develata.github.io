@@ -6,6 +6,11 @@ on:
       - main
   workflow_dispatch:
 
+# 防止并发运行导致冲突，新的 Push 会取消旧的运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -31,15 +36,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 切换到一个新的孤立分支（不包含 main 的历史记录）或新的分支状态
-          # 我们希望将当前的 *纯净* 状态作为 template 分支的最新提交
+          # 获取当前 Main 分支的 Short SHA 用于溯源
+          MAIN_SHA=$(git rev-parse --short HEAD)
+
+          # 切换到一个新的孤立分支（不包含 main 的历史记录）
+          git checkout --orphan template-temp
 
           # 策略：
-          # 直接将变更提交到一个新的临时分支，然后强制推送到远程的 template 分支
+          # 1. 删除自动化脚本自身（用户不需要在模板中看到这些维护工具）
+          # 2. 提交当前目录下所有变更
+          # 3. 强制推送到 template 分支
 
-          git checkout --orphan template-temp
+          # 删除工作流和清理脚本，确保 Template 分支纯净且不会自我触发
+          rm -rf .github/workflows/sync-template.yml
+          rm -rf scripts/cleanup-for-template.mjs
+          # 如果 scripts 目录为空，也删除它 (可选，视 .gitkeep 是否存在而定)
+          # rmdir scripts || true 
+
           git add .
-          git commit -m "chore: 同步 main 分支的模板更新 $(date +'%Y-%m-%d')"
+          git commit -m "chore: 同步 main 分支的模板更新 (Ref: $MAIN_SHA)"
 
           # 强制推送新状态到远程 template 分支
           git push origin template-temp:template --force
