@@ -35,6 +35,7 @@ const Sudoku = createGameComponent(() => import('./components/games/Sudoku.vue')
 const LightsOut = createGameComponent(() => import('./components/games/LightsOut.vue'))
 const ConvergenceGame = createGameComponent(() => import('./components/games/convergence/GameEntry.vue'))
 const Snake = createGameComponent(() => import('./components/games/Snake.vue'))
+const Tetris = createGameComponent(() => import('./components/games/Tetris.vue'))
 
 
 export default {
@@ -58,5 +59,6 @@ export default {
     app.component('LightsOut', LightsOut)// 注册熄灯组件
     app.component('ConvergenceGame', ConvergenceGame)// 注册聚合游戏组件
     app.component('Snake', Snake)// 注册贪吃蛇组件
+    app.component('Tetris', Tetris)// 注册俄罗斯方块组件
   }
 }

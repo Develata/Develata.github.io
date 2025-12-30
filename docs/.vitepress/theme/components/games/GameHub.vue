@@ -44,7 +44,7 @@ const games: Game[] = [
     icon: '🧬',
     link: '/games/gameoflife',
     tag: 'Simulation',
-    color: '#10b981', 
+    color: '#10b981',
   },
   {
     id: 'minesweeper',
@@ -94,7 +94,7 @@ const games: Game[] = [
     icon: '🎯',
     link: '/games/convergence',
     tag: 'Rougelike',
-    color: '#8b5ff6' 
+    color: '#8b5ff6'
   },
   {
     id: 'snake',
@@ -105,6 +105,16 @@ const games: Game[] = [
     link: '/games/snake',
     tag: 'Arcade',
     color: '#22c55e' // 绿色
+  },
+  {
+    id: 'tetris',
+    title: '俄罗斯方块',
+    enTitle: 'Tetris',
+    desc: '经典中的经典。堆叠方块，消除行，挑战最高分。',
+    icon: '🧱',
+    link: '/games/tetris',
+    tag: 'Arcade',
+    color: '#3b82f6' // 蓝色
   },
 ]
 </script>
@@ -117,34 +127,30 @@ const games: Game[] = [
     </div>
 
     <div class="game-grid">
-      <a 
-        v-for="game in games" 
-        :key="game.id" 
-        :href="game.disabled ? 'javascript:void(0)' : withBase(game.link)"
-        class="game-card"
-        :class="{ 'is-disabled': game.disabled }"
-      >
+      <a v-for="game in games" :key="game.id" :href="game.disabled ? 'javascript:void(0)' : withBase(game.link)"
+        class="game-card" :class="{ 'is-disabled': game.disabled }">
         <div class="card-content">
           <div class="card-top">
             <span class="icon-box">{{ game.icon }}</span>
-            <span class="tag" :style="{ color: game.color, borderColor: game.color + '40', backgroundColor: game.color + '10' }">
+            <span class="tag"
+              :style="{ color: game.color, borderColor: game.color + '40', backgroundColor: game.color + '10' }">
               {{ game.tag }}
             </span>
           </div>
-          
+
           <h3 class="game-title">
             {{ game.title }}
             <span class="game-en-title">{{ game.enTitle }}</span>
           </h3>
-          
+
           <p class="game-desc">{{ game.desc }}</p>
-          
+
           <div class="card-footer">
             <span v-if="game.disabled" class="status-text">🚧 开发中...</span>
             <span v-else class="play-btn">Start Game ➜</span>
           </div>
         </div>
-        
+
         <div class="card-bg-decoration" :style="{ background: game.color }"></div>
       </a>
     </div>
@@ -190,20 +196,24 @@ const games: Game[] = [
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 24px;
 }
+
 @media (max-width: 600px) {
   .game-hub {
-    padding: 20px 16px; /* 减小手机端边距 */
+    padding: 20px 16px;
+    /* 减小手机端边距 */
   }
-  
+
   .glitch-title {
-    font-size: 2.5rem; /* 标题字号调小 */
+    font-size: 2.5rem;
+    /* 标题字号调小 */
   }
-  
+
   .game-card:not(.is-disabled):hover {
     /* 手机端取消悬停上浮效果，因为手机没有 hover */
-    transform: none; 
+    transform: none;
   }
 }
+
 /* 卡片核心样式 */
 .game-card {
   position: relative;
@@ -325,7 +335,14 @@ const games: Game[] = [
 }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
