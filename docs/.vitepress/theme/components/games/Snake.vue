@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import SpeedControl from './SpeedControl.vue'
 
 // --- 类型定义 ---
 type Point = { x: number; y: number }
@@ -10,7 +11,6 @@ type GameStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER'
 const GRID_SIZE = 20
 const BOARD_SIZE = 20 // 20x20 网格
 const INITIAL_SPEED = 130
-const SPEED_OPTIONS = [0.25, 0.5, 1, 1.5, 2, 3, 5]
 
 // --- 状态管理 ---
 const snake = ref<Point[]>([{ x: 10, y: 10 }])
@@ -230,12 +230,7 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="speed-control">
-        <span class="label">SPEED:</span>
-        <select v-model="speedMultiplier" class="speed-select">
-          <option v-for="opt in SPEED_OPTIONS" :key="opt" :value="opt">{{ opt }}x</option>
-        </select>
-      </div>
+      <SpeedControl v-model="speedMultiplier" />
     </div>
 
     <div class="game-area">
@@ -326,26 +321,7 @@ onUnmounted(() => {
   /* 让记分板占据更多空间 */
 }
 
-.speed-control {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: var(--vp-c-bg-soft);
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--vp-c-divider);
-}
 
-.speed-select {
-  background: transparent;
-  color: var(--vp-c-text-1);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 4px;
-  padding: 2px 5px;
-  font-family: inherit;
-  font-weight: bold;
-  cursor: pointer;
-}
 
 .score-item {
   display: flex;

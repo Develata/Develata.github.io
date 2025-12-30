@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import SpeedControl from './SpeedControl.vue'
 
 // --- 类型定义 ---
 type Point = { x: number; y: number }
@@ -9,7 +10,7 @@ type TetrominoShape = number[][]
 type GameStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER'
 
 // --- 配置常量 ---
-const GRID_SIZE = 25 // 稍微大一点的格子
+// GRID_SIZE 现在通过 CSS 变量控制，这里只定义行列数
 const ROWS = 20
 const COLS = 10
 const INITIAL_SPEED = 800 // 毫秒
@@ -76,6 +77,7 @@ const linesCleared = ref(0)
 const highScore = ref(0)
 const status = ref<GameStatus>('IDLE')
 const speed = ref(INITIAL_SPEED)
+const speedMultiplier = ref(1) // 倍速控制
 
 let lastTime = 0
 let animationFrameId: number | null = null
@@ -247,12 +249,12 @@ function clearLines() {
     }
 
     if (cleared > 0) {
-        // 计分规则: 1行100, 2行300, 3行500, 4行800
+        // 计分规则
         const points = [0, 100, 300, 500, 800]
         score.value += points[cleared] * level.value
         linesCleared.value += cleared
 
-        // 升级逻辑：每消10行升一级
+        // 升级逻辑
         level.value = Math.floor(linesCleared.value / 10) + 1
         // 速度增加
         speed.value = Math.max(MIN_SPEED, INITIAL_SPEED - (level.value - 1) * SPEED_DECREMENT)
@@ -275,7 +277,11 @@ function gameLoop(timestamp: number) {
     lastTime = timestamp
 
     dropCounter += deltaTime
-    if (dropCounter >= speed.value) {
+
+    // 应用倍速
+    const effectiveSpeed = speed.value / speedMultiplier.value
+
+    if (dropCounter >= effectiveSpeed) {
         movePiece(0, 1)
         dropCounter = 0
     }
@@ -326,27 +332,10 @@ function handleKeydown(e: KeyboardEvent) {
     }
 
     switch (e.key) {
-        case 'ArrowUp':
-        case 'w':
-        case 'W':
-            rotatePiece()
-            break
-        case 'ArrowDown':
-        case 's':
-        case 'S':
-            movePiece(0, 1)
-            score.value += 1 // 软降加分
-            break
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-            movePiece(-1, 0)
-            break
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-            movePiece(1, 0)
-            break
+        case 'ArrowUp': case 'w': case 'W': rotatePiece(); break
+        case 'ArrowDown': case 's': case 'S': movePiece(0, 1); score.value += 1; break
+        case 'ArrowLeft': case 'a': case 'A': movePiece(-1, 0); break
+        case 'ArrowRight': case 'd': case 'D': movePiece(1, 0); break
     }
 }
 
@@ -421,28 +410,24 @@ const nextPieceColor = computed(() => {
                     <span class="value">{{ highScore }}</span>
                 </div>
             </div>
+
+            <SpeedControl v-model="speedMultiplier" />
         </div>
 
         <div class="game-content">
             <div class="game-area">
                 <!-- 棋盘 -->
                 <div class="board" :style="{
-                    width: COLS * GRID_SIZE + 'px',
-                    height: ROWS * GRID_SIZE + 'px'
+                    width: `calc(var(--grid-size) * ${COLS})`,
+                    height: `calc(var(--grid-size) * ${ROWS})`
                 }">
-                    <!-- 静态格子背景 -->
-                    <!-- 可以选择只渲染背景网格，或者已锁定的块 -->
-
                     <!-- 已锁定的块 -->
                     <template v-for="(row, r) in board">
                         <template v-for="(cellColor, c) in row">
                             <div v-if="cellColor" :key="`locked-${r}-${c}`" class="block locked" :style="{
-                                left: c * GRID_SIZE + 'px',
-                                top: r * GRID_SIZE + 'px',
-                                width: GRID_SIZE + 'px',
-                                height: GRID_SIZE + 'px',
-                                backgroundColor: cellColor,
-                                borderColor: 'rgba(0,0,0,0.1)'
+                                left: `calc(var(--grid-size) * ${c})`,
+                                top: `calc(var(--grid-size) * ${r})`,
+                                backgroundColor: cellColor
                             }">
                             </div>
                         </template>
@@ -450,12 +435,9 @@ const nextPieceColor = computed(() => {
 
                     <!-- 当前活动的块 -->
                     <div v-for="(block, i) in activeBlocks" :key="`active-${i}`" class="block active" :style="{
-                        left: block.c * GRID_SIZE + 'px',
-                        top: block.r * GRID_SIZE + 'px',
-                        width: GRID_SIZE + 'px',
-                        height: GRID_SIZE + 'px',
-                        backgroundColor: block.color,
-                        borderColor: 'rgba(0,0,0,0.1)'
+                        left: `calc(var(--grid-size) * ${block.c})`,
+                        top: `calc(var(--grid-size) * ${block.r})`,
+                        backgroundColor: block.color
                     }">
                     </div>
 
@@ -519,21 +501,36 @@ const nextPieceColor = computed(() => {
 </template>
 
 <style scoped>
+/* CSS变量控制网格大小，实现动态缩放 */
 .game-container {
+    --grid-size: 25px;
+    /* 默认桌面端大小 */
+
     display: flex;
     flex-direction: column;
     align-items: center;
     font-family: 'Courier New', Courier, monospace;
     margin: 20px 0;
     user-select: none;
-    /* 移动端优化：禁止默认触摸动作，防止滚动 */
     touch-action: pan-y;
+}
+
+/* 响应式调整 */
+@media (max-width: 400px) {
+    .game-container {
+        --grid-size: 20px;
+        /* 小屏幕缩小网格 */
+    }
 }
 
 .header {
     margin-bottom: 15px;
     width: 100%;
     max-width: 400px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
 .score-board {
@@ -543,6 +540,7 @@ const nextPieceColor = computed(() => {
     padding: 10px;
     border-radius: 8px;
     border: 1px solid var(--vp-c-divider);
+    flex-grow: 1;
 }
 
 .score-item {
@@ -598,17 +596,19 @@ const nextPieceColor = computed(() => {
     background-color: #1a1a1a;
     position: relative;
     overflow: hidden;
-    /* 防止方块溢出显示 */
+    /* 必须显式设置尺寸，否则 overflow hidden 可能失效? 但这里 height 由 style 决定没问题 */
 }
 
-/* 优化渲染：使用绝对定位 */
+/* 使用 CSS 变量渲染的大小 */
 .block {
     position: absolute;
+    width: var(--grid-size);
+    height: var(--grid-size);
     box-sizing: border-box;
-    border: 1px solid;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* 网格背景线 (可选，但为了性能这里先用简单的背景色) */
+/* 网格背景线 */
 .board::before {
     content: '';
     position: absolute;
@@ -619,8 +619,7 @@ const nextPieceColor = computed(() => {
     background-image:
         linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 25px 25px;
-    /* 与 GRID_SIZE 一致 */
+    background-size: var(--grid-size) var(--grid-size);
     pointer-events: none;
 }
 
