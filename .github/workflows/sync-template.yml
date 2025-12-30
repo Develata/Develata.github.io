@@ -31,27 +31,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Switch to a new orphan branch (no history from main) or just a new branch state
-          # We want to commit the current *clean* state as the head of the template branch
+          # 切换到一个新的孤立分支（不包含 main 的历史记录）或新的分支状态
+          # 我们希望将当前的 *纯净* 状态作为 template 分支的最新提交
 
-          # Option 1: Commit on top of current (but we deleted stuff)
-          # Option 2: New orphan branch for every push? No, that breaks history for users pulling.
-          # Best approach: Treat 'template' as a branch we force push to, but ideally with a commit history associated with template updates.
-
-          # Let's try to checkout the template branch if it exists, or create it
-          # BUT we have already modified files in the working directory (the cleanup).
-
-          # Strategy: 
-          # 1. Stash changes (the cleanup results)
-          # 2. Checkout orphan branch 'temp-template'
-          # 3. Apply changes (pop stash? might conflict if files missing. Better: just keep working dir)
-
-          # Simpler Strategy:
-          # Just commit the changes to a new disconnected branch and force push it to origin/template
+          # 策略：
+          # 直接将变更提交到一个新的临时分支，然后强制推送到远程的 template 分支
 
           git checkout --orphan template-temp
           git add .
-          git commit -m "chore: sync template from main $(date +'%Y-%m-%d')"
+          git commit -m "chore: 同步 main 分支的模板更新 $(date +'%Y-%m-%d')"
 
-          # Force push this new state to the 'template' branch on remote
+          # 强制推送新状态到远程 template 分支
           git push origin template-temp:template --force
