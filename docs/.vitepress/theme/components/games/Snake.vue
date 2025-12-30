@@ -81,7 +81,14 @@ function moveSnake() {
     case 'RIGHT': newHead.x += 1; break
   }
 
-  // 碰撞检测
+  // 穿墙处理 (Wrap-around)
+  if (newHead.x < 0) newHead.x = BOARD_SIZE - 1
+  else if (newHead.x >= BOARD_SIZE) newHead.x = 0
+  
+  if (newHead.y < 0) newHead.y = BOARD_SIZE - 1
+  else if (newHead.y >= BOARD_SIZE) newHead.y = 0
+
+  // 碰撞检测 (只检测撞自己)
   if (checkCollision(newHead)) {
     gameOver()
     return
@@ -105,17 +112,9 @@ function moveSnake() {
 
 // 碰撞检测
 function checkCollision(p: Point): boolean {
-  // 撞墙
-  if (p.x < 0 || p.x >= BOARD_SIZE || p.y < 0 || p.y >= BOARD_SIZE) return true
-  // 撞自己 (不包含尾巴，因为尾巴马上会移走，除非刚好是尾巴)
-  // 这里简化处理，直接判断是否在当前蛇身上（未pop前的身体）
-  // 新头已经在 unshift 前计算出来了，所以只看旧身体
-  // 如果新头撞到除了尾巴以外的身体，就是碰撞。
-  // 注意：moveSnake 里是先 unshift 新头，再 pop 尾巴（如果没吃到）。
-  // 实际上简单的判断是：新头是否与当前 snake 数组中的任何一段重合（除了尾尖，如果它即将移出）
-  // 但为了简单和安全，直接判断是否在 snake 数组中即可。snake 头部是 index 0。
-  // 我们比较新头和当前的 snake 身体。
-  for (let i = 0; i < snake.value.length - 1; i++) { // 忽略最后一个，因为它会动
+  // 撞墙逻辑已在 moveSnake 中改为穿墙，此处只需检测撞自己
+  // 检测是否撞到身体 (不包含尾巴，因为尾巴马上会移走)
+  for (let i = 0; i < snake.value.length - 1; i++) {
      if (p.x === snake.value[i].x && p.y === snake.value[i].y) return true
   }
   return false
@@ -393,6 +392,7 @@ onUnmounted(() => {
 .controls {
   margin-top: 20px;
   display: none; /* 桌面端默认隐藏 */
+  padding-bottom: 20px; /* 增加底部间距 */
 }
 
 @media (max-width: 768px) {
@@ -405,30 +405,34 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 10px; /* 增加按键间距 */
 }
 
 .h-row {
   display: flex;
-  gap: 5px;
+  gap: 10px; /* 增加按键间距 */
 }
 
 .d-btn {
-  width: 50px;
-  height: 50px;
+  width: 60px; /* 加大按钮 */
+  height: 60px;
   background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  font-size: 1.2rem;
-  color: var(--vp-c-text-1);
+  border: 2px solid var(--vp-c-brand); /* 增加边框颜色以提高可见度 */
+  border-radius: 12px;
+  font-size: 1.5rem;
+  color: var(--vp-c-brand); /* 调整图标颜色 */
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 增加阴影 */
+  transition: all 0.1s;
 }
 
 .d-btn:active {
-  background: var(--vp-c-bg-mute);
+  background: var(--vp-c-brand);
+  color: white;
+  transform: scale(0.95);
 }
 
 .instructions {
