@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import SpeedControl from './SpeedControl.vue'
+import GameControls from './GameControls.vue'
 
 // --- 类型定义 ---
 type Point = { x: number; y: number }
@@ -271,16 +272,8 @@ onUnmounted(() => {
     </div>
 
     <!-- 移动端控件 -->
-    <div class="controls">
-      <div class="d-pad">
-        <button class="d-btn up" @click="setDirection('UP')">▲</button>
-        <div class="h-row">
-          <button class="d-btn left" @click="setDirection('LEFT')">◀</button>
-          <button class="d-btn down" @click="setDirection('DOWN')">▼</button>
-          <button class="d-btn right" @click="setDirection('RIGHT')">▶</button>
-        </div>
-      </div>
-    </div>
+    <GameControls @up="setDirection('UP')" @down="setDirection('DOWN')" @left="setDirection('LEFT')"
+      @right="setDirection('RIGHT')" @action-a="initGame" label-a="Start" :hide-actions="status === 'PLAYING'" />
 
     <div class="instructions">
       使用键盘方向键或 WASD 控制移动，空格暂停
@@ -411,59 +404,7 @@ onUnmounted(() => {
   margin-bottom: 10px;
 }
 
-.controls {
-  margin-top: 20px;
-  display: none;
-  /* 桌面端默认隐藏 */
-  padding-bottom: 20px;
-  /* 增加底部间距 */
-}
 
-@media (max-width: 768px) {
-  .controls {
-    display: block;
-  }
-}
-
-.d-pad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  /* 增加按键间距 */
-}
-
-.h-row {
-  display: flex;
-  gap: 10px;
-  /* 增加按键间距 */
-}
-
-.d-btn {
-  width: 60px;
-  /* 加大按钮 */
-  height: 60px;
-  background: var(--vp-c-bg-soft);
-  border: 2px solid var(--vp-c-brand);
-  /* 增加边框颜色以提高可见度 */
-  border-radius: 12px;
-  font-size: 1.5rem;
-  color: var(--vp-c-brand);
-  /* 调整图标颜色 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  /* 增加阴影 */
-  transition: all 0.1s;
-}
-
-.d-btn:active {
-  background: var(--vp-c-brand);
-  color: white;
-  transform: scale(0.95);
-}
 
 .instructions {
   margin-top: 20px;

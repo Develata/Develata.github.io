@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import SpeedControl from './SpeedControl.vue'
+import GameControls from './GameControls.vue'
 
 // --- 类型定义 ---
 type Point = { x: number; y: number }
@@ -483,20 +484,9 @@ const nextPieceColor = computed(() => {
         </div>
 
         <!-- 移动端控件 -->
-        <div class="controls">
-            <div class="control-row">
-                <button class="c-btn rotate" @click="handleControl('ROTATE')">↻</button>
-                <button class="c-btn drop" @click="handleControl('DROP')">⤓</button>
-            </div>
-            <div class="d-pad">
-                <button class="d-btn up" @click="handleControl('ROTATE')">▲</button>
-                <div class="h-row">
-                    <button class="d-btn left" @click="handleControl('LEFT')">◀</button>
-                    <button class="d-btn down" @click="handleControl('DOWN')">▼</button>
-                    <button class="d-btn right" @click="handleControl('RIGHT')">▶</button>
-                </div>
-            </div>
-        </div>
+        <GameControls @up="handleControl('ROTATE')" @down="handleControl('DOWN')" @left="handleControl('LEFT')"
+            @right="handleControl('RIGHT')" @action-a="handleControl('ROTATE')" @action-b="handleControl('DROP')"
+            label-a="Rot" label-b="Drop" />
     </div>
 </template>
 
@@ -716,93 +706,5 @@ const nextPieceColor = computed(() => {
 
 .desktop-only {
     display: block;
-}
-
-/* Controls */
-.controls {
-    margin-top: 20px;
-    display: none;
-    padding-bottom: 20px;
-    width: 100%;
-    max-width: 300px;
-}
-
-@media (max-width: 768px) {
-    .controls {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-}
-
-.control-row {
-    display: flex;
-    gap: 40px;
-    margin-bottom: 10px;
-}
-
-.c-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: none;
-    background: var(--vp-c-brand-soft);
-    color: var(--vp-c-brand-dark);
-    font-size: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
-    /* 增加触控反馈 */
-    transition: transform 0.1s, box-shadow 0.1s;
-}
-
-.c-btn:active {
-    transform: translateY(4px);
-    box-shadow: none;
-}
-
-.d-pad {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.h-row {
-    display: flex;
-    gap: 45px;
-}
-
-.d-btn {
-    width: 50px;
-    height: 50px;
-    background: var(--vp-c-bg-soft);
-    border: 1px solid var(--vp-c-divider);
-    border-radius: 8px;
-    font-size: 1.2rem;
-    color: var(--vp-c-text-1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* 增加阴影，像 Snake 那样 */
-    transition: all 0.1s;
-}
-
-.d-btn.left {
-    margin-right: -10px;
-}
-
-.d-btn.right {
-    margin-left: -10px;
-}
-
-.d-btn:active {
-    background: var(--vp-c-brand);
-    color: white;
-    transform: scale(0.95);
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
 }
 </style>

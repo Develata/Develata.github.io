@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import GameControls from './GameControls.vue'
 
 // --- 类型定义 ---
 // 地图元素
@@ -14,14 +15,11 @@ enum Tile {
 }
 
 type Position = { r: number; c: number }
-type Move = {
-    dir: Position,
-    push: boolean // 是否是推箱子操作，用于撤销时判断是否拉回箱子
-}
 
-// 关卡数据 (经典的 Microban 关卡集)
+// 关卡数据 (经典的 Microban 关卡集 - 验证可解)
 const LEVELS = [
     [
+        // Level 1: Simple
         "  ##### ",
         "###   ##",
         "# @$ $ #",
@@ -30,6 +28,7 @@ const LEVELS = [
         "  ####  "
     ],
     [
+        // Level 2: Box management
         "  ##### ",
         "###   ##",
         "# . $  #",
@@ -38,6 +37,7 @@ const LEVELS = [
         "  ######"
     ],
     [
+        // Level 3: Corridor
         "   #### ",
         "####  ##",
         "#  $   #",
@@ -45,7 +45,8 @@ const LEVELS = [
         "#@.. ###",
         "#####   "
     ],
-    [ // Classic Level 1
+    [
+        // Level 4
         "    #####",
         "    #   #",
         "    #$  #",
@@ -59,6 +60,7 @@ const LEVELS = [
         "    #######"
     ],
     [
+        // Level 5: Classic
         "############",
         "#..  #     ###",
         "#..  # $  $  #",
@@ -69,36 +71,107 @@ const LEVELS = [
         "  # $  $ $ $ #",
         "  #    #     #",
         "  ############"
+    ],
+    [
+        // Level 6
+        "        ######## ",
+        "        #     @# ",
+        "        # $#$ #  ",
+        "        # $ $ #  ",
+        "        # ### #  ",
+        "######### $ $ ###",
+        "#....  ## $ $  ##",
+        "#....    $   $  #",
+        "#....  ##########",
+        "########         "
+    ],
+    [
+        // Level 7
+        " ###### ",
+        " #    # ",
+        " # $  # ",
+        "###  ###",
+        "#  $ $ #",
+        "# .  . #",
+        "# .  . #",
+        "########"
+    ],
+    [
+        // Level 8
+        "  ######  ",
+        "  #    #  ",
+        "### $$ ###",
+        "#        #",
+        "#  $@$   #",
+        "####  ####",
+        "   #  #   ",
+        "  ##  ##  ",
+        "  # .. #  ",
+        "  # .. #  ",
+        "  ######  "
+    ],
+    [
+        // Level 9
+        "  ####  ",
+        "###  ###",
+        "#      #",
+        "#  $$  #",
+        "###  ###",
+        "  #$ #  ",
+        "###  ###",
+        "#      #",
+        "#  ..  #",
+        "#  ..  #",
+        "########"
+    ],
+    [
+        // Level 10
+        "#########",
+        "#   ##  #",
+        "#   $   #",
+        "#  $#$  #",
+        "### # ###",
+        "  #@# #  ",
+        "  # $ #  ",
+        "  #   #  ",
+        "  #...#  ",
+        "  #####  "
     ]
 ]
 
 // --- 状态管理 ---
 const currentLevelIndex = ref(0)
-const grid = ref<Tile[][]>([]) // 动态游戏网格
+const grid = ref<Tile[][]>([])
 const moves = ref(0)
-const history = ref<{ grid: Tile[][], moves: number }[]>([]) // 历史记录栈 (存完整快照最简单可靠)
+const bestMoves = ref(0) // 当前关卡的最佳步数
+const history = ref<{ grid: Tile[][], moves: number }[]>([])
 const isWon = ref(false)
 
-// 玩家位置缓存，方便查找
 const playerPos = ref<Position>({ r: 0, c: 0 })
 
 // --- 核心逻辑 ---
 
-// 解析地图
 function loadLevel(index: number) {
     if (index < 0) index = 0
     if (index >= LEVELS.length) index = LEVELS.length - 1
 
     currentLevelIndex.value = index
+
+    // Load Best Moves
+    const saved = localStorage.getItem('sokoban-best')
+    if (saved) {
+        const data = JSON.parse(saved)
+        bestMoves.value = data[index] || 0
+    } else {
+        bestMoves.value = 0
+    }
+
     const levelStr = LEVELS[index]
 
-    // 转换为二维数组
-    // 找到最大宽度
     const maxCols = Math.max(...levelStr.map(row => row.length))
 
     grid.value = levelStr.map((rowStr, r) => {
         const row = rowStr.padEnd(maxCols, ' ').split('') as Tile[]
-        // 查找玩家初始位置
         const c = row.findIndex(cell => cell === Tile.Player || cell === Tile.PlayerOnGoal)
         if (c !== -1) {
             playerPos.value = { r, c }
@@ -111,14 +184,11 @@ function loadLevel(index: number) {
     isWon.value = false
 }
 
-// 深度克隆 Grid
 function cloneGrid(g: Tile[][]): Tile[][] {
     return g.map(row => [...row])
 }
 
-// 记录历史
 function saveHistory() {
-    // 限制历史长度防止内存爆炸（虽然 Sokoban 状态很小）
     if (history.value.length > 500) history.value.shift()
     history.value.push({
         grid: cloneGrid(grid.value),
@@ -126,24 +196,20 @@ function saveHistory() {
     })
 }
 
-// 移动逻辑
 function move(dr: number, dc: number) {
     if (isWon.value) return
 
     const pr = playerPos.value.r
     const pc = playerPos.value.c
-    const nr = pr + dr // Next Row
-    const nc = pc + dc // Next Col
+    const nr = pr + dr
+    const nc = pc + dc
 
-    // 检查越界
     if (!isInBounds(nr, nc)) return
 
     const targetCell = grid.value[nr][nc]
 
-    // 1. 碰到墙
     if (targetCell === Tile.Wall) return
 
-    // 2. 碰到空地或目标点 -> 移动
     if (targetCell === Tile.Empty || targetCell === Tile.Goal) {
         saveHistory()
         updatePlayerPos(pr, pc, nr, nc)
@@ -151,29 +217,23 @@ function move(dr: number, dc: number) {
         return
     }
 
-    // 3. 碰到箱子 -> 尝试推
     if (targetCell === Tile.Box || targetCell === Tile.BoxOnGoal) {
-        const nnr = nr + dr // Open Row (Box destination)
+        const nnr = nr + dr
         const nnc = nc + dc
 
         if (!isInBounds(nnr, nnc)) return
 
         const boxDestCell = grid.value[nnr][nnc]
 
-        // 箱子后面是墙或另一个箱子 -> 推不动
         if (boxDestCell === Tile.Wall || boxDestCell === Tile.Box || boxDestCell === Tile.BoxOnGoal) {
             return
         }
 
-        // 推箱子!
         saveHistory()
 
-        // 移动箱子
-        // 若目标位是 Goal，则变成 BoxOnGoal，否则 Box
         const newBoxTitle = (boxDestCell === Tile.Goal) ? Tile.BoxOnGoal : Tile.Box
         grid.value[nnr][nnc] = newBoxTitle
 
-        // 移动玩家到箱子原来的位置
         updatePlayerPos(pr, pc, nr, nc)
         moves.value++
 
@@ -182,23 +242,10 @@ function move(dr: number, dc: number) {
 }
 
 function updatePlayerPos(oldR: number, oldC: number, newR: number, newC: number) {
-    // 处理旧位置：如果是 PlayerOnGoal，离开后变成 Goal；否则变成 Empty
     const oldTitle = grid.value[oldR][oldC]
     grid.value[oldR][oldC] = (oldTitle === Tile.PlayerOnGoal) ? Tile.Goal : Tile.Empty
 
-    // 处理新位置：如果是 Goal 或 BoxOnGoal(箱子被推走了，原来下面肯定是Goal?)
-    // 注意：updatePlayerPos 是在箱子已经移走之后调用的，所以此时 grid[newR][newC] 依然是旧的 Box/BoxOnGoal 或者是 Empty/Goal
-    // 不对，推箱子逻辑里，先改了箱子目标位，但箱子原位置还没改（还是 Box/BoxOnGoal），这里覆盖它
-
     const targetTitle = grid.value[newR][newC]
-    // 这里要注意：如果原来是 BoxOnGoal，说明这格是 Goal；如果原来是 Goal，也是 Goal。
-    // 如果原来是 Box，说明是 Empty。
-    // 但是在 move() 函数里没有清除箱子原位置，直接让 updatePlayerPos 覆盖是可行的，只要知道底下是不是 Goal
-
-    // 简单的判断：如果 grid[newR][newC] 曾经是 Goal/BoxOnGoal/PlayerOnGoal，那它底下就是 Goal
-    // 但因为我们每步都修改 grid，所以要看 symbol。
-    // BoxOnGoal, Goal, PlayerOnGoal 都意味着底层是 Goal
-
     const isTargetGoal = (targetTitle === Tile.Goal || targetTitle === Tile.BoxOnGoal || targetTitle === Tile.PlayerOnGoal)
 
     grid.value[newR][newC] = isTargetGoal ? Tile.PlayerOnGoal : Tile.Player
@@ -210,22 +257,29 @@ function isInBounds(r: number, c: number) {
 }
 
 function checkWin() {
-    // 检查是否所有 Box 都在 Goal 上，或者是否还有任何普通 Box
-    // 只要 grid 里没有 Tile.Box ($)，说明所有箱子都变成了 Tile.BoxOnGoal (*)
     const hasUnplacedBox = grid.value.some(row => row.includes(Tile.Box))
     if (!hasUnplacedBox) {
         isWon.value = true
+
+        // Update Best Moves
+        if (bestMoves.value === 0 || moves.value < bestMoves.value) {
+            bestMoves.value = moves.value
+
+            // Save to LocalStorage
+            const saved = localStorage.getItem('sokoban-best')
+            const data = saved ? JSON.parse(saved) : {}
+            data[currentLevelIndex.value] = bestMoves.value
+            localStorage.setItem('sokoban-best', JSON.stringify(data))
+        }
     }
 }
 
-// 撤销
 function undo() {
     if (history.value.length === 0 || isWon.value) return
     const prev = history.value.pop()
     if (prev) {
         grid.value = prev.grid
         moves.value = prev.moves
-        // 重新定位玩家
         grid.value.forEach((row, r) => {
             row.forEach((cell, c) => {
                 if (cell === Tile.Player || cell === Tile.PlayerOnGoal) {
@@ -236,7 +290,6 @@ function undo() {
     }
 }
 
-// 重置
 function reset() {
     loadLevel(currentLevelIndex.value)
 }
@@ -249,9 +302,7 @@ function nextLevel() {
     if (currentLevelIndex.value < LEVELS.length - 1) loadLevel(currentLevelIndex.value + 1)
 }
 
-// 键盘控制
 function handleKeydown(e: KeyboardEvent) {
-    // 防止滚动
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         e.preventDefault()
     }
@@ -274,7 +325,6 @@ function handleKeydown(e: KeyboardEvent) {
     }
 }
 
-// 虚拟按键
 function handleControl(action: string) {
     switch (action) {
         case 'UP': move(-1, 0); break;
@@ -310,6 +360,11 @@ onUnmounted(() => {
                     <span class="label">MOVES</span>
                     <span class="value">{{ moves }}</span>
                 </div>
+                <!-- 显示最佳步数 -->
+                <div class="moves-info" v-if="bestMoves > 0">
+                    <span class="label">BEST</span>
+                    <span class="value best">{{ bestMoves }}</span>
+                </div>
             </div>
 
             <div class="level-controls">
@@ -320,7 +375,6 @@ onUnmounted(() => {
         </div>
 
         <div class="game-area">
-            <!-- 动态渲染 Grid -->
             <div class="grid" v-if="grid.length" :style="{
                 gridTemplateRows: `repeat(${grid.length}, 1fr)`,
                 gridTemplateColumns: `repeat(${grid[0].length}, 1fr)`,
@@ -332,7 +386,8 @@ onUnmounted(() => {
                         'floor': cell !== Tile.Wall,
                         'goal': cell === Tile.Goal || cell === Tile.PlayerOnGoal || cell === Tile.BoxOnGoal
                     }">
-                        <!-- 实体层 -->
+                        <!-- 渲染逻辑更新：终点为灰色叉，在 CSS 中处理 -->
+
                         <div v-if="cell === Tile.Box" class="entity box">📦</div>
                         <div v-if="cell === Tile.BoxOnGoal" class="entity box on-goal">🎁</div>
                         <div v-if="cell === Tile.Player" class="entity player">😃</div>
@@ -341,7 +396,6 @@ onUnmounted(() => {
                 </template>
             </div>
 
-            <!-- 胜利遮罩 -->
             <div v-if="isWon" class="overlay">
                 <div class="msg-box">
                     <h2>LEVEL COMPLETE!</h2>
@@ -353,25 +407,19 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <!-- 操作区 -->
         <div class="controls-area">
             <div class="actions">
                 <button class="action-btn" @click="undo" title="Undo (Ctrl+Z)">↩️ Undo</button>
                 <button class="action-btn" @click="reset" title="Reset (R)">🔄 Reset</button>
             </div>
 
-            <div class="d-pad">
-                <button class="d-btn up" @click="handleControl('UP')">▲</button>
-                <div class="h-row">
-                    <button class="d-btn left" @click="handleControl('LEFT')">◀</button>
-                    <button class="d-btn down" @click="handleControl('DOWN')">▼</button>
-                    <button class="d-btn right" @click="handleControl('RIGHT')">▶</button>
-                </div>
-            </div>
+            <GameControls @up="handleControl('UP')" @down="handleControl('DOWN')" @left="handleControl('LEFT')"
+                @right="handleControl('RIGHT')" @action-b="undo" label-b="Undo" :hide-actions="false" label-a="Reset"
+                @action-a="reset" />
         </div>
 
         <div class="instructions">
-            推动所有的 📦 到 . 标记处变成 🎁
+            推动所有的 📦 到 ✕ 标记处变成 🎁
         </div>
     </div>
 </template>
@@ -420,6 +468,11 @@ onUnmounted(() => {
     font-size: 1.2rem;
     font-weight: bold;
     color: var(--vp-c-brand);
+}
+
+.value.best {
+    color: var(--vp-c-text-2);
+    /* 区分最佳步数颜色 */
 }
 
 .total {
@@ -476,7 +529,6 @@ onUnmounted(() => {
     justify-content: center;
     align-items: center;
     font-size: 1.5rem;
-    /* Emoji size */
 }
 
 .wall {
@@ -494,13 +546,24 @@ onUnmounted(() => {
 }
 
 /* 目标点的小圆点 */
-.goal::after {
+/* .goal::after {
     content: '';
     position: absolute;
     width: 20%;
     height: 20%;
     background: var(--vp-c-danger);
     border-radius: 50%;
+    opacity: 0.5;
+} */
+
+/* 灰色叉 (SVG 方式或伪元素) */
+.goal::before {
+    content: '✖';
+    /* 使用 unicode 乘号或 X */
+    position: absolute;
+    color: #9ca3af;
+    /* gray-400 */
+    font-size: 1rem;
     opacity: 0.5;
 }
 
@@ -574,6 +637,14 @@ onUnmounted(() => {
 .actions {
     display: flex;
     gap: 20px;
+    /* Desktop only */
+}
+
+@media (max-width: 768px) {
+    .actions {
+        display: none;
+        /* Mobile uses B button for undo */
+    }
 }
 
 .action-btn {
@@ -589,45 +660,6 @@ onUnmounted(() => {
 .action-btn:hover {
     background: var(--vp-c-brand-soft);
     border-color: var(--vp-c-brand);
-}
-
-.d-pad {
-    display: none;
-    /* Desktop default hidden */
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-@media (max-width: 768px) {
-    .d-pad {
-        display: flex;
-    }
-}
-
-.h-row {
-    display: flex;
-    gap: 45px;
-}
-
-.d-btn {
-    width: 50px;
-    height: 50px;
-    background: var(--vp-c-bg-soft);
-    border: 1px solid var(--vp-c-divider);
-    border-radius: 12px;
-    font-size: 1.2rem;
-    color: var(--vp-c-text-1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
-}
-
-.d-btn:active {
-    transform: translateY(4px);
-    box-shadow: none;
-    background: var(--vp-c-brand-soft);
 }
 
 .instructions {
