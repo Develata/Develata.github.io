@@ -116,6 +116,16 @@ const games: Game[] = [
     tag: 'Arcade',
     color: '#3b82f6' // 蓝色
   },
+  {
+    id: 'sokoban',
+    title: '推箱子',
+    enTitle: 'Sokoban',
+    desc: '经典益智游戏。运用智慧将所有箱子推到目标点。',
+    icon: '📦',
+    link: '/games/sokoban',
+    tag: 'Puzzle',
+    color: '#d97706' // 琥珀色
+  },
 ]
 </script>
 
