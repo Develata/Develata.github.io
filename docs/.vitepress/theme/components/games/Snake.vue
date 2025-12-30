@@ -9,7 +9,7 @@ type GameStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER'
 // --- 配置常量 ---
 const GRID_SIZE = 20
 const BOARD_SIZE = 20 // 20x20 网格
-const INITIAL_SPEED = 200
+const INITIAL_SPEED = 130
 
 // --- 状态管理 ---
 const snake = ref<Point[]>([{ x: 10, y: 10 }])
@@ -19,7 +19,9 @@ const nextDirection = ref<Direction>('RIGHT') // 防止单帧多次转向导致�
 const score = ref(0)
 const highScore = ref(0)
 const status = ref<GameStatus>('IDLE')
-const gameLoop = ref<number | null>(null)
+// const gameLoop = ref<number | null>(null) // 废弃
+let lastTime = 0
+let animationFrameId: number | null = null
 const speed = ref(INITIAL_SPEED)
 
 // --- 核心逻辑 ---
@@ -51,18 +53,31 @@ function spawnFood() {
   food.value = newFood
 }
 
-// 游戏循环
-function startGameLoop() {
-  if (gameLoop.value) clearInterval(gameLoop.value)
-  gameLoop.value = setInterval(() => {
+// 游戏循环 (RAF)
+function gameLoop(timestamp: number) {
+  if (!lastTime) lastTime = timestamp
+  const deltaTime = timestamp - lastTime
+
+  if (deltaTime >= speed.value) {
     moveSnake()
-  }, speed.value) as unknown as number
+    lastTime = timestamp
+  }
+
+  if (status.value === 'PLAYING') {
+    animationFrameId = requestAnimationFrame(gameLoop)
+  }
+}
+
+function startGameLoop() {
+  if (animationFrameId) cancelAnimationFrame(animationFrameId)
+  lastTime = 0
+  animationFrameId = requestAnimationFrame(gameLoop)
 }
 
 function stopGameLoop() {
-  if (gameLoop.value) {
-    clearInterval(gameLoop.value)
-    gameLoop.value = null
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId)
+    animationFrameId = null
   }
 }
 
@@ -84,7 +99,7 @@ function moveSnake() {
   // 穿墙处理 (Wrap-around)
   if (newHead.x < 0) newHead.x = BOARD_SIZE - 1
   else if (newHead.x >= BOARD_SIZE) newHead.x = 0
-  
+
   if (newHead.y < 0) newHead.y = BOARD_SIZE - 1
   else if (newHead.y >= BOARD_SIZE) newHead.y = 0
 
@@ -101,8 +116,7 @@ function moveSnake() {
     score.value += 10
     // 简单的加速机制
     if (score.value % 50 === 0 && speed.value > 50) {
-      speed.value -= 10
-      startGameLoop() // 重启循环以应用新速度
+      speed.value -= 5 // 每次加速更平滑一点
     }
     spawnFood()
   } else {
@@ -115,7 +129,7 @@ function checkCollision(p: Point): boolean {
   // 撞墙逻辑已在 moveSnake 中改为穿墙，此处只需检测撞自己
   // 检测是否撞到身体 (不包含尾巴，因为尾巴马上会移走)
   for (let i = 0; i < snake.value.length - 1; i++) {
-     if (p.x === snake.value[i].x && p.y === snake.value[i].y) return true
+    if (p.x === snake.value[i].x && p.y === snake.value[i].y) return true
   }
   return false
 }
@@ -217,28 +231,20 @@ onUnmounted(() => {
     <div class="game-area">
       <div class="board" :style="{ width: BOARD_SIZE * GRID_SIZE + 'px', height: BOARD_SIZE * GRID_SIZE + 'px' }">
         <!-- 蛇 -->
-        <div 
-          v-for="(segment, index) in snake" 
-          :key="index"
-          class="snake-segment"
-          :class="{ 'head': index === 0 }"
-          :style="{ 
-            left: segment.x * GRID_SIZE + 'px', 
+        <div v-for="(segment, index) in snake" :key="index" class="snake-segment" :class="{ 'head': index === 0 }"
+          :style="{
+            left: segment.x * GRID_SIZE + 'px',
             top: segment.y * GRID_SIZE + 'px',
             width: GRID_SIZE + 'px',
             height: GRID_SIZE + 'px'
-          }"
-        ></div>
+          }"></div>
         <!-- 食物 -->
-        <div 
-          class="food"
-          :style="{ 
-            left: food.x * GRID_SIZE + 'px', 
-            top: food.y * GRID_SIZE + 'px',
-            width: GRID_SIZE + 'px',
-            height: GRID_SIZE + 'px'
-          }"
-        ></div>
+        <div class="food" :style="{
+          left: food.x * GRID_SIZE + 'px',
+          top: food.y * GRID_SIZE + 'px',
+          width: GRID_SIZE + 'px',
+          height: GRID_SIZE + 'px'
+        }"></div>
 
         <!-- 遮罩层 -->
         <div v-if="status !== 'PLAYING' && status !== 'PAUSED'" class="overlay">
@@ -252,9 +258,9 @@ onUnmounted(() => {
             <button class="btn" @click="initGame">再玩一次</button>
           </div>
         </div>
-         <div v-if="status === 'PAUSED'" class="overlay paused">
-            <p>PAUSED</p>
-            <button class="btn" @click="() => { status = 'PLAYING'; startGameLoop() }">继续</button>
+        <div v-if="status === 'PAUSED'" class="overlay paused">
+          <p>PAUSED</p>
+          <button class="btn" @click="() => { status = 'PLAYING'; startGameLoop() }">继续</button>
         </div>
       </div>
     </div>
@@ -262,12 +268,12 @@ onUnmounted(() => {
     <!-- 移动端控件 -->
     <div class="controls">
       <div class="d-pad">
-         <button class="d-btn up" @click="setDirection('UP')">▲</button>
-         <div class="h-row">
-           <button class="d-btn left" @click="setDirection('LEFT')">◀</button>
-           <button class="d-btn down" @click="setDirection('DOWN')">▼</button>
-           <button class="d-btn right" @click="setDirection('RIGHT')">▶</button>
-         </div>
+        <button class="d-btn up" @click="setDirection('UP')">▲</button>
+        <div class="h-row">
+          <button class="d-btn left" @click="setDirection('LEFT')">◀</button>
+          <button class="d-btn down" @click="setDirection('DOWN')">▼</button>
+          <button class="d-btn right" @click="setDirection('RIGHT')">▶</button>
+        </div>
       </div>
     </div>
 
@@ -284,13 +290,13 @@ onUnmounted(() => {
   align-items: center;
   font-family: 'Courier New', Courier, monospace;
   margin: 20px 0;
-  touch-action: none; /* 防止移动端触摸滚动 */
+  touch-action: pan-y;
+  /* 允许垂直滚动，解决移动端必须滑动背景才能看到按钮的问题 */
 }
 
 .header {
   margin-bottom: 20px;
   width: 100%;
-  max-width: 400px;
 }
 
 .score-board {
@@ -329,7 +335,8 @@ onUnmounted(() => {
 
 .board {
   position: relative;
-  background-color: #222; /* 游戏背景深色 */
+  background-color: #222;
+  /* 游戏背景深色 */
   overflow: hidden;
 }
 
@@ -391,8 +398,10 @@ onUnmounted(() => {
 
 .controls {
   margin-top: 20px;
-  display: none; /* 桌面端默认隐藏 */
-  padding-bottom: 20px; /* 增加底部间距 */
+  display: none;
+  /* 桌面端默认隐藏 */
+  padding-bottom: 20px;
+  /* 增加底部间距 */
 }
 
 @media (max-width: 768px) {
@@ -405,27 +414,33 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px; /* 增加按键间距 */
+  gap: 10px;
+  /* 增加按键间距 */
 }
 
 .h-row {
   display: flex;
-  gap: 10px; /* 增加按键间距 */
+  gap: 10px;
+  /* 增加按键间距 */
 }
 
 .d-btn {
-  width: 60px; /* 加大按钮 */
+  width: 60px;
+  /* 加大按钮 */
   height: 60px;
   background: var(--vp-c-bg-soft);
-  border: 2px solid var(--vp-c-brand); /* 增加边框颜色以提高可见度 */
+  border: 2px solid var(--vp-c-brand);
+  /* 增加边框颜色以提高可见度 */
   border-radius: 12px;
   font-size: 1.5rem;
-  color: var(--vp-c-brand); /* 调整图标颜色 */
+  color: var(--vp-c-brand);
+  /* 调整图标颜色 */
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 增加阴影 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* 增加阴影 */
   transition: all 0.1s;
 }
 
