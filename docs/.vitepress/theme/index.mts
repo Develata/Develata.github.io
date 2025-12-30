@@ -12,14 +12,14 @@ function createGameComponent(loader: () => Promise<any>) {
     loader,
     loadingComponent: {
       render() {
-        return h('div', { 
-          style: 'padding: 50px; text-align: center; color: var(--vp-c-text-2); font-family: monospace; animation: pulse 1.5s infinite;' 
+        return h('div', {
+          style: 'padding: 50px; text-align: center; color: var(--vp-c-text-2); font-family: monospace; animation: pulse 1.5s infinite;'
         }, '👾 Loading Game Resources...')
       }
     },
     // 展示加载组件前的延迟时间，默认为 200ms
     // 改为 50ms，让用户点击后立刻有反馈，感觉更灵敏
-    delay: 50, 
+    delay: 50,
     timeout: 10000 // 超时时间
   })
 }
@@ -34,10 +34,11 @@ const Game2048 = createGameComponent(() => import('./components/games/Game2048.v
 const Sudoku = createGameComponent(() => import('./components/games/Sudoku.vue'))
 const LightsOut = createGameComponent(() => import('./components/games/LightsOut.vue'))
 const ConvergenceGame = createGameComponent(() => import('./components/games/convergence/GameEntry.vue'))
+const Snake = createGameComponent(() => import('./components/games/Snake.vue'))
 
 
 export default {
-  extends: DefaultTheme, 
+  extends: DefaultTheme,
   Layout() {
     return h(DefaultTheme.Layout, null, {
       'nav-bar-content-after': () => h(RandomJump),// 导航栏后添加随机跳转按钮
@@ -56,5 +57,6 @@ export default {
     app.component('Sudoku', Sudoku)// 注册数独组件
     app.component('LightsOut', LightsOut)// 注册熄灯组件
     app.component('ConvergenceGame', ConvergenceGame)// 注册聚合游戏组件
+    app.component('Snake', Snake)// 注册贪吃蛇组件
   }
 }

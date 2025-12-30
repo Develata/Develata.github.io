@@ -96,6 +96,16 @@ const games: Game[] = [
     tag: 'Rougelike',
     color: '#8b5ff6' 
   },
+  {
+    id: 'snake',
+    title: '贪吃蛇',
+    enTitle: 'Snake',
+    desc: '控制小蛇吞噬食物变长，小心不要撞到墙壁或自己。',
+    icon: '🐍',
+    link: '/games/snake',
+    tag: 'Arcade',
+    color: '#22c55e' // 绿色
+  },
 ]
 </script>
 

@@ -1,7 +1,48 @@
+# Dependencies
 node_modules
+# package-lock.json is committed, so we don't ignore it
+# yarn.lock
+# pnpm-lock.yaml
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# Build
 dist
-cache
 .vitepress/dist
 .vitepress/cache
+cache
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Misc
 repomix-output.xml
