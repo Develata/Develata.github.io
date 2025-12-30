@@ -1,0 +1,57 @@
+name: Sync Template Branch
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Clean up personal content
+        run: node scripts/cleanup-for-template.mjs
+
+      - name: Create Template Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Switch to a new orphan branch (no history from main) or just a new branch state
+          # We want to commit the current *clean* state as the head of the template branch
+
+          # Option 1: Commit on top of current (but we deleted stuff)
+          # Option 2: New orphan branch for every push? No, that breaks history for users pulling.
+          # Best approach: Treat 'template' as a branch we force push to, but ideally with a commit history associated with template updates.
+
+          # Let's try to checkout the template branch if it exists, or create it
+          # BUT we have already modified files in the working directory (the cleanup).
+
+          # Strategy: 
+          # 1. Stash changes (the cleanup results)
+          # 2. Checkout orphan branch 'temp-template'
+          # 3. Apply changes (pop stash? might conflict if files missing. Better: just keep working dir)
+
+          # Simpler Strategy:
+          # Just commit the changes to a new disconnected branch and force push it to origin/template
+
+          git checkout --orphan template-temp
+          git add .
+          git commit -m "chore: sync template from main $(date +'%Y-%m-%d')"
+
+          # Force push this new state to the 'template' branch on remote
+          git push origin template-temp:template --force
