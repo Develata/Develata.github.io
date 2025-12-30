@@ -16,19 +16,20 @@
 ## 🗂️ 内容板块
 内容主要分为以下几个领域：
 
-### 1. 🧮 数学笔记 (Mathematics)
-记录我的专业课笔记与数学思考。
-* 包含概率论（大偏差理论）等学术内容。
-* 支持复杂的 LaTeX 公式展示。
+### 1. 🧠 知识库 (Knowledge)
+沉淀我的学习与思考：
+* **Math (数学)**：概率论、大偏差理论等学术笔记，支持 LaTeX 公式。
+* **Coding (编程)**：Linux 运维、Web 开发 (Vue/VitePress)、网络技术 (VPS/内网穿透) 等实战经验。
+* **Sharing (分享)**：杂项分享与生活经验。
 
-### 2. 💻 编程与运维 (Coding & Linux)
-实用的服务器搭建与开发指南，涵盖：
-* **Linux 基础**：Debian/Ubuntu 配置、UFW 防火墙设置。
-* **Web 服务**：OpenResty & Nginx 配置、SSL 证书自动签发 (Acme.sh)。
-* **网络技术**：VPS 选购指南、内网穿透 (EasyTier/Tailscale)、Sing-box 搭建、网盘整合。
+### 2. 📰 动态 (News)
+站点的更新日志与最新动态。
 
 ### 3. 🎮 游戏实验室 (Game Lab)
 完全由 Vue 3 编写的网页端小游戏，无需后端，纯前端逻辑：
+* **Convergence (收敛)**：The Gradient War (梯度战争)，策略/动作类实验性作品。
+* **Tetris (俄罗斯方块)**：经典消除游戏，针对移动端触控优化。
+* **Snake (贪吃蛇)**：包含经典模式与平滑移动特性。
 * **2048**：经典的数字合并游戏，支持撤销。
 * **扫雷 (Minesweeper)**：支持“智能和弦”操作（双击数字自动插旗/挖开）。
 * **数独 (Sudoku)**：包含笔记模式、撤销及递归求解可视化动画。
@@ -43,7 +44,7 @@
 * 培根：《新工具》(Novum Organum)
 * 维特根斯坦：《逻辑哲学论》(Tractatus)
 
-### 5. ✍️ 随笔 (Blog)
+### 5. ✍️ 关于 (About)
 生活记录、杂谈以及年度归档。
 
 ## 🚀 快速开始 / 模板使用
@@ -90,11 +91,11 @@ npm run dev
 │   │   └── theme/
 │   │       ├── components/ # 存放所有游戏 Vue 组件 (Game2048, Sudoku 等)
 │   │       └── ...
-│   ├── about/             # "关于我"页面
-│   ├── blog/              # 博客文章与归档数据逻辑
+│   ├── about/             # "关于我"页面 (Me, Blog)
 │   ├── books/             # 读书笔记
 │   ├── games/             # 游戏页面入口 (Markdown 引入 Vue 组件)
 │   ├── knowledge/         # 知识库 (Math, Coding, Sharing)
+│   ├── news/              # 站点动态
 │   └── index.md           # 网站首页
 ├── package.json           # 项目依赖与脚本
 └── .github/workflows/     # 自动部署脚本
