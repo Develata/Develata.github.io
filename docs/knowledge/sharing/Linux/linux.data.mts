@@ -1,3 +1,11 @@
+/**
+ * @file linux.data.mts
+ * @description Linux 文章列表数据加载器 (Linux Articles Data Loader)
+ * 职责：
+ * 1. 扫描 `knowledge/sharing/Linux/` 目录下的所有 Markdown 文件。
+ * 2. 排除索引页 (index.md) 和目录页。
+ * 3. 提取文章元数据 (标题、链接、摘要、日期) 并按日期倒序排列，供 Linux 专题页使用。
+ */
 import { createContentLoader } from 'vitepress'
 
 interface Post {
