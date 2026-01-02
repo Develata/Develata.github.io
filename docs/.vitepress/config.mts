@@ -25,7 +25,11 @@ interface SidebarItem extends DefaultTheme.SidebarItem {
 /**
  * 递归生成侧边栏条目
  */
-function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
+interface SidebarOptions {
+  isNewsRoot?: boolean;
+}
+
+function resolveSidebarItems(dirPath: string, baseUrl: string, options: SidebarOptions = {}): SidebarItem[] {
   const absolutePath = path.resolve(docsRoot, dirPath);
   if (!fs.existsSync(absolutePath)) return [];
 
@@ -43,7 +47,7 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
     if (entry.isDirectory()) {
       // 使用 posix.join 确保 URL 使用正斜杠
       const nextBaseUrl = path.posix.join(baseUrl, entry.name, '/');
-      const children = resolveSidebarItems(path.join(dirPath, entry.name), nextBaseUrl);
+      const children = resolveSidebarItems(path.join(dirPath, entry.name), nextBaseUrl, options);
 
       if (children.length === 0) continue;
 
@@ -130,14 +134,23 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
     }
   }
 
-  // 排序：Order (小到大) -> Date (新到旧) -> Name (A-Z)
-  return items.sort((a, b) => {
+  // 排序逻辑优化：如果是 News 且包含年份文件夹，特殊处理
+  const result = items.sort((a, b) => {
     // 特殊处理：Other 文件夹永远排在最后
     const isAOther = (a.name || '').toLowerCase() === 'other' || (a.text || '').toLowerCase() === 'other';
     const isBOther = (b.name || '').toLowerCase() === 'other' || (b.text || '').toLowerCase() === 'other';
     
     if (isAOther && !isBOther) return 1;
     if (!isAOther && isBOther) return -1;
+
+    // News 特殊排序：如果检测到是年份文件夹（这里做一个简单的正则判断），则倒序排列
+    if (options.isNewsRoot) {
+       const isAYear = /^\d{4}$/.test(a.name || '');
+       const isBYear = /^\d{4}$/.test(b.name || '');
+       if (isAYear && isBYear) {
+           return (b.name || '').localeCompare(a.name || ''); // 倒序：2026 在 2025 上面
+       }
+    }
 
     const orderA = a.order ?? Number.POSITIVE_INFINITY;
     const orderB = b.order ?? Number.POSITIVE_INFINITY;
@@ -154,7 +167,17 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
     }
 
     return (a.name ?? '').localeCompare(b.name ?? '', 'en');
-  }).map(({ order, name, date, ...rest }) => rest); // 清理内部属性
+  });
+
+  // 如果启用了 News 模式，且排序后的第一项是年份文件夹，则将其展开
+  if (options.isNewsRoot && result.length > 0) {
+      const firstItem = result[0];
+      if (/^\d{4}$/.test(firstItem.name || '')) {
+          firstItem.collapsed = false;
+      }
+  }
+
+  return result.map(({ order, name, date, ...rest }) => rest);
 }
 
 export default withMermaid(
@@ -244,7 +267,7 @@ export default withMermaid(
         '/books/': resolveSidebarItems('books', '/books/'), 
 
         // 自动解析 news 目录
-        '/news/': resolveSidebarItems('news', '/news/'),
+        '/news/': resolveSidebarItems('news', '/news/', { isNewsRoot: true }),
 
         // Blog 侧边栏：合并自动生成的分类 + 手动添加的归档
         '/about/blog/': [
