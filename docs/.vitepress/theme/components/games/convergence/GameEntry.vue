@@ -17,42 +17,18 @@
 
       <div class="rail rail-left">
         <div class="rail-section rail-section--top">
-          <MiniMap
-            :heatmap="heatmap"
-            :player="entities.player"
-            :enemies="entities.enemies"
-            :grid-size="gridSize"
-          />
+          <MiniMap :heatmap="heatmap" :player="entities.player" :enemies="entities.enemies" :grid-size="gridSize" />
         </div>
         <div class="rail-section rail-section--center">
-          <ActionLog
-            :entries="actionLog"
-            :collapsed="actionLogCollapsed"
-            @toggle="handleActionLogToggle"
-          />
+          <ActionLog :entries="actionLog" :collapsed="actionLogCollapsed" @toggle="handleActionLogToggle" />
         </div>
         <div class="rail-section rail-section--bottom">
-          <HUD
-            v-if="interactionState.playerSelected"
-            :stats="playerStats"
-            :capacity="ammoCapacity"
-            :strategy="activeStrategyLabel"
-            :loss-value="lossValue"
-            :turn="turnCount"
-            mode="player"
-            title="作战状态"
-            :show-close="true"
-            @close="handleClosePanel"
-          />
-          <HUD
-            v-else-if="selectedEnemyStats"
-            :stats="{ hp: selectedEnemyStats.hp, maxHp: selectedEnemyStats.maxHp }"
-            :title="selectedEnemyStats.name"
-            :traits="selectedEnemyStats.traits"
-            mode="enemy"
-            :show-close="true"
-            @close="handleClosePanel"
-          />
+          <HUD v-if="interactionState.playerSelected" :stats="playerStats" :capacity="ammoCapacity"
+            :strategy="activeStrategyLabel" :loss-value="lossValue" :turn="turnCount" mode="player" title="作战状态"
+            :show-close="true" @close="handleClosePanel" />
+          <HUD v-else-if="selectedEnemyStats" :stats="{ hp: selectedEnemyStats.hp, maxHp: selectedEnemyStats.maxHp }"
+            :title="selectedEnemyStats.name" :traits="selectedEnemyStats.traits" mode="enemy" :show-close="true"
+            @close="handleClosePanel" />
         </div>
       </div>
 
@@ -66,12 +42,8 @@
         <div class="rail-section rail-section--bottom">
           <div class="strategy-toggle">
             <span>武器流派</span>
-            <button
-              v-for="strategy in strategyOptions"
-              :key="strategy"
-              :class="{ active: strategy === activeStrategy }"
-              @click="handleStrategySelect(strategy)"
-            >
+            <button v-for="strategy in strategyOptions" :key="strategy" :class="{ active: strategy === activeStrategy }"
+              @click="handleStrategySelect(strategy)">
               {{ formatStrategy(strategy) }}
             </button>
           </div>
@@ -79,18 +51,12 @@
           <div class="action-panel">
             <p>{{ selectionHint }}</p>
             <div class="action-buttons">
-              <button
-                :disabled="!interactionState.playerSelected"
-                :class="{ active: interactionState.plannedAction === 'move' }"
-                @click="planAction('move')"
-              >
+              <button :disabled="!interactionState.playerSelected"
+                :class="{ active: interactionState.plannedAction === 'move' }" @click="planAction('move')">
                 移动一格
               </button>
-              <button
-                :disabled="!interactionState.playerSelected"
-                :class="{ active: interactionState.plannedAction === 'attack' }"
-                @click="planAction('attack')"
-              >
+              <button :disabled="!interactionState.playerSelected"
+                :class="{ active: interactionState.plannedAction === 'attack' }" @click="planAction('attack')">
                 {{ interactionState.plannedAction === 'attack' ? '取消攻击' : '锁定攻击' }}
               </button>
             </div>
@@ -142,7 +108,8 @@
                 <li>场函数只影响数值与子弹行为，机体始终在平坦网格上运动。</li>
               </ul>
             </li>
-            <li><strong>Buff 选择</strong>：击败敌人后会在右侧中部弹出 <strong>3 选 1 Buff</strong> 面板，点击其中一个即可获取对应增益，其等级取决于该敌人所在 ER 节点的度数。</li>
+            <li><strong>Buff 选择</strong>：击败敌人后会在右侧中部弹出 <strong>3 选 1 Buff</strong> 面板，点击其中一个即可获取对应增益，其等级取决于该敌人所在 ER
+              节点的度数。</li>
           </ul>
         </div>
       </div>
@@ -150,6 +117,14 @@
   </div>
 </template>
 
+<!--
+  @file GameEntry.vue
+  @description 收敛游戏入口 (Convergence Game Entry)
+  职责：
+  1. 初始化游戏核心 (GameCore) 和渲染器 (SceneManager)。
+  2. 管理游戏主循环 (Animation Loop)。
+  3. 处理 UI 面板显示与隐藏 (Player HUD, Inventory, etc.)。
+-->
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import HUD from './ui/HUD.vue';
@@ -267,7 +242,7 @@ const handleKeydown = (event: KeyboardEvent) => {
     return;
   }
 
-  if ([ 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight' ].includes(event.code)) {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) {
     event.preventDefault();
   }
 
@@ -374,8 +349,8 @@ const handleActionLogToggle = () => {
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at 20% 20%, rgba(0, 255, 204, 0.2), transparent 55%),
-              radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.3), transparent 55%),
-              #02030b;
+    radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.3), transparent 55%),
+    #02030b;
 }
 
 .start-card {
@@ -420,7 +395,8 @@ const handleActionLogToggle = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  pointer-events: none; /* 确保不阻挡下方点击，但子元素需要 auto */
+  pointer-events: none;
+  /* 确保不阻挡下方点击，但子元素需要 auto */
 }
 
 .hud-title-group {
@@ -501,7 +477,7 @@ const handleActionLogToggle = () => {
   flex: 1;
 }
 
-.rail-section--center > * {
+.rail-section--center>* {
   flex: 1;
 }
 
@@ -636,11 +612,13 @@ const handleActionLogToggle = () => {
     right: 12px;
     width: auto;
     z-index: 20;
-    pointer-events: none; /* 容器本身不阻挡点击 */
+    pointer-events: none;
+    /* 容器本身不阻挡点击 */
   }
 
-  .rail-left .rail-section--bottom > * {
-    pointer-events: auto; /* 内部内容可点击 */
+  .rail-left .rail-section--bottom>* {
+    pointer-events: auto;
+    /* 内部内容可点击 */
   }
 
   .rail-right {

@@ -1,3 +1,11 @@
+<!--
+  @file Minesweeper.vue
+  @description 扫雷游戏组件 (Minesweeper)
+  职责：
+  1. 实现雷区生成与数字计算逻辑。
+  2. 处理左键翻开与右键标记操作。
+  3. 递归展开空白区域 (Flood Fill)。
+-->
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import confetti from 'canvas-confetti'
@@ -33,7 +41,7 @@ const board = ref<Cell[][]>([])
 const gameState = ref<'idle' | 'playing' | 'won' | 'lost'>('idle')
 const flagsPlaced = ref(0)
 const timeElapsed = ref(0)
-const mode = ref<'dig' | 'flag'>('dig') 
+const mode = ref<'dig' | 'flag'>('dig')
 
 let timerId: number | null = null
 
@@ -72,10 +80,10 @@ function initGame() {
   timeElapsed.value = 0
   gameState.value = 'idle'
   flagsPlaced.value = 0
-  
+
   const { rows, cols } = config
   const newBoard: Cell[][] = []
-  
+
   for (let r = 0; r < rows; r++) {
     const row: Cell[] = []
     for (let c = 0; c < cols; c++) {
@@ -92,11 +100,11 @@ function initGame() {
 function generateMines(excludeRow: number, excludeCol: number) {
   const { rows, cols, totalMines } = config
   let placed = 0
-  
+
   while (placed < totalMines) {
     const r = Math.floor(Math.random() * rows)
     const c = Math.floor(Math.random() * cols)
-    
+
     const isExcluded = Math.abs(r - excludeRow) <= 1 && Math.abs(c - excludeCol) <= 1
 
     if (!board.value[r][c].isMine && !isExcluded) {
@@ -157,7 +165,7 @@ function handleClick(r: number, c: number) {
 function handleSmartChord(r: number, c: number) {
   const cell = board.value[r][c]
   const { rows, cols } = config
-  
+
   // 获取周围邻居信息
   const neighbors: Cell[] = []
   let flaggedCount = 0
@@ -193,7 +201,7 @@ function handleSmartChord(r: number, c: number) {
     })
     // 插完旗后，状态变了，重新统计一下，以便看看是否满足策略B（立刻挖开剩余的）
     // 但在这个逻辑下，closedCount == cell.count，说明没有多余的安全格了，所以不需要策略B
-    return 
+    return
   }
 
   // 策略 B: 自动挖开 (Auto Reveal / Chord)
@@ -209,7 +217,7 @@ function handleSmartChord(r: number, c: number) {
 }
 
 function handleRightClick(e: MouseEvent, r: number, c: number) {
-  e.preventDefault() 
+  e.preventDefault()
   if (gameState.value === 'won' || gameState.value === 'lost') return
   toggleFlag(r, c)
 }
@@ -251,12 +259,12 @@ function reveal(r: number, c: number) {
 function openCellRecursive(r: number, c: number) {
   const { rows, cols } = config
   if (r < 0 || r >= rows || c < 0 || c >= cols) return
-  
+
   const cell = board.value[r][c]
   if (cell.isOpen || cell.isFlagged) return
-  
+
   cell.isOpen = true
-  
+
   if (cell.count === 0) {
     for (let dr = -1; dr <= 1; dr++) {
       for (let dc = -1; dc <= 1; dc++) {
@@ -274,7 +282,7 @@ function checkWin() {
       if (board.value[r][c].isOpen) openCount++
     }
   }
-  
+
   if (openCount === rows * cols - totalMines) {
     gameState.value = 'won'
     stopTimer()
@@ -311,7 +319,7 @@ function gameOverLoss(triggerCell: Cell) {
   gameState.value = 'lost'
   stopTimer()
   triggerCell.isExploded = true
-  
+
   const { rows, cols } = config
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -358,14 +366,10 @@ initGame()
   <div class="minesweeper-container">
     <div class="header-card">
       <div class="top-row">
-        <button 
-          class="settings-btn" 
-          :class="{ active: showSettings }"
-          @click="showSettings = !showSettings"
-        >
+        <button class="settings-btn" :class="{ active: showSettings }" @click="showSettings = !showSettings">
           ⚙️ 设置
         </button>
-        
+
         <button class="reset-face" @click="initGame">
           <span v-if="gameState === 'won'">😎</span>
           <span v-else-if="gameState === 'lost'">😵</span>
@@ -388,13 +392,7 @@ initGame()
 
         <div class="setting-group">
           <label>雷区密度: {{ tempConfig.density }}%</label>
-          <input 
-            type="range" 
-            v-model.number="tempConfig.density" 
-            min="5" 
-            max="40" 
-            step="1"
-          >
+          <input type="range" v-model.number="tempConfig.density" min="5" max="40" step="1">
           <div class="preview-text">预计地雷: {{ estimatedMines }}</div>
         </div>
 
@@ -403,20 +401,12 @@ initGame()
 
       <div class="info-row" v-if="!showSettings">
         <div class="lcd-screen mines">💣 {{ remainMines }}</div>
-        
+
         <div class="mode-toggle">
-          <button 
-            class="mode-btn"
-            :class="{ active: mode === 'dig' }"
-            @click="mode = 'dig'"
-          >
+          <button class="mode-btn" :class="{ active: mode === 'dig' }" @click="mode = 'dig'">
             ⛏️ 挖开
           </button>
-          <button 
-            class="mode-btn"
-            :class="{ active: mode === 'flag' }"
-            @click="mode = 'flag'"
-          >
+          <button class="mode-btn" :class="{ active: mode === 'flag' }" @click="mode = 'flag'">
             🚩 插旗
           </button>
         </div>
@@ -424,39 +414,19 @@ initGame()
     </div>
 
     <div class="board-wrapper">
-      <div 
-        class="board"
-        :style="{ 
-          gridTemplateColumns: `repeat(${config.cols}, 1fr)`,
-        }"
-        @contextmenu.prevent
-      >
-        <div 
-          v-for="(row, r) in board" 
-          :key="r" 
-          class="row-group"
-          style="display: contents;" 
-        >
-          <div 
-            v-for="(cell, c) in row" 
-            :key="`${r}-${c}`"
-            class="cell"
-            :class="{ 
-              'open': cell.isOpen, 
-              'closed': !cell.isOpen,
-              'exploded': cell.isExploded,
-              'flagged': cell.isFlagged
-            }"
-            @click="handleClick(r, c)"
-            @contextmenu="handleRightClick($event, r, c)"
-          >
+      <div class="board" :style="{
+        gridTemplateColumns: `repeat(${config.cols}, 1fr)`,
+      }" @contextmenu.prevent>
+        <div v-for="(row, r) in board" :key="r" class="row-group" style="display: contents;">
+          <div v-for="(cell, c) in row" :key="`${r}-${c}`" class="cell" :class="{
+            'open': cell.isOpen,
+            'closed': !cell.isOpen,
+            'exploded': cell.isExploded,
+            'flagged': cell.isFlagged
+          }" @click="handleClick(r, c)" @contextmenu="handleRightClick($event, r, c)">
             <template v-if="cell.isOpen">
               <span v-if="cell.isMine">💣</span>
-              <span 
-                v-else-if="cell.count > 0" 
-                class="num" 
-                :style="{ color: numColors[cell.count] }"
-              >
+              <span v-else-if="cell.count > 0" class="num" :style="{ color: numColors[cell.count] }">
                 {{ cell.count }}
               </span>
             </template>
@@ -479,12 +449,13 @@ initGame()
   margin-top: 20px;
   font-family: sans-serif;
   user-select: none;
-  touch-action: manipulation; 
-  
+  touch-action: manipulation;
+
   /* 👇 新增这两行：彻底锁死宽度，防止撑破页面导致导航栏偏移 */
   width: 100%;
-  max-width: 100vw; 
-  overflow: hidden; /* 隐藏溢出部分，具体滚动交给子元素 .board-wrapper */
+  max-width: 100vw;
+  overflow: hidden;
+  /* 隐藏溢出部分，具体滚动交给子元素 .board-wrapper */
 }
 
 /* 头部卡片 */
@@ -498,7 +469,7 @@ initGame()
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s;
 }
 
@@ -518,7 +489,9 @@ initGame()
   color: var(--vp-c-text-2);
   transition: all 0.2s;
 }
-.settings-btn:hover, .settings-btn.active {
+
+.settings-btn:hover,
+.settings-btn.active {
   background: var(--vp-c-bg-alt);
   color: var(--vp-c-brand);
   border-color: var(--vp-c-brand);
@@ -531,7 +504,10 @@ initGame()
   cursor: pointer;
   transition: transform 0.1s;
 }
-.reset-face:active { transform: scale(0.9); }
+
+.reset-face:active {
+  transform: scale(0.9);
+}
 
 /* 设置面板 */
 .settings-panel {
@@ -550,6 +526,7 @@ initGame()
   flex-direction: column;
   gap: 6px;
 }
+
 .setting-group label {
   font-size: 0.85rem;
   color: var(--vp-c-text-2);
@@ -561,6 +538,7 @@ initGame()
   align-items: center;
   gap: 8px;
 }
+
 .inputs input {
   flex: 1;
   padding: 6px;
@@ -586,7 +564,10 @@ initGame()
   cursor: pointer;
   font-weight: bold;
 }
-.apply-btn:hover { background: var(--vp-c-brand-dark); }
+
+.apply-btn:hover {
+  background: var(--vp-c-brand-dark);
+}
 
 /* 信息栏 */
 .info-row {
@@ -638,12 +619,14 @@ initGame()
 .board-wrapper {
   width: 100%;
   max-width: 100%;
-  overflow-x: auto; /* 允许横向滚动 */
+  overflow-x: auto;
+  /* 允许横向滚动 */
   padding-bottom: 10px;
-  
+
   /* 👇 修改：移除 flex 布局，改用 block + margin auto */
-  display: block; 
-  text-align: center; /* 让内部 inline-block 元素居中 */
+  display: block;
+  text-align: center;
+  /* 让内部 inline-block 元素居中 */
 }
 
 @media (max-width: 600px) {
@@ -651,19 +634,21 @@ initGame()
     /* 👇 修改：移除之前的 padding 设置，防止挤压 */
     padding-left: 0;
     padding-right: 0;
-    text-align: left; /* 手机上靠左对齐，方便从左往右滑 */
+    text-align: left;
+    /* 手机上靠左对齐，方便从左往右滑 */
   }
 }
 
 .board {
-  display: inline-grid; /* 👇 修改：改为 inline-grid 以便被 text-align 控制 */
+  display: inline-grid;
+  /* 👇 修改：改为 inline-grid 以便被 text-align 控制 */
   gap: 2px;
   background: var(--vp-c-divider);
   padding: 4px;
   border-radius: 4px;
-  
+
   /* 👇 新增：防止棋盘本身 margin 导致溢出 */
-  margin: 0 auto; 
+  margin: 0 auto;
 }
 
 .cell {
@@ -683,23 +668,44 @@ initGame()
   background: var(--vp-c-bg-alt);
   border: 1px outset var(--vp-c-divider);
 }
-.cell.closed:hover { filter: brightness(0.95); }
+
+.cell.closed:hover {
+  filter: brightness(0.95);
+}
 
 .cell.open {
   background: var(--vp-c-bg-soft);
   border: 1px solid transparent;
 }
 
-.cell.exploded { background: #ef4444 !important; border: none; }
+.cell.exploded {
+  background: #ef4444 !important;
+  border: none;
+}
 
-.flag-icon { font-size: 0.9rem; }
+.flag-icon {
+  font-size: 0.9rem;
+}
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 </style>

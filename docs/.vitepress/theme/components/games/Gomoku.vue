@@ -1,3 +1,11 @@
+<!--
+  @file Gomoku.vue
+  @description 五子棋游戏组件 (Gomoku)
+  职责：
+  1. 实现五子棋游戏规则与胜负判定。
+  2. 集成 Minimax 算法实现 AI 对战。
+  3. 棋盘渲染与交互处理。
+-->
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
@@ -20,7 +28,7 @@ const isAiThinking = ref(false)
 const lastMove = ref<number>(-1) // 记录最后一步，高亮显示
 
 // --- 新增：历史记录栈 ---
-const history = ref<number[]>([]) 
+const history = ref<number[]>([])
 
 // --- 计算属性 ---
 const statusText = computed(() => {
@@ -93,11 +101,11 @@ function undoMove() {
     // 1. 撤销 AI 的步子
     const aiIdx = history.value.pop()
     if (aiIdx !== undefined) board.value[aiIdx] = 0
-    
+
     // 2. 撤销 玩家 的步子
     const playerIdx = history.value.pop()
     if (playerIdx !== undefined) board.value[playerIdx] = 0
-    
+
     // 确保轮到玩家
     currentPlayer.value = 1
   }
@@ -166,7 +174,7 @@ function makeAiMove() {
   let bestMove = -1
   let maxScore = -Infinity
   const candidates = getCandidates()
-  
+
   for (const idx of candidates) {
     const attackScore = evaluatePoint(idx, 2)
     const defenseScore = evaluatePoint(idx, 1)
@@ -225,7 +233,7 @@ function evaluatePoint(index: number, role: Player): number {
   const y = Math.floor(index / BOARD_SIZE)
 
   for (const [dx, dy] of DIRECTIONS) {
-    const line: number[] = [] 
+    const line: number[] = []
     for (let i = -4; i <= 4; i++) {
       const nx = x + dx * i
       const ny = y + dy * i
@@ -264,14 +272,9 @@ function getLineScore(line: number[]): number {
         <button class="btn" :class="{ active: gameMode === 'PVE' }" @click="switchMode('PVE')">🤖 人机</button>
       </div>
       <div class="status">{{ statusText }}</div>
-      
+
       <div class="action-btns">
-        <button 
-          class="btn undo" 
-          :disabled="!canUndo" 
-          @click="undoMove"
-          title="悔棋"
-        >
+        <button class="btn undo" :disabled="!canUndo" @click="undoMove" title="悔棋">
           ↩️
         </button>
         <button class="btn reset" @click="resetGame">重置</button>
@@ -280,24 +283,17 @@ function getLineScore(line: number[]): number {
 
     <div class="board-wrapper">
       <div class="board">
-        <div v-for="i in BOARD_SIZE - 1" :key="'h'+i" class="grid-line horizontal" :style="{ top: (i * 100 / BOARD_SIZE) + '%' }"></div>
-        <div v-for="i in BOARD_SIZE - 1" :key="'v'+i" class="grid-line vertical" :style="{ left: (i * 100 / BOARD_SIZE) + '%' }"></div>
+        <div v-for="i in BOARD_SIZE - 1" :key="'h' + i" class="grid-line horizontal"
+          :style="{ top: (i * 100 / BOARD_SIZE) + '%' }"></div>
+        <div v-for="i in BOARD_SIZE - 1" :key="'v' + i" class="grid-line vertical"
+          :style="{ left: (i * 100 / BOARD_SIZE) + '%' }"></div>
 
-        <div 
-          v-for="(cell, index) in board" 
-          :key="index" 
-          class="cell"
-          @click="handleMove(index)"
-        >
-          <div 
-            v-if="cell !== 0" 
-            class="piece" 
-            :class="{ 
-              'black': cell === 1, 
-              'white': cell === 2,
-              'last-move': lastMove === index 
-            }"
-          ></div>
+        <div v-for="(cell, index) in board" :key="index" class="cell" @click="handleMove(index)">
+          <div v-if="cell !== 0" class="piece" :class="{
+            'black': cell === 1,
+            'white': cell === 2,
+            'last-move': lastMove === index
+          }"></div>
         </div>
       </div>
     </div>
@@ -359,6 +355,7 @@ function getLineScore(line: number[]): number {
   color: white;
   border-color: var(--vp-c-brand);
 }
+
 .btn:hover:not(.active):not(:disabled) {
   border-color: var(--vp-c-brand);
   color: var(--vp-c-brand);
@@ -368,7 +365,7 @@ function getLineScore(line: number[]): number {
   padding: 15px;
   background: #eebb77;
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .board {
@@ -387,22 +384,27 @@ function getLineScore(line: number[]): number {
     width: 96vw;
     height: 96vw;
   }
+
   .board-wrapper {
     padding: 8px;
   }
+
   .btn {
     padding: 6px 10px;
     font-size: 0.85rem;
   }
+
   .header {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
   }
+
   .status {
     width: 100%;
     text-align: center;
-    order: -1; /* 手机上把状态文字放到最上面 */
+    order: -1;
+    /* 手机上把状态文字放到最上面 */
     margin-bottom: 5px;
   }
 }
@@ -411,11 +413,13 @@ function getLineScore(line: number[]): number {
   position: absolute;
   background-color: #5d4037;
 }
+
 .horizontal {
   left: 3.33%;
   right: 3.33%;
   height: 1px;
 }
+
 .vertical {
   top: 3.33%;
   bottom: 3.33%;
@@ -433,7 +437,7 @@ function getLineScore(line: number[]): number {
   width: 80%;
   height: 80%;
   border-radius: 50%;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
   position: relative;
 }
 

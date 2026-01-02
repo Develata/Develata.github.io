@@ -1,3 +1,11 @@
+<!--
+  @file GameHub.vue
+  @description 游戏中心首页 (Game Hub Home)
+  职责：
+  1. 展示所有游戏的卡片列表。
+  2. 提供游戏的简短介绍、图标、标签和跳转链接。
+  3. 响应式网格布局。
+-->
 <script setup lang="ts">
 import { withBase } from 'vitepress'
 

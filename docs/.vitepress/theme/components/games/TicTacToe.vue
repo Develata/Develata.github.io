@@ -1,3 +1,10 @@
+<!--
+  @file TicTacToe.vue
+  @description 井字棋游戏组件 (Tic Tac Toe)
+  职责：
+  1. 3x3 棋盘逻辑。
+  2. 极小化极大算法 (Minimax) 实现不可战胜的 AI。
+-->
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 
@@ -113,7 +120,7 @@ function getBestMove(currentBoard: Player[]): number {
 // 极小化极大算法递归
 function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): number {
   const result = calculateWinner(currentBoard)
-  
+
   // 终止条件：分数判定
   if (result === 'O') return 10 - depth // AI 赢，分数越高越好，减去深度是为了让AI尽快赢
   if (result === 'X') return depth - 10 // 玩家赢，分数越低越好
@@ -150,18 +157,10 @@ function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): 
 <template>
   <div class="game-container">
     <div class="mode-selector">
-      <button 
-        class="mode-btn" 
-        :class="{ active: gameMode === 'PVP' }" 
-        @click="switchMode('PVP')"
-      >
+      <button class="mode-btn" :class="{ active: gameMode === 'PVP' }" @click="switchMode('PVP')">
         👥 本地双人
       </button>
-      <button 
-        class="mode-btn" 
-        :class="{ active: gameMode === 'PVE' }" 
-        @click="switchMode('PVE')"
-      >
+      <button class="mode-btn" :class="{ active: gameMode === 'PVE' }" @click="switchMode('PVE')">
         🤖 人机对战 (困难)
       </button>
     </div>
@@ -178,17 +177,11 @@ function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): 
     </div>
 
     <div class="board" :class="{ 'ai-thinking': isAiThinking }">
-      <div 
-        v-for="(cell, index) in board" 
-        :key="index" 
-        class="square" 
-        :class="{ 
-          'x-style': cell === 'X', 
-          'o-style': cell === 'O',
-          'clickable': !cell && !winner && !isAiThinking 
-        }"
-        @click="handleMove(index)"
-      >
+      <div v-for="(cell, index) in board" :key="index" class="square" :class="{
+        'x-style': cell === 'X',
+        'o-style': cell === 'O',
+        'clickable': !cell && !winner && !isAiThinking
+      }" @click="handleMove(index)">
         {{ cell }}
       </div>
     </div>
@@ -239,7 +232,7 @@ function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): 
   background: var(--vp-c-bg);
   color: var(--vp-c-brand);
   font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 状态栏 */
@@ -250,9 +243,18 @@ function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): 
   font-weight: bold;
 }
 
-.msg.winner { color: var(--vp-c-brand); animation: pop 0.3s; }
-.msg.draw { color: var(--vp-c-text-2); }
-.msg.turn { color: var(--vp-c-text-1); }
+.msg.winner {
+  color: var(--vp-c-brand);
+  animation: pop 0.3s;
+}
+
+.msg.draw {
+  color: var(--vp-c-text-2);
+}
+
+.msg.turn {
+  color: var(--vp-c-text-1);
+}
 
 /* 棋盘样式 */
 .board {
@@ -268,7 +270,8 @@ function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): 
 
 .board.ai-thinking {
   opacity: 0.8;
-  pointer-events: none; /* 思考时禁止点击 */
+  pointer-events: none;
+  /* 思考时禁止点击 */
 }
 
 .square {
@@ -290,8 +293,13 @@ function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): 
   background-color: var(--vp-c-bg-soft);
 }
 
-.x-style { color: var(--vp-c-brand); }
-.o-style { color: var(--vp-c-danger, #f43f5e); }
+.x-style {
+  color: var(--vp-c-brand);
+}
+
+.o-style {
+  color: var(--vp-c-danger, #f43f5e);
+}
 
 /* 重置按钮 */
 .reset-btn {
@@ -312,7 +320,14 @@ function minimax(currentBoard: Player[], depth: number, isMaximizing: boolean): 
 }
 
 @keyframes pop {
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 </style>

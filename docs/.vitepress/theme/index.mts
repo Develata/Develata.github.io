@@ -1,3 +1,11 @@
+/**
+ * @file index.mts
+ * @description 主题入口文件 (Theme Entry)
+ * 职责：
+ * 1. 扩展默认 VitePress 主题。
+ * 2. 注册和注入全局组件 (Background, FolderTree, RandomJump 等)。
+ * 3. 实现游戏组件的异步懒加载机制 (createGameComponent)。
+ */
 import { h, defineAsyncComponent } from 'vue' // Vue 的核心函数
 import DefaultTheme from 'vitepress/theme' // 引入默认主题
 import './custom.css' // 引入自定义样式

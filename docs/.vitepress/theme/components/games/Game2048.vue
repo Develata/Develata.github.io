@@ -1,3 +1,11 @@
+<!--
+  @file Game2048.vue
+  @description 2048 游戏组件
+  职责：
+  1. 实现 2048 数字合成逻辑。
+  2. 处理键盘输入与触摸滑动。
+  3. 状态管理（分数、胜利/失败判定）。
+-->
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 
@@ -33,15 +41,15 @@ const history = ref<{ tiles: Tile[], score: number }[]>([])
 function getTileColor(val: number) {
   if (val > 2048) return { bg: '#1e293b', fg: '#f8fafc' }
   const colors: Record<number, { bg: string, fg: string }> = {
-    2:    { bg: 'var(--vp-c-bg-alt)', fg: 'var(--vp-c-text-1)' },
-    4:    { bg: 'var(--vp-c-bg-soft)',fg: 'var(--vp-c-text-1)' },
-    8:    { bg: '#f59e0b', fg: '#fff' },
-    16:   { bg: '#f97316', fg: '#fff' },
-    32:   { bg: '#ef4444', fg: '#fff' },
-    64:   { bg: '#dc2626', fg: '#fff' },
-    128:  { bg: '#eab308', fg: '#fff' },
-    256:  { bg: '#84cc16', fg: '#fff' },
-    512:  { bg: '#22c55e', fg: '#fff' },
+    2: { bg: 'var(--vp-c-bg-alt)', fg: 'var(--vp-c-text-1)' },
+    4: { bg: 'var(--vp-c-bg-soft)', fg: 'var(--vp-c-text-1)' },
+    8: { bg: '#f59e0b', fg: '#fff' },
+    16: { bg: '#f97316', fg: '#fff' },
+    32: { bg: '#ef4444', fg: '#fff' },
+    64: { bg: '#dc2626', fg: '#fff' },
+    128: { bg: '#eab308', fg: '#fff' },
+    256: { bg: '#84cc16', fg: '#fff' },
+    512: { bg: '#22c55e', fg: '#fff' },
     1024: { bg: '#0ea5e9', fg: '#fff' },
     2048: { bg: '#6366f1', fg: '#fff' },
   }
@@ -52,7 +60,7 @@ function getTileColor(val: number) {
 
 function initGame(forceReset = false) {
   isAnimating.value = false
-  
+
   // 读取最高分
   const savedBest = localStorage.getItem('2048-best')
   if (savedBest) bestScore.value = parseInt(savedBest)
@@ -114,7 +122,7 @@ function recordHistory() {
 // ↩️ 执行悔棋
 function undo() {
   if (history.value.length === 0 || isAnimating.value || gameState.value === 'over') return
-  
+
   const lastState = history.value.pop()
   if (lastState) {
     // 恢复状态
@@ -122,7 +130,7 @@ function undo() {
     score.value = lastState.score
     gameState.value = 'playing'
     saveState() // 更新存档
-    
+
     // 震动反馈
     if (navigator.vibrate) navigator.vibrate(20)
   }
@@ -137,11 +145,11 @@ function createTile(r: number, c: number, val: number): Tile {
 }
 
 function spawnTile() {
-  const emptyCells: {r:number, c:number}[] = []
+  const emptyCells: { r: number, c: number }[] = []
   for (let r = 0; r < GRID_SIZE; r++) {
     for (let c = 0; c < GRID_SIZE; c++) {
       if (!tiles.value.find(t => t.r === r && t.c === c)) {
-        emptyCells.push({r, c})
+        emptyCells.push({ r, c })
       }
     }
   }
@@ -150,7 +158,7 @@ function spawnTile() {
   const { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)]
   const val = Math.random() < 0.9 ? 2 : 4
   tiles.value.push(createTile(r, c, val))
-  
+
   setTimeout(() => {
     const tile = tiles.value.find(t => t.r === r && t.c === c)
     if (tile) tile.isNew = false
@@ -163,13 +171,13 @@ function move(direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') {
   // 1. 构建逻辑网格
   let grid: (Tile | null)[][] = Array(GRID_SIZE).fill(0).map(() => Array(GRID_SIZE).fill(null))
   tiles.value.forEach(t => {
-    t.isMerged = false 
+    t.isMerged = false
     grid[t.r][t.c] = t
   })
 
   let moved = false
   let scoreAdd = 0
-  const mergedIds = new Set<number>() 
+  const mergedIds = new Set<number>()
 
   // 记录移动前的快照（如果确实发生了移动，再推入 history）
   const currentSnapshot = JSON.parse(JSON.stringify(tiles.value))
@@ -178,7 +186,7 @@ function move(direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') {
   const rStart = direction === 'ArrowDown' ? GRID_SIZE - 1 : 0
   const rEnd = direction === 'ArrowDown' ? -1 : GRID_SIZE
   const rStep = direction === 'ArrowDown' ? -1 : 1
-  
+
   const cStart = direction === 'ArrowRight' ? GRID_SIZE - 1 : 0
   const cEnd = direction === 'ArrowRight' ? -1 : GRID_SIZE
   const cStep = direction === 'ArrowRight' ? -1 : 1
@@ -190,33 +198,33 @@ function move(direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') {
 
       let nextR = r
       let nextC = c
-      
+
       while (true) {
         const testR = nextR + (direction === 'ArrowUp' ? -1 : direction === 'ArrowDown' ? 1 : 0)
         const testC = nextC + (direction === 'ArrowLeft' ? -1 : direction === 'ArrowRight' ? 1 : 0)
-        
+
         if (testR < 0 || testR >= GRID_SIZE || testC < 0 || testC >= GRID_SIZE) break
-        
+
         const target = grid[testR][testC]
-        
+
         if (!target) {
           nextR = testR
           nextC = testC
           continue
         }
-        
+
         if (target.val === tile.val && !target.isMerged) {
           if (r !== testR || c !== testC) moved = true
-          
+
           mergedIds.add(tile.id)
           target.val *= 2
           target.isMerged = true
           scoreAdd += target.val
-          
+
           tile.r = testR
           tile.c = testC
           grid[r][c] = null
-          break 
+          break
         } else {
           break
         }
@@ -236,7 +244,7 @@ function move(direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') {
 
   if (moved) {
     isAnimating.value = true
-    
+
     // ↩️ 将之前的状态存入历史
     history.value.push({ tiles: currentSnapshot, score: currentScore })
     if (history.value.length > 5) history.value.shift()
@@ -255,11 +263,11 @@ function move(direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') {
     awaitNextFrame(() => {
       setTimeout(() => {
         tiles.value = tiles.value.filter(t => !mergedIds.has(t.id))
-        
+
         tiles.value.forEach(t => {
           if (t.isMerged) setTimeout(() => t.isMerged = false, 100)
         })
-        
+
         spawnTile()
         checkGameState()
         saveState() // 💾 自动存档
@@ -287,8 +295,8 @@ function checkGameState() {
     for (let r = 0; r < GRID_SIZE; r++) {
       for (let c = 0; c < GRID_SIZE; c++) {
         const val = grid[r][c]!.val
-        if (c < GRID_SIZE - 1 && grid[r][c+1]!.val === val) return
-        if (r < GRID_SIZE - 1 && grid[r+1][c]!.val === val) return
+        if (c < GRID_SIZE - 1 && grid[r][c + 1]!.val === val) return
+        if (r < GRID_SIZE - 1 && grid[r + 1][c]!.val === val) return
       }
     }
     gameState.value = 'over'
@@ -355,7 +363,7 @@ onUnmounted(() => {
         <h1>2048</h1>
         <p>Join the numbers!</p>
       </div>
-      
+
       <div class="controls-right">
         <div class="scores">
           <div class="score-box">
@@ -367,14 +375,10 @@ onUnmounted(() => {
             <span class="value">{{ bestScore }}</span>
           </div>
         </div>
-        
+
         <div class="buttons">
-          <button 
-            class="action-btn" 
-            @click="undo" 
-            :disabled="history.length === 0 || gameState !== 'playing'"
-            title="Undo"
-          >
+          <button class="action-btn" @click="undo" :disabled="history.length === 0 || gameState !== 'playing'"
+            title="Undo">
             ↩️
           </button>
           <button class="action-btn restart" @click="initGame(true)" title="Restart">
@@ -395,18 +399,13 @@ onUnmounted(() => {
       </div>
 
       <TransitionGroup name="tile" tag="div" class="tile-layer">
-        <div 
-          v-for="tile in tiles" 
-          :key="tile.id"
-          class="tile"
-          :class="{ 'tile-new': tile.isNew, 'tile-merged': tile.isMerged }"
-          :style="{
+        <div v-for="tile in tiles" :key="tile.id" class="tile"
+          :class="{ 'tile-new': tile.isNew, 'tile-merged': tile.isMerged }" :style="{
             '--r': tile.r,
             '--c': tile.c,
             '--bg': getTileColor(tile.val).bg,
             '--fg': getTileColor(tile.val).fg
-          }"
-        >
+          }">
           {{ tile.val }}
         </div>
       </TransitionGroup>
@@ -442,7 +441,12 @@ onUnmounted(() => {
   line-height: 1;
   color: var(--vp-c-brand);
 }
-.title-box p { margin: 0; font-size: 0.9rem; color: var(--vp-c-text-2); }
+
+.title-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2);
+}
 
 .controls-right {
   display: flex;
@@ -451,7 +455,11 @@ onUnmounted(() => {
   align-items: flex-end;
 }
 
-.scores { display: flex; gap: 6px; }
+.scores {
+  display: flex;
+  gap: 6px;
+}
+
 .score-box {
   background: var(--vp-c-bg-soft);
   padding: 4px 10px;
@@ -461,8 +469,17 @@ onUnmounted(() => {
   align-items: center;
   min-width: 55px;
 }
-.score-box .label { font-size: 0.65rem; font-weight: bold; color: var(--vp-c-text-2); }
-.score-box .value { font-size: 1.1rem; font-weight: bold; }
+
+.score-box .label {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: var(--vp-c-text-2);
+}
+
+.score-box .value {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
 
 .buttons {
   display: flex;
@@ -483,10 +500,26 @@ onUnmounted(() => {
   align-items: center;
   transition: all 0.2s;
 }
-.action-btn:hover:not(:disabled) { background: var(--vp-c-bg-soft); border-color: var(--vp-c-brand); }
-.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.action-btn.restart { background: var(--vp-c-brand); color: white; border: none; }
-.action-btn.restart:hover { opacity: 0.9; }
+
+.action-btn:hover:not(:disabled) {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-brand);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.restart {
+  background: var(--vp-c-brand);
+  color: white;
+  border: none;
+}
+
+.action-btn.restart:hover {
+  opacity: 0.9;
+}
 
 /* --- 棋盘样式 --- */
 .board-container {
@@ -501,9 +534,19 @@ onUnmounted(() => {
 }
 
 @media (max-width: 450px) {
-  .header { max-width: 320px; }
-  .title-box h1 { font-size: 2.5rem; }
-  .board-container { width: 320px; height: 320px; padding: 8px; }
+  .header {
+    max-width: 320px;
+  }
+
+  .title-box h1 {
+    font-size: 2.5rem;
+  }
+
+  .board-container {
+    width: 320px;
+    height: 320px;
+    padding: 8px;
+  }
 }
 
 .grid-bg {
@@ -514,7 +557,13 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
 }
-@media (max-width: 450px) { .grid-bg { gap: 8px; } }
+
+@media (max-width: 450px) {
+  .grid-bg {
+    gap: 8px;
+  }
+}
+
 .grid-cell {
   background: var(--vp-c-bg);
   border-radius: 4px;
@@ -522,9 +571,20 @@ onUnmounted(() => {
 
 .tile-layer {
   position: absolute;
-  top: 10px; left: 10px; right: 10px; bottom: 10px;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
 }
-@media (max-width: 450px) { .tile-layer { top: 8px; left: 8px; right: 8px; bottom: 8px; } }
+
+@media (max-width: 450px) {
+  .tile-layer {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+  }
+}
 
 .tile {
   position: absolute;
@@ -534,17 +594,17 @@ onUnmounted(() => {
   left: calc(var(--c) * (var(--size) + var(--gap)));
   width: var(--size);
   height: var(--size);
-  
+
   border-radius: 4px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 2rem;
   font-weight: bold;
-  
+
   background: var(--bg);
   color: var(--fg);
-  
+
   transition: top 0.15s ease-in-out, left 0.15s ease-in-out, transform 0.15s;
   z-index: 1;
 }
@@ -555,20 +615,40 @@ onUnmounted(() => {
     font-size: 1.5rem;
   }
 }
-.tile[style*="--fg: #fff"] { text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 
-.tile-new { animation: pop 0.2s ease-out backwards; }
-.tile-merged { z-index: 10; animation: pop 0.2s ease-out; }
+.tile[style*="--fg: #fff"] {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.tile-new {
+  animation: pop 0.2s ease-out backwards;
+}
+
+.tile-merged {
+  z-index: 10;
+  animation: pop 0.2s ease-out;
+}
 
 @keyframes pop {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .overlay {
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(255, 255, 255, 0.7);
   z-index: 100;
   display: flex;
@@ -580,16 +660,31 @@ onUnmounted(() => {
   pointer-events: none;
   transition: opacity 0.3s;
 }
-.dark .overlay { background: rgba(0, 0, 0, 0.7); }
-.overlay.over, .overlay.won { opacity: 1; pointer-events: auto; }
-.message { font-size: 2.5rem; font-weight: 800; color: var(--vp-c-brand); margin-bottom: 20px; }
-.restart-btn.big { 
-  font-size: 1.2rem; 
-  padding: 10px 24px; 
-  background: var(--vp-c-brand); 
-  color: white; 
-  border: none; 
-  border-radius: 6px; 
-  cursor: pointer; 
+
+.dark .overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.overlay.over,
+.overlay.won {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.message {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--vp-c-brand);
+  margin-bottom: 20px;
+}
+
+.restart-btn.big {
+  font-size: 1.2rem;
+  padding: 10px 24px;
+  background: var(--vp-c-brand);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 </style>

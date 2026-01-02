@@ -1,3 +1,11 @@
+<!--
+  @file FolderTree.vue
+  @description 目录树组件 (Folder Tree)
+  职责：
+  1. 递归展示当前文档目录结构。
+  2. 自动根据 VitePress Sidebar 配置生成树状列表。
+  3. 支持文件夹折叠与文件链接跳转。
+-->
 <script setup lang="ts">
 import { useData, withBase } from 'vitepress'
 import { computed } from 'vue'
@@ -34,7 +42,7 @@ const currentDirItems = computed(() => {
   }
 
   const path = page.value.relativePath.replace(/index\.md$/, '').replace(/\.md$/, '')
-  
+
   // 尝试匹配 sidebar 中的 key
   // 优先匹配最长的 key (最精确匹配)
   const matchKey = Object.keys(sidebar)
@@ -50,26 +58,26 @@ const currentDirItems = computed(() => {
     const rawPath = page.value.relativePath
     const parentDir = rawPath.split('/').slice(0, -1).join('/')
     const currentFileDir = parentDir ? `/${parentDir}/` : '/'
-    
+
     // 如果当前目录比 sidebar key 更深，需要向下查找
     if (currentFileDir.startsWith(matchKey) && currentFileDir.length > matchKey.length) {
-       const relativePath = currentFileDir.slice(matchKey.length)
-       const segments = relativePath.split('/').filter(Boolean)
-       
-       for (const segment of segments) {
-         try {
-            const decodedSegment = decodeURIComponent(segment)
-            const found = items.find(item => (item.name === decodedSegment) || (item.text === decodedSegment))
-            if (found && found.items) {
-              items = found.items
-            } else {
-              break
-            }
-         } catch (e) {
-            // 忽略解码错误
+      const relativePath = currentFileDir.slice(matchKey.length)
+      const segments = relativePath.split('/').filter(Boolean)
+
+      for (const segment of segments) {
+        try {
+          const decodedSegment = decodeURIComponent(segment)
+          const found = items.find(item => (item.name === decodedSegment) || (item.text === decodedSegment))
+          if (found && found.items) {
+            items = found.items
+          } else {
             break
-         }
-       }
+          }
+        } catch (e) {
+          // 忽略解码错误
+          break
+        }
+      }
     }
 
     return items
@@ -86,7 +94,7 @@ const indentStyle = computed(() => {
 <template>
   <div class="folder-tree" :class="{ 'root-tree': !level }">
     <div v-for="(item, index) in currentDirItems" :key="index" class="tree-item" :style="indentStyle">
-      
+
       <!-- 情况 A: 是文件夹 (有 items) -->
       <template v-if="item.items && item.items.length > 0">
         <details class="folder-details" :open="false">
@@ -107,7 +115,7 @@ const indentStyle = computed(() => {
       </template>
 
     </div>
-    
+
     <!-- 空状态提示 -->
     <div v-if="!level && (!currentDirItems || currentDirItems.length === 0)" class="empty-tip">
       (当前目录下没有检测到文章)
@@ -142,19 +150,24 @@ const indentStyle = computed(() => {
   padding: 4px 8px;
   border-radius: 6px;
   transition: background 0.2s;
-  list-style: none; /* 隐藏原生三角 */
+  list-style: none;
+  /* 隐藏原生三角 */
 }
+
 .folder-summary::-webkit-details-marker {
   display: none;
 }
+
 .folder-summary:hover {
   background: var(--vp-c-bg-alt);
 }
+
 .folder-text {
   font-weight: 600;
   margin: 0 8px;
   color: var(--vp-c-text-1);
 }
+
 /* 自定义小三角指示器 */
 .folder-summary::before {
   content: '▶';
@@ -164,7 +177,8 @@ const indentStyle = computed(() => {
   color: var(--vp-c-text-3);
   display: inline-block;
 }
-details[open] > .folder-summary::before {
+
+details[open]>.folder-summary::before {
   transform: rotate(90deg);
 }
 
@@ -174,7 +188,8 @@ details[open] > .folder-summary::before {
   padding: 0 6px;
   border-radius: 10px;
   color: var(--vp-c-text-2);
-  margin-left: auto; /* 靠右对齐 */
+  margin-left: auto;
+  /* 靠右对齐 */
 }
 
 /* --- 文件样式 --- */
@@ -187,11 +202,13 @@ details[open] > .folder-summary::before {
   color: var(--vp-c-text-2);
   transition: all 0.2s;
 }
+
 .file-link:hover {
   background: var(--vp-c-bg-alt);
   color: var(--vp-c-brand);
   transform: translateX(4px);
 }
+
 .file-link .text {
   margin-left: 8px;
 }

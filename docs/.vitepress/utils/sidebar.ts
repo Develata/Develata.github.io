@@ -1,3 +1,12 @@
+/**
+ * @file sidebar.ts
+ * @description 侧边栏生成工具 (Sidebar Generation Utility)
+ * 职责：
+ * 1. 扫描指定目录下的 Markdown 文件和子目录。
+ * 2. 读取 Frontmatter 元数据 (title, order, date)。
+ * 3. 按照自定义规则 (Order -> Date -> Name) 对菜单项进行排序。
+ * 4. 支持 News 栏目的特殊倒序和自动展开逻辑。
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

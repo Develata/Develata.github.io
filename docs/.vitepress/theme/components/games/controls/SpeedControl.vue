@@ -1,3 +1,8 @@
+<!--
+  @file SpeedControl.vue
+  @description 速度控制组件
+  职责：提供滑块以调节游戏 (如生命游戏) 的演化速度。
+-->
 <script setup lang="ts">
 defineProps<{
     modelValue: number

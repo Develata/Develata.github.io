@@ -14,7 +14,12 @@ export const CAMERA_CONFIG = {
   damping: 0.08,
 };
 
-export const COLOR_PALETTE = {
+/**
+ * @file config.ts
+ * @description 收敛游戏全局配置 (Convergence Game Config)
+ * 职责：定义游戏常量，包括颜色调色板、实体属性、地图生成参数等。
+ */
+export const COLORS_PALETTE = {
   background: 0x101015,
   fog: 0x101015,
   player: 0x00ffff,

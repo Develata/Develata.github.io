@@ -1,3 +1,10 @@
+<!--
+  @file GameControls.vue
+  @description 游戏通用控制器组件
+  职责：
+  1. 提供统一的 重置 / 撤销 / 返回 按钮组。
+  2. 封装游戏常用的底部操作栏样式。
+-->
 <script setup lang="ts">
 // 定义事件
 const emit = defineEmits<{

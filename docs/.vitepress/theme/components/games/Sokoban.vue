@@ -1,3 +1,11 @@
+<!--
+  @file Sokoban.vue
+  @description 推箱子游戏组件 (Sokoban)
+  职责：
+  1. 解析关卡地图数据。
+  2. 实现以人为中心的推箱子移动逻辑。
+  3. 提供撤销 (Undo) 和重置功能。
+-->
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import GameControls from './controls/GameControls.vue'
@@ -330,7 +338,7 @@ onUnmounted(() => {
                 <div class="level-info">
                     <span class="label">LEVEL</span>
                     <span class="value">{{ currentLevelIndex + 1 }}<span class="total">/{{ LEVELS.length
-                            }}</span></span>
+                    }}</span></span>
                 </div>
                 <div class="moves-info">
                     <span class="label">MOVES</span>

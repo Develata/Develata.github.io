@@ -1,3 +1,11 @@
+<!--
+  @file Tetris.vue
+  @description 俄罗斯方块游戏组件 (Tetris)
+  职责：
+  1. 实现方块的旋转、下落与碰撞逻辑 (SRS系统)。
+  2. 行消除与积分计算。
+  3. 下落预览 (Ghost Piece) 功能。
+-->
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import SpeedControl from './controls/SpeedControl.vue'

@@ -1,3 +1,11 @@
+<!--
+  @file Background.vue
+  @description 动态背景组件 (Dynamic Background)
+  职责：
+  1. 使用 Canvas 实现数学符号粒子运动效果。
+  2. 实现基于凸包算法 (Convex Hull) 的边界绘制。
+  3. 提供响应式和深色模式适配的视觉体验。
+-->
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 

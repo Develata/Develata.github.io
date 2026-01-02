@@ -1,3 +1,11 @@
+<!--
+  @file Snake.vue
+  @description 贪吃蛇游戏组件 (Snake)
+  职责：
+  1. 实现蛇的移动、进食与身体增长逻辑。
+  2. 碰撞检测（墙壁与自身）。
+  3. 移动端虚拟手柄支持。
+-->
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import SpeedControl from './controls/SpeedControl.vue'
