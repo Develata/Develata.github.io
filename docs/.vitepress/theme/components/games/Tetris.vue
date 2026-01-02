@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import SpeedControl from './SpeedControl.vue'
-import GameControls from './GameControls.vue'
+import SpeedControl from './controls/SpeedControl.vue'
+import GameControls from './controls/GameControls.vue'
 
 // --- 类型定义 ---
 type Point = { x: number; y: number }
