@@ -15,26 +15,39 @@ export function autoInjectTitle(): Plugin {
     name: 'auto-inject-title',
     enforce: 'pre',
     transform(code, id) {
-      // 仅处理 .md 文件，排除 node_modules
       if (!id.endsWith('.md') || id.includes('node_modules')) return;
 
       try {
         const { data, content } = matter(code);
 
-        // 排除首页和无标题页面
         if (path.basename(id).toLowerCase() === 'index.md' || !data.title) return;
 
-        // 检查是否已有 H1
-        const h1Regex = /^\s*#\s+(.*)$/m;
-        const hasH1 = h1Regex.test(content);
+        // Simplify: Only check first 5 non-empty lines for H1
+        const lines = content.split('\n');
+        let h1LineIndex = -1;
+        let h1Content = '';
 
-        if (hasH1) {
-          // 如果已有 H1，强制替换为 Frontmatter 中的 title
-          const newContent = content.replace(h1Regex, `# ${data.title}`);
-          return matter.stringify(newContent, data);
+        // Check first 5 lines (or fewer if file is short)
+        const checkLimit = Math.min(lines.length, 5);
+        const h1Regex = /^\s*#\s+(.*)$/;
+
+        for (let i = 0; i < checkLimit; i++) {
+          const match = h1Regex.exec(lines[i]);
+          if (match) {
+            h1LineIndex = i;
+            h1Content = match[1];
+            break;
+          }
+        }
+
+        if (h1LineIndex !== -1) {
+           // Found H1 within first 5 lines, replace it
+           lines[h1LineIndex] = `# ${data.title}`;
+           const newContent = lines.join('\n');
+           return matter.stringify(newContent, data);
         } else {
-          // 如果没有 H1，自动注入
-          return matter.stringify(`# ${data.title}\n\n${content}`, data);
+           // No H1 found in first 5 lines, inject at top
+           return matter.stringify(`# ${data.title}\n\n${content}`, data);
         }
       } catch (e) {
         return;
