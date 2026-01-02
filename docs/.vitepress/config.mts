@@ -74,7 +74,7 @@ function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
 
       items.push({
         text: title,
-        collapsed: false,
+        collapsed: true,
         items: children,
         order,
         name: entry.name,
@@ -251,7 +251,7 @@ export default withMermaid(
           ...resolveSidebarItems('about/blog', '/about/blog/'),
           {
             text: '归档',
-            collapsed: false,
+            collapsed: true,
             items: [
               { text: '2025', link: '/about/blog/archive/' },
             ],
