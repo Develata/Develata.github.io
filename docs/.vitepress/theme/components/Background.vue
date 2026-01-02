@@ -50,7 +50,7 @@ function initPoints(width: number, height: number) {
 // 📐 凸分析算法：Monotone Chain (单调链) 求凸包
 function getConvexHull(pts: Point[]) {
   const sorted = pts.slice().sort((a, b) => a.x - b.x || a.y - b.y)
-  
+
   const cross = (o: Point, a: Point, b: Point) => {
     return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
   }
@@ -86,7 +86,7 @@ function draw() {
 
   // 检测暗色模式
   const isDark = document.documentElement.classList.contains('dark')
-  
+
   // 🎨 颜色配置 (已加深)
   // 符号颜色：更清晰的灰/白
   const symbolColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'
@@ -95,7 +95,7 @@ function draw() {
   // 三角形填充：加深一点，更有质感
   const triangleColor = isDark ? 'rgba(120,220,255,0.05)' : 'rgba(0,50,100,0.005)'
   // 凸包颜色：醒目的元边界
-  const hullColor = isDark ? 'rgba(100, 220, 255, 0.05)' : 'rgba(0, 160, 200, 0.01)' 
+  const hullColor = isDark ? 'rgba(100, 220, 255, 0.05)' : 'rgba(0, 160, 200, 0.01)'
 
   ctx.font = '14px "Courier New", monospace' // 使用等宽字体体现形式化感
   ctx.textAlign = 'center'
@@ -105,8 +105,23 @@ function draw() {
   points.forEach(p => {
     p.x += p.vx
     p.y += p.vy
-    if (p.x < 0 || p.x > width) p.vx *= -1
-    if (p.y < 0 || p.y > height) p.vy *= -1
+
+    // 边界碰撞检测 (添加位置修正，防止粒子卡在边界外)
+    if (p.x < 0) {
+      p.x = 0;
+      p.vx *= -1;
+    } else if (p.x > width) {
+      p.x = width;
+      p.vx *= -1;
+    }
+
+    if (p.y < 0) {
+      p.y = 0;
+      p.vy *= -1;
+    } else if (p.y > height) {
+      p.y = height;
+      p.vy *= -1;
+    }
   })
 
   // 2. 绘制凸包 (Convex Hull - The Boundary of the System)
@@ -122,7 +137,7 @@ function draw() {
     ctx.fill()
     ctx.strokeStyle = hullColor
     ctx.lineWidth = 1.5
-    ctx.setLineDash([8, 8]) 
+    ctx.setLineDash([8, 8])
     ctx.stroke()
     ctx.setLineDash([])
   }
@@ -130,7 +145,7 @@ function draw() {
   // 3. 绘制拓扑与元结构 (Topology & Meta-structure)
   for (let i = 0; i < points.length; i++) {
     const p1 = points[i]
-    
+
     // 绘制元符号 (代替普通圆点)
     ctx.fillStyle = symbolColor
     ctx.fillText(p1.symbol, p1.x, p1.y)
@@ -156,7 +171,7 @@ function draw() {
           const d2 = (p1.x - p3.x) ** 2 + (p1.y - p3.y) ** 2
           const d3 = (p2.x - p3.x) ** 2 + (p2.y - p3.y) ** 2
 
-          if (d2 < CONNECT_DIST**2 && d3 < CONNECT_DIST**2) {
+          if (d2 < CONNECT_DIST ** 2 && d3 < CONNECT_DIST ** 2) {
             // 填充主三角形
             ctx.beginPath()
             ctx.moveTo(p1.x, p1.y)
@@ -171,12 +186,12 @@ function draw() {
             // 这象征着系统内部的自我描述
             const cx = (p1.x + p2.x + p3.x) / 3
             const cy = (p1.y + p2.y + p3.y) / 3
-            
+
             ctx.beginPath()
             // 绘制一个小一点的内嵌空心三角形
-            ctx.moveTo((p1.x+cx)/2, (p1.y+cy)/2)
-            ctx.lineTo((p2.x+cx)/2, (p2.y+cy)/2)
-            ctx.lineTo((p3.x+cx)/2, (p3.y+cy)/2)
+            ctx.moveTo((p1.x + cx) / 2, (p1.y + cy) / 2)
+            ctx.lineTo((p2.x + cx) / 2, (p2.y + cy) / 2)
+            ctx.lineTo((p3.x + cx) / 2, (p3.y + cy) / 2)
             ctx.closePath()
             ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
             ctx.lineWidth = 0.5
@@ -198,8 +213,17 @@ function handleResize() {
   if (ctx) ctx.scale(dpr, dpr)
   canvasRef.value.style.width = `${window.innerWidth}px`
   canvasRef.value.style.height = `${window.innerHeight}px`
-  
+
   initPoints(window.innerWidth, window.innerHeight)
+}
+
+// 防抖处理 resize
+let resizeTimeout: ReturnType<typeof setTimeout> | null = null
+const onResize = () => {
+  if (resizeTimeout) clearTimeout(resizeTimeout)
+  resizeTimeout = setTimeout(() => {
+    handleResize()
+  }, 200)
 }
 
 onMounted(() => {
@@ -207,12 +231,13 @@ onMounted(() => {
     ctx = canvasRef.value.getContext('2d')
     handleResize()
     draw()
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', onResize)
   }
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('resize', onResize)
+  if (resizeTimeout) clearTimeout(resizeTimeout)
   cancelAnimationFrame(animationFrameId)
 })
 </script>
