@@ -25,6 +25,16 @@ interface Game {
 // 👇 修改：应用类型定义
 const games: Game[] = [
   {
+    id: 'mathlab',
+    title: '数学实验室',
+    enTitle: 'Math Lab',
+    desc: '沉浸式数学模拟体验。探索元胞自动机、混沌与秩序的边界。',
+    icon: '⚗️',
+    link: '/games/math-lab/',
+    tag: 'Lab',
+    color: '#8b5cf6' // 紫色
+  },
+  {
     id: 'tictactoe',
     title: '井字棋',
     enTitle: 'Tic Tac Toe',
@@ -43,16 +53,6 @@ const games: Game[] = [
     link: '/games/gomoku',
     tag: 'Strategy',
     color: '#8b5cf6' // 紫色
-  },
-  {
-    id: 'life',
-    title: '康威生命游戏',
-    enTitle: 'Game of Life',
-    desc: '零玩家游戏，观察细胞在数学规则下的繁衍与生灭。',
-    icon: '🧬',
-    link: '/games/gameoflife',
-    tag: 'Simulation',
-    color: '#10b981',
   },
   {
     id: 'minesweeper',

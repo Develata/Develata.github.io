@@ -34,6 +34,7 @@ function createGameComponent(loader: () => Promise<any>) {
 
 // 使用封装好的函数加载组件
 const GameHub = createGameComponent(() => import('./components/games/GameHub.vue'))
+const MathHub = createGameComponent(() => import('./components/games/MathHub.vue'))
 const TicTacToe = createGameComponent(() => import('./components/games/TicTacToe.vue'))
 const Gomoku = createGameComponent(() => import('./components/games/Gomoku.vue'))
 const GameOfLife = createGameComponent(() => import('./components/games/GameOfLife.vue'))
@@ -59,6 +60,7 @@ export default {
     app.component('RandomJump', RandomJump)// 注册随机跳转组件
     app.component('FolderTree', FolderTree)// 注册文件夹树组件
     app.component('GameHub', GameHub)// 注册游戏中心组件
+    app.component('MathHub', MathHub)// 注册数学实验中心组件
     app.component('TicTacToe', TicTacToe)// 注册井字棋组件
     app.component('Gomoku', Gomoku)// 注册五子棋组件
     app.component('GameOfLife', GameOfLife)// 注册生命游戏组件
