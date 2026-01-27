@@ -1,8 +1,8 @@
-# OpenCode（opencode）完整使用指南（Markdown）
+# OpenCode使用指南
 
 ## 目录
 
-- [OpenCode（opencode）完整使用指南（Markdown）](#opencodeopencode完整使用指南markdown)
+- [OpenCode使用指南](#opencode使用指南)
   - [目录](#目录)
   - [1. OpenCode 是什么](#1-opencode-是什么)
   - [2. 安装与更新](#2-安装与更新)
