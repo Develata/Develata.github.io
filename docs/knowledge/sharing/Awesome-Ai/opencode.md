@@ -1,58 +1,8 @@
-# OpenCode使用指南
-
-## 目录
-
-- [OpenCode使用指南](#opencode使用指南)
-  - [目录](#目录)
-  - [1. OpenCode 是什么](#1-opencode-是什么)
-  - [2. 安装与更新](#2-安装与更新)
-    - [2.1 macOS / Linux](#21-macos--linux)
-      - [A. 官方安装脚本](#a-官方安装脚本)
-      - [B. Homebrew（推荐）](#b-homebrew推荐)
-    - [2.2 Arch Linux（Paru）](#22-arch-linuxparu)
-    - [2.3 Windows](#23-windows)
-      - [A. Chocolatey](#a-chocolatey)
-      - [B. Scoop](#b-scoop)
-      - [C. NPM（推荐，全局安装）](#c-npm推荐全局安装)
-  - [3. 快速开始](#3-快速开始)
-    - [3.1 在项目目录启动](#31-在项目目录启动)
-    - [3.2 连接模型（必须）](#32-连接模型必须)
-    - [3.2\*第三方中转 / 代理 API（OpenAI-Compatible Relay）](#32第三方中转--代理-apiopenai-compatible-relay)
-        - [B 第一步：在 opencode.json 中配置 baseURL + models](#b-第一步在-opencodejson-中配置-baseurl--models)
-        - [B 第二步：在 TUI 里添加凭据（/connect → Other）](#b-第二步在-tui-里添加凭据connect--other)
-        - [C) 第三步（可选）：如果中转需要“自定义 Header”而不是标准 Authorization](#c-第三步可选如果中转需要自定义-header而不是标准-authorization)
-    - [3.3 列出并切换模型](#33-列出并切换模型)
-    - [3.4 项目初始化](#34-项目初始化)
-  - [4. TUI 交互基础（核心用法）](#4-tui-交互基础核心用法)
-    - [4.1 会话与上下文](#41-会话与上下文)
-    - [4.2 引用文件 `@file`](#42-引用文件-file)
-    - [4.3 执行命令 `!cmd`](#43-执行命令-cmd)
-    - [4.4 常用斜杠命令 `/...`](#44-常用斜杠命令-)
-    - [4.5 快捷键大全（核心效率）](#45-快捷键大全核心效率)
-  - [5. Agent 模式与子代理](#5-agent-模式与子代理)
-    - [5.1 Plan vs Build 模式](#51-plan-vs-build-模式)
-    - [5.2 子代理（Subagents）](#52-子代理subagents)
-  - [6. 基本流程（固定）](#6-基本流程固定)
-  - [6. 配置体系（opencode.json/jsonc）](#6-配置体系opencodejsonjsonc)
-    - [6.1 配置加载顺序](#61-配置加载顺序)
-    - [6.2 常用配置项](#62-常用配置项)
-    - [6.3 权限控制（强烈建议启用）](#63-权限控制强烈建议启用)
-  - [7.Rules (规则系统)](#7rules-规则系统)
-    - [7.1 AGENTS.md 层级](#71-agentsmd-层级)
-    - [7.2 引入外部规则](#72-引入外部规则)
-  - [8.MCP (模型上下文协议)](#8mcp-模型上下文协议)
-    - [8.1 本地 MCP 服务器](#81-本地-mcp-服务器)
-    - [8.2 远程 MCP 服务器](#82-远程-mcp-服务器)
-  - [9.SKILLS (技能系统)](#9skills-技能系统)
-    - [9.1 创建技能](#91-创建技能)
-    - [9.2 权限管理](#92-权限管理)
-  - [10. 进阶指南与最佳实践](#10-进阶指南与最佳实践)
-    - [10.1 避坑与性能优化](#101-避坑与性能优化)
-    - [10.2 常用 Shell 技巧](#102-常用-shell-技巧)
-    - [10.4 提示词（Prompt）优化要素](#104-提示词prompt优化要素)
-    - [10.5 调试与日志](#105-调试与日志)
-
 ---
+order: 1
+---
+
+# OpenCode使用指南
 
 ## 1. OpenCode 是什么
 
