@@ -28,14 +28,29 @@
     - [4.2 引用文件 `@file`](#42-引用文件-file)
     - [4.3 执行命令 `!cmd`](#43-执行命令-cmd)
     - [4.4 常用斜杠命令 `/...`](#44-常用斜杠命令-)
-  - [5. 基本流程（固定）](#5-基本流程固定)
+    - [4.5 快捷键大全（核心效率）](#45-快捷键大全核心效率)
+  - [5. Agent 模式与子代理](#5-agent-模式与子代理)
+    - [5.1 Plan vs Build 模式](#51-plan-vs-build-模式)
+    - [5.2 子代理（Subagents）](#52-子代理subagents)
+  - [6. 基本流程（固定）](#6-基本流程固定)
   - [6. 配置体系（opencode.json/jsonc）](#6-配置体系opencodejsonjsonc)
     - [6.1 配置加载顺序](#61-配置加载顺序)
     - [6.2 常用配置项](#62-常用配置项)
     - [6.3 权限控制（强烈建议启用）](#63-权限控制强烈建议启用)
-  - [Rules](#rules)
-  - [MCP](#mcp)
-  - [SKILLS](#skills)
+  - [7.Rules (规则系统)](#7rules-规则系统)
+    - [7.1 AGENTS.md 层级](#71-agentsmd-层级)
+    - [7.2 引入外部规则](#72-引入外部规则)
+  - [8.MCP (模型上下文协议)](#8mcp-模型上下文协议)
+    - [8.1 本地 MCP 服务器](#81-本地-mcp-服务器)
+    - [8.2 远程 MCP 服务器](#82-远程-mcp-服务器)
+  - [9.SKILLS (技能系统)](#9skills-技能系统)
+    - [9.1 创建技能](#91-创建技能)
+    - [9.2 权限管理](#92-权限管理)
+  - [10. 进阶指南与最佳实践](#10-进阶指南与最佳实践)
+    - [10.1 避坑与性能优化](#101-避坑与性能优化)
+    - [10.2 常用 Shell 技巧](#102-常用-shell-技巧)
+    - [10.4 提示词（Prompt）优化要素](#104-提示词prompt优化要素)
+    - [10.5 调试与日志](#105-调试与日志)
 
 ---
 
@@ -293,21 +308,71 @@ OpenCode 的做法是：先在 `opencode.json/jsonc` 里把该中转服务配置
 
 ### 4.4 常用斜杠命令 `/...`
 
-以下命令在 TUI 里输入即可：
+以下命令在 TUI 里输入即可（括号内为常用别名）：
 
+* `/help`：显示帮助对话框
 * `/connect`：连接/管理 provider 凭据
 * `/models`：列出与切换模型
-* `/sessions`：列出/切换会话
+* `/sessions` (`/resume`, `/continue`)：列出/切换历史会话
+* `/new` (`/clear`)：开启全新会话
 * `/init`：生成/更新 `AGENTS.md`
-* `/compact`：压缩当前会话（把长上下文总结后继续）
-* `/undo`、`/redo`：撤销/重做（通常依赖 Git 仓库）
-* `/share`：分享当前会话（协作/排错）
-* `/editor`：用外部编辑器编辑长输入（依赖 `EDITOR` 环境变量）
-* `/export`：导出对话到 Markdown（便于归档）
+* `/compact` (`/summarize`)：压缩当前会话（总结长上下文以节省 Token）
+* `/undo`：撤销上一次代码修改（依赖 Git）
+* `/redo`：重做撤销的修改
+* `/share` / `/unshare`：分享/取消分享当前会话
+* `/editor`：调用外部编辑器（如 VS Code）编写长输入
+* `/export`：将对话导出为 Markdown 文件
+* `/theme`：切换界面主题
+* `/exit` (`/quit`, `/q`)：退出
 
 ---
 
-## 5. 基本流程（固定）
+### 4.5 快捷键大全（核心效率）
+
+OpenCode 使用 **Leader 键**（默认 `Ctrl+x`）来触发快速操作：
+
+| 快捷键 | 功能 | 快捷键 | 功能 |
+| :--- | :--- | :--- | :--- |
+| **Ctrl+x n** | 开启新会话 | **Ctrl+x u** | 撤销修改 |
+| **Ctrl+x l** | 列出历史会话 | **Ctrl+x r** | 重做修改 |
+| **Ctrl+x m** | 切换模型 | **Ctrl+x s** | 分享会话 |
+| **Ctrl+x i** | 初始化项目 | **Ctrl+x e** | 外部编辑器 |
+| **Ctrl+x t** | 切换主题 | **Ctrl+x q** | 退出 |
+| **Ctrl+x b** | 切换侧边栏 | **Ctrl+x y** | 复制消息 |
+| **Ctrl+x a** | Agent 列表 | **Ctrl+x g** | 会话时间线 |
+
+**基础操作与导航：**
+- `Tab` / `Shift+Tab`：在 **Plan（规划）** 与 **Build（构建）** 模式间切换。
+- `Ctrl+x →` / `Ctrl+x ←`：在 **父会话** 与 **子会话**（由 `@general` 等触发）之间快速切换。
+- `Shift+Enter` / `Ctrl+j`：在输入框内换行。
+- `PgUp` / `PgDown`：向上/下翻页。
+- `Ctrl+Alt+u` / `Ctrl+Alt+d`：向上/下翻 **半页**。
+- `Home` / `End`：跳至对话最顶部或最底部。
+- `Escape`：中断当前的 AI 输出。
+
+---
+
+## 5. Agent 模式与子代理
+
+OpenCode 并非单一的对话框，它通过不同的 Agent 协同工作。
+
+### 5.1 Plan vs Build 模式
+*   **Plan Mode (🧠)**：**只分析，不改代码**。适合架构设计、逻辑推演或大规模重构前的方案评估。
+*   **Build Mode (🔨)**：**直接修改文件**。根据指令进行编码、修复 Bug。
+*   **最佳实践**：复杂任务先在 Plan 模式确认方案，满意后再切到 Build 模式说“开始执行”。
+
+### 5.2 子代理（Subagents）
+在对话中使用 `@` 可以召唤特定功能的子代理：
+*   **`@general`**：用于处理需要多步推理、跨文件搜索的复杂任务。
+    *   *示例*：“@general 在整个项目中搜索所有使用了 localStorage 的地方并总结用途。”
+    *   *示例*：“@general 分析项目依赖，找出是否存在循环引用。”
+*   **`@explore`**：专注于代码库的快速探索与定位。
+    *   *示例*：“@explore 找到所有包含 'TODO' 或 'FIXME' 注释的文件。”
+    *   *示例*：“@explore 这个项目的入口文件和核心路由定义在哪里？”
+
+---
+
+## 6. 基本流程（固定）
 
 1. cmd `opencode` 或者vscode opencode 扩展（推荐）启动 TUI
 2. `/connect` 连接 provider（填 key 或登录）
@@ -380,8 +445,117 @@ OpenCode 常见高风险能力：
 * `edit` 默认 `ask`，避免大范围变更未审
 * `webfetch` 可 `allow` 或 `ask`（看你是否允许拉取外部信息）
 
-## Rules
+## 7.Rules (规则系统)
 
-## MCP
+Rules 允许你通过 `AGENTS.md` 文件为项目定义长期遵循的指令（类似于 Cursor 的 `.cursorrules`）。
 
-## SKILLS
+### 7.1 AGENTS.md 层级
+1.  **项目级**：存放在项目根目录。仅对该项目生效。
+2.  **全局级**：存放在 `~/.config/opencode/AGENTS.md`。对所有项目生效（适合存放个人编程偏好）。
+
+### 7.2 引入外部规则
+在 `opencode.jsonc` 中，你可以通过 `instructions` 数组引用现有的 Markdown 文档作为规则：
+
+```jsonc
+{
+  "instructions": [
+    "CONTRIBUTING.md",
+    "docs/coding-standards.md",
+    ".cursor/rules/*.md" // 支持通配符导入 Cursor 规则
+  ]
+}
+```
+
+---
+
+## 8.MCP (模型上下文协议)
+
+MCP 允许 OpenCode 挂载外部工具（如 Google Search, GitHub API, SQL 查询等）。
+
+### 8.1 本地 MCP 服务器
+在配置文件的 `mcp` 字段下定义：
+
+```jsonc
+"mcp": {
+  "my-local-tool": {
+    "type": "local",
+    "command": ["npx", "-y", "@modelcontextprotocol/server-everything"],
+    "enabled": true
+  }
+}
+```
+
+### 8.2 远程 MCP 服务器
+支持 OAuth 认证，初次使用时会在浏览器弹出授权：
+
+```jsonc
+"mcp": {
+  "sentry": {
+    "type": "remote",
+    "url": "https://mcp.sentry.dev/mcp",
+    "enabled": true
+  }
+}
+```
+
+---
+
+## 9.SKILLS (技能系统)
+
+Skills 是可复用的指令片段，通过 `SKILL.md` 文件定义。代理会自动发现这些技能并按需加载。
+
+### 9.1 创建技能
+路径：`.opencode/skills/<skill-name>/SKILL.md`
+
+```markdown
+---
+name: git-release
+description: 用于起草标准化的 Git Release 说明和版本号更新建议
+---
+## 指令
+1. 检查当前已合并的 PR。
+2. 按照 SemVer 建议版本号。
+3. 生成 gh release create 命令。
+```
+
+### 9.2 权限管理
+你可以控制哪些技能被允许、拒绝或需要询问：
+
+```jsonc
+"permission": {
+  "skill": {
+    "git-release": "allow",
+    "experimental-*": "ask",
+    "*": "deny"
+  }
+}
+```
+
+---
+
+## 10. 进阶指南与最佳实践
+
+### 10.1 避坑与性能优化
+*   **上下文超限**：如果项目极大，务必使用 `/compact`。同时在 `opencode.jsonc` 中合理配置 `ignore` 列表（默认遵循 `.gitignore`）。
+*   **图片支持**：直接将图片（报错截图、设计稿）**拖入终端**，OpenCode 即可理解图片内容。
+*   **国产模型适配**：对于火山引擎、DeepSeek 等国内 Provider，推荐使用 **OpenAI-Compatible Relay** 模式配置（详见 3.2*）。
+
+### 10.2 常用 Shell 技巧
+使用 `!` 执行命令时，输出会直接进入上下文：
+*   `!tree -L 2`：让 AI 快速预览目录结构。
+*   `!git diff HEAD`：让 AI 总结你刚才手动做的修改。
+*   `!npm test -- --grep "auth"`：运行特定测试并让 AI 修复报错。
+
+### 10.4 提示词（Prompt）优化要素
+为了让 OpenCode 给出最精准的代码，建议在消息中包含以下要素：
+*   **具体文件**：使用 `@` 引用所有相关文件（如 `@api.ts @types.ts`），避免 AI 瞎猜。
+*   **明确目标**：说清楚“要做什么”，而不是“帮我改下”。（例：“重构 request 函数，使用 async/await 替代 Promise”）。
+*   **丰富上下文**：提供完整的错误信息（直接粘贴或拖入截图）、期望的运行结果。
+*   **约束条件**：指定技术栈或代码风格（例：“请遵循项目现有的函数式编程风格”）。
+
+### 10.5 调试与日志
+如果遇到 OpenCode 自身运行异常，可以使用调试模式启动以查看详细日志：
+```bash
+# 开启 debug 级别日志并重定向到文件
+opencode --log-level debug > opencode-debug.log
+```
