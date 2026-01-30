@@ -1,10 +1,13 @@
 ---
+title: OpenCode
+date: 2026-1-28
 order: 1
 ---
 
 # OpenCode使用指南
 
 ## 1. OpenCode 是什么
+[OpenCode github repo](https://github.com/anomalyco/opencode)
 
 OpenCode（命令通常为 `opencode`）是一个面向代码库的 AI 编码agent
 
