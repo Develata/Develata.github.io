@@ -6,7 +6,7 @@ order: 3
 # CC Switch 使用指南
 
 ## 1. CC Switch 是什么
-[cc-switch github repo](https://github.com/farion1231/cc-switch)
+[Github Repo](https://github.com/farion1231/cc-switch)
 
 CC Switch (Cloud/Code Switch) 是一个可视化的终端，目前支持 **Claude Code**、**OpenCode** 、 **Codex** 以及 **Gemini CLI**。
 

@@ -6,7 +6,7 @@ order: 2
 # Antigravity-Manager 使用指南
 
 ## 1. Antigravity-Manager 是什么
-[Antigravity-Manager github repo](https://github.com/lbjlaq/Antigravity-Manager)
+[Github Repo](https://github.com/lbjlaq/Antigravity-Manager)
 
 Antigravity-Manager 将antigravity 的 gemini 和 claude 额度反代为api。
 
