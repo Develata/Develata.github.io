@@ -13,6 +13,7 @@ Claude Code（命令 `claude`）是一个终端内的 Agent：读代码、改文
 
 官方文档：
 * https://code.claude.com/docs/en/overview
+* https://code.claude.com/docs/zh-CN/overview
 * https://code.claude.com/docs/en/setup
 * https://code.claude.com/docs/en/cli-reference
 
@@ -30,6 +31,12 @@ curl -fsSL https://claude.ai/install.sh | bash
 ### 2.2 Windows (推荐)
 ```powershell
 irm https://claude.ai/install.ps1 | iex
+```
+
+Windows CMD：
+
+```cmd
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
 ```
 
 WinGet (Windows)：
@@ -52,14 +59,14 @@ npm install -g @anthropic-ai/claude-code
 
 > Node.js 18+ 仅对 NPM 安装方式必需。
 
-### 2.4 更新
+### 2.3 更新
 ```bash
 claude update
 ```
 
 > Homebrew/WinGet 安装不会自动更新：用 `brew upgrade claude-code` 或 `winget upgrade Anthropic.ClaudeCode`。
 
-### 2.5 健康检查
+### 2.4 健康检查
 ```bash
 claude -v
 claude doctor
@@ -78,9 +85,18 @@ claude
 ### 3.2 常用指令
 ```text
 /init
+/login
+/logout
 /config
 /permissions
+/model
+/status
 /mcp
+/agents
+/hooks
+/plugin
+/terminal-setup
+/sandbox
 /compact
 /rewind
 ```
@@ -144,6 +160,27 @@ export ANTHROPIC_VERTEX_PROJECT_ID=your-gcp-project-id
 export CLOUD_ML_REGION=us-east5
 export CLAUDE_CODE_SKIP_VERTEX_AUTH=1
 export CLAUDE_CODE_USE_VERTEX=1
+```
+
+#### D. 第三方模型直连（Anthropic API 兼容）
+
+> 前提：第三方服务提供 Anthropic Messages 格式（通常为 `.../anthropic` + `/v1/messages`）。
+
+DeepSeek（示例）：
+
+```bash
+export ANTHROPIC_AUTH_TOKEN=sk-your-deepseek-key
+export ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
+export ANTHROPIC_MODEL=deepseek-chat
+```
+
+智谱 GLM（示例）：
+
+```bash
+export ANTHROPIC_AUTH_TOKEN=your_zhipu_api_key
+export ANTHROPIC_BASE_URL=https://open.bigmodel.cn/api/anthropic
+export ANTHROPIC_DEFAULT_SONNET_MODEL=glm-4.6
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=glm-4.5-air
 ```
 
 ---
@@ -337,9 +374,16 @@ cat file | claude -p "query"
 | :--- | :--- |
 | `ANTHROPIC_API_KEY` | API Key（`X-Api-Key`） |
 | `ANTHROPIC_AUTH_TOKEN` | Bearer token（`Authorization`） |
+| `ANTHROPIC_MODEL` | 默认模型（alias 或 model name） |
 | `ANTHROPIC_BASE_URL` | LLM gateway / 代理 base URL（Anthropic Messages 格式） |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | 覆盖 `opus` 的默认模型名 |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | 覆盖 `sonnet` 的默认模型名 |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | 覆盖 `haiku` 的默认模型名（`ANTHROPIC_SMALL_FAST_MODEL` 已 deprecated） |
 | `ANTHROPIC_CUSTOM_HEADERS` | 给所有请求追加自定义 HTTP header |
 | `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` | 代理配置 |
+| `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` | 同时关闭自动更新/遥测/错误上报等非必要流量 |
+| `NODE_EXTRA_CA_CERTS` | 追加企业 CA 证书（代理/网关环境常用） |
+| `CLAUDE_CODE_CLIENT_CERT` / `CLAUDE_CODE_CLIENT_KEY` | mTLS 客户端证书/私钥 |
 | `DISABLE_AUTOUPDATER=1` | 关闭自动更新 |
 | `CLAUDE_CONFIG_DIR` | 自定义配置与数据目录 |
 | `MCP_TIMEOUT` / `MCP_TOOL_TIMEOUT` | MCP 启动/执行超时（ms） |

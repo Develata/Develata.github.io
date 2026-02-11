@@ -4,7 +4,7 @@ date: 2026-1-28
 order: 1
 ---
 
-# OpenCode使用指南
+# OpenCode 使用指南
 
 ## 1. OpenCode 是什么
 [Github Repo](https://github.com/anomalyco/opencode)
