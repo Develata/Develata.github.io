@@ -14,7 +14,9 @@ order: 1
 
 如果你只想先跑起来，再慢慢细化配置，可以按下面这 5 步：
 
-1. 安装：`curl -fsSL https://openclaw.ai/install.sh | bash`[macOS / Linux] `iwr -useb https://openclaw.ai/install.ps1 | iex`[Windows Powershell]
+1. 安装（按系统二选一）：
+   - macOS / Linux：`curl -fsSL https://openclaw.ai/install.sh | bash`
+   - Windows PowerShell：`iwr -useb https://openclaw.ai/install.ps1 | iex`
 2. 初始化：`openclaw onboard --install-daemon`
 3. 打开控制台：`openclaw dashboard`
 4. 连接渠道（可选）：`openclaw channels login`
@@ -62,7 +64,7 @@ iwr -useb https://openclaw.ai/install.ps1 | iex
 # Windows CMD
 curl -fsSL https://openclaw.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
 ```
-更新openclaw：在最后添加`--no-onboard`即可跳过新手引导
+更新 OpenClaw：在安装命令最后添加 `--no-onboard` 可跳过新手引导。
 #### npm 包管理器（全局）
 
 如果你已经安装 Node：
@@ -94,7 +96,7 @@ openclaw onboard --install-daemon
 
 * 系统要求：Node >= 22（官方明确）。
 * 新手引导入口：`openclaw onboard`，并支持后续用 `openclaw configure` 做二次配置。
-* 具体选项不清楚可见附录
+* 具体选项不清楚可见附录或参考官方 onboarding 文档或执行 `openclaw onboard --help`
 
 ### 2.2 更新
 
@@ -143,7 +145,26 @@ openclaw gateway
 
 > 注意：默认情况下，Gateway **要求配置里设置** `gateway.mode=local` 才允许启动；临时调试可以用 `--allow-unconfigured`。
 
-#### 立刻接入 Feishu(国内常用)
+#### 立刻接入 Feishu（国内常用）
+
+Feishu/Lark 一般通过渠道配置接入，建议按下面流程做最小可用联通：
+
+1. 在飞书开放平台创建应用，拿到 App ID / App Secret，并配置事件订阅回调地址。
+2. 在 OpenClaw 配置中补充 Feishu 渠道，并先限制触发范围（测试账号或测试群）。
+3. 启动 Gateway，完成事件校验与消息回调连通。
+4. 用日志和状态命令确认是否收发正常。
+
+```bash
+openclaw configure --section channels
+openclaw gateway run
+openclaw logs --follow
+```
+
+安全建议（强烈建议先做）：
+
+* 先用测试账号/测试群验证，不要直接全员放开
+* 群聊开启 mention 门控，避免机器人“见消息就回”
+* token/secret 优先放环境变量或受限权限文件，不要明文入库
 
 
 
@@ -554,11 +575,6 @@ ssh -N remote-gateway &
 ### 4）配置写错导致网关起不来？别硬猜，直接 doctor
 
 严格 schema 校验会让网关“拒绝启动”，这时只允许诊断命令（status/logs/doctor 等）。
-
----
-## 附录
-
-
 
 ## 参考链接（原始 URL）
 
