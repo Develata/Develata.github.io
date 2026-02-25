@@ -38,7 +38,7 @@ order: 1
 
 ---
 
-## 2. 安装与更新
+## 2. 快速上手
 
 ### 推荐配置
 
@@ -143,7 +143,9 @@ openclaw gateway
 
 > 注意：默认情况下，Gateway **要求配置里设置** `gateway.mode=local` 才允许启动；临时调试可以用 `--allow-unconfigured`。
 
----
+#### 立刻接入 Feishu(国内常用)
+
+
 
 ## 3. 日常管理（配置/服务/诊断）
 
@@ -156,17 +158,6 @@ openclaw gateway
 它是 **JSON5**（支持注释、尾逗号），并且 **严格 schema 校验**：
 
 * 任何未知键、类型不对、非法值都会导致 Gateway 拒绝启动（安全护栏）。
-
-最小可用配置（官方示例风格）：
-
-```json5
-{
-  agents: { defaults: { workspace: "~/.openclaw/workspace" } },
-  channels: { whatsapp: { allowFrom: ["+15555550123"] } },
-}
-```
-
----
 
 ### 3 种改配置方式：向导 / config set / RPC patch
 
@@ -219,6 +210,7 @@ openclaw gateway
 
 * 默认会拒绝启动，除非配置了 `gateway.mode=local`（安全护栏）。
 * 非 loopback 绑定时，如果没有认证会被阻止（建议始终用 token）。
+* 设备需要pairing
 
 #### 装成服务（launchd/systemd/schtasks）
 
@@ -230,8 +222,6 @@ openclaw gateway restart
 openclaw gateway stop
 openclaw gateway uninstall
 ```
-
----
 
 ### 诊断：status / logs / doctor / health
 
@@ -282,7 +272,6 @@ openclaw agents add work
   * 否则记忆检索保持禁用直到配置完成 
 * `memory_search` 返回的是 **片段（snippet）+ 路径 + 行号范围 + 分数**，不是整个文件；需要再用 `memory_get` 读指定行范围。
 
----
 
 ### memory CLI：索引、探测、搜索
 
@@ -297,7 +286,6 @@ openclaw memory index --verbose
 openclaw memory search "release checklist"
 ```
 
----
 
 ### memorySearch 配置全解（含 provider、batch、hybrid）
 
@@ -360,7 +348,41 @@ openclaw memory search "release checklist"
 
 概念页对 local 模式（node-llama-cpp）和 fallback 行为写得非常明确。
 
----
+#### 补充：如何添加API_KEY环境变量
+1.网关服务（systemd）环境变量
+```
+mkdir ~/.config/systemd/user/openclaw-gateway.service.d
+nano override.conf
+```
+写入
+```
+[Service]
+# 目录里面的user需要换成自己的用户名
+EnvironmentFile=-/home/user/.config/openclaw/env
+Environment="NODE_OPTIONS=--dns-result-order=ipv4first --require=/home/user/.openclaw/patches/undici-connect-timeout.js"
+```
+```
+nano ~/.config/openclaw/env
+# 写入env环境变量
+# 如OPENAI_COMPAT_API_KEY=sk-xxxxxxxxx
+chmod 600 ~/.config/openclaw/env
+systemctl --user daemon-reload
+systemctl --user restart openclaw-gateway
+```
+2.CLI commands 环境变量
+```
+cp ~/.config/openclaw/env ~/.openclaw/.env
+```
+（访问权限自行chmod设置）
+或者把以下内容加入加到 `~/.bashrc`
+```
+# OpenClaw env (for CLI commands)
+if [ -f "$HOME/.config/openclaw/env" ]; then
+  set -a
+  . "$HOME/.config/openclaw/env"
+  set +a
+fi
+```
 
 ### 源码补充：引用模式与群聊默认不展示引用
 
