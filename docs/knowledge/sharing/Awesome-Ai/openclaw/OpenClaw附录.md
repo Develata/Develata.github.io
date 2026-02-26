@@ -68,23 +68,50 @@ order: 2
 在models.providers下添加第三方服务器配置，如Kimi K2.5(openai 兼容格式)
 ```
 {
-  agents: {
-    defaults: { model: { primary: "moonshot/kimi-k2.5" } },
+  "models": {
+    "providers": {
+      "moonshot": {
+        "baseUrl": "https://api.moonshot.ai/v1",
+        "auth": "api-key",
+        "apiKey": "${MOONSHOT_API_KEY}",
+        "api": "openai-responses", // 或者openai-completions（看 moonshot 支持哪个）
+        "models": [
+          { "id": "kimi-k2.5", "name": "Kimi K2.5" }
+        ]
+      }
+    }
   },
-  models: {
-    mode: "merge",
-    providers: {
-      moonshot: {
-        baseUrl: "https://api.moonshot.ai/v1",
-        apiKey: "${MOONSHOT_API_KEY}",
-        api: "openai-completions",
-        models: [{ id: "kimi-k2.5", name: "Kimi K2.5" }],
+    "agents": {
+    "defaults": {
+      "model": {
+        "primary": "moonshot/kimi-k2.5",
       },
-    },
-  },
+      "models": {
+        "moonshot/kimi-k2.5": {}
+      }
+    }
+  }
 }
 ```
 
+**（4）备用模型**
+
+在`~/.openclaw/openclaw.json`的`agents`段加上primary + fallbacks（按顺序自动降级）
+```
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openai-codex/gpt-5.2",
+        "fallbacks": [
+          "anthropic/claude-4-5-sonnet",
+          "google/gemini-3.0-flash"
+        ]
+      }
+    }
+  }
+}
+```
 
 ### 4) 第三步：工作区（Workspace）位置
 
