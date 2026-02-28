@@ -3,12 +3,14 @@ title: Antigravity-Manager
 order: 2
 ---
 
-# Antigravity-Manager 使用指南
+# Antigravity-Manager 使用指南（不推荐）
 
 ## 1. Antigravity-Manager 是什么
 [Github Repo](https://github.com/lbjlaq/Antigravity-Manager)
 
 Antigravity-Manager 将antigravity 的 gemini 和 claude 额度反代为api。
+
+风险性：非google官方用法，使用后可能被封号，反代后果自负。
 
 **核心能力：**
 *   **账号管理**：一键无缝切换 Google Antigravity 账号，可视化监控配额。
