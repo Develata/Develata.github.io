@@ -102,10 +102,10 @@ order: 2
   "agents": {
     "defaults": {
       "model": {
-        "primary": "openai-codex/gpt-5.2",
+        "primary": "openai/gpt-5.2",
         "fallbacks": [
-          "anthropic/claude-4-5-sonnet",
-          "google/gemini-3.0-flash"
+          "anthropic/claude-sonnet-4-5",
+          "google/gemini-3-flash-preview"
         ]
       }
     }

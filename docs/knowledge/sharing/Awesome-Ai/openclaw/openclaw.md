@@ -33,6 +33,7 @@ order: 1
 ### 2）智能体（Agent）与工作区（Workspace）
 
 * OpenClaw 默认就能跑一个内置智能体 + 默认工作区（通常在 `~/.openclaw/workspace`）。只有当你需要 **限制触发人、群聊策略、改工作区、多智能体、模型/工具/沙箱** 等时，才需要写配置。
+* **多智能体并发 (Multi-Agent)**：你甚至可以在配置文件中写多个完全不同的智能体，根据渠道或人来做自动路由（比如家里用一个，Slack里用另一个）。
 
 ### 3）“记忆”不是聊天记录，而是一套可索引的笔记体系
 
@@ -58,7 +59,7 @@ order: 1
 # macOS / Linux
 curl -fsSL https://openclaw.ai/install.sh | bash
 
-# Windows PowerShell（或更推荐 WSL2）
+# Windows PowerShell（官方强烈建议在 WSL2 环境下运行）
 iwr -useb https://openclaw.ai/install.ps1 | iex
 
 # Windows CMD
@@ -176,7 +177,7 @@ openclaw logs --follow
 
 * `~/.openclaw/openclaw.json`
 
-它是 **JSON5**（支持注释、尾逗号），并且 **严格 schema 校验**：
+它是 **JSON5**（支持斜杠 `//` 注释、也支持尾逗号），这对复杂的环境变配非常友好，并且有着 **严格 schema 校验**：
 
 * 任何未知键、类型不对、非法值都会导致 Gateway 拒绝启动（安全护栏）。
 
@@ -460,9 +461,52 @@ OpenClaw 有一类工具是 **owner-only**（只允许“所有者发送者”�
 
 ---
 
+### 工具权限精细控制 (Tools Policy)
+
+对于暴露给别人用的机器人，务必通过 `tools.allow` 或 `tools.deny` 来控制能力边界：
+
+```json5
+tools: { 
+  profile: "messaging", // minimal | coding | messaging | full
+  deny: ["browser", "canvas"] // 直接干掉浏览器与绘图板工具
+}
+```
+
+针对高危的宿主机执行权限，还可以通过白名单限制触发者：
+
+```json5
+tools: {
+  elevated: {
+    enabled: true,
+    allowFrom: {
+      whatsapp: ["+15555550123"],  // 只有自己的手机号能要求执行终端命令
+      discord: ["1234567890123"]
+    }
+  }
+}
+```
+
+---
+
 ## 7. 进阶：沙箱（Docker Sandbox）与执行安全
 
-OpenClaw 支持把工具执行放进 Docker 沙箱里，降低影响面：网关仍在主机上，工具执行在隔离容器里跑。
+OpenClaw 支持把工具执行放进 Docker 沙箱里，降低影响面：网关仍在主机上，工具执行在隔离容器里跑。这对于防止 Agent 误删文件或被“提示词注入”后作恶非常关键。
+
+开启沙盒：
+```json5
+agents: {
+  defaults: {
+    sandbox: {
+      mode: "non-main", // off | non-main | all
+      docker: {
+        image: "openclaw-sandbox:bookworm-slim",
+        network: "none", // 无网环境，极端安全
+        user: "1000:1000"
+      }
+    }
+  }
+}
+```
 
 ### 常用沙箱命令
 
@@ -521,12 +565,31 @@ openclaw hooks enable session-memory
 
 ---
 
-## 9. 进阶：远程访问与远程 Gateway
+## 9. 进阶：Web 控制台 (Control UI) 与远程访问
 
 你会遇到两类“远程”：
 
 1）**CLI 远程连接到网关**（`gateway.mode=remote` + remote.url/token 等）
 2）**OpenClaw.app 通过 SSH 隧道连接远程网关**（官方给了完整指南）
+
+### 内置可视化面板与 Tailscale 原生集成
+
+OpenClaw 实际内建了一个可视化管理面板和极其方便的内网穿透能力，只需在 `openclaw.json` 里添加：
+
+```json5
+  gateway: {
+    controlUi: { 
+      enabled: true, 
+      basePath: "/openclaw" 
+    },
+    tailscale: { 
+      mode: "serve" // "off" | "serve" | "funnel"
+    }
+  }
+```
+
+* **Control UI**：启动后即可在浏览器访问 `http://localhost:18789/openclaw`，获取可视化网关和对话管理功能。
+* **Tailscale**：设置 `serve` 后，OpenClaw 会自动化与主机的 Tailscale 通讯，直接将网关服务暴露到你的私有 Tailnet 子网中，无需折腾 SSH 隧道或 Nginx 反代。
 
 ### SSH 隧道方式（OpenClaw.app 官方指南）
 
