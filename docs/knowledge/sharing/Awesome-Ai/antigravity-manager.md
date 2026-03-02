@@ -1,5 +1,6 @@
 ---
 title: Antigravity-Manager（已过期不推荐）
+date: 2026-1-28
 order: 2
 ---
 
