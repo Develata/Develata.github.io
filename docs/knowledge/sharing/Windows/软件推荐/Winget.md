@@ -1,19 +1,18 @@
 ---
 title: Winget
 date: 2026-2-11
-order: 2
+order: 1
 ---
 
 # Winget 使用指南
 
-> 参考 Microsoft Learn 的 WinGet 文档与 `winget-cli` 官方仓库
+[Winget github repo](https://github.com/microsoft/winget-cli)
 
 ## 1. 什么是 Winget
 `winget`（Windows Package Manager CLI）是微软官方包管理器，用于发现、安装、升级、卸载软件。
 - **系统集成**：随 **App Installer** 分发更新（Windows 10 1809+ / Windows 11 / Windows Server 2025）。
 - **覆盖面广**：对 MSI/EXE/MSIX 等安装器生态友好，GUI 软件尤其方便。
 - **可复刻环境**：`export/import` 一键恢复常用软件。
-仓库：https://github.com/microsoft/winget-cli
 
 ## 2. 安装与验证
 Windows 10/11 通常已自带（来自 Microsoft Store 的 **App Installer**）。若缺失/过旧：在 Microsoft Store 安装或更新 **App Installer**。
@@ -27,7 +26,7 @@ winget --info
 winget source list
 ```
 
-## 3. 常用命令（建议背下来）
+## 3. 常用命令
 | 目的 | 命令 |
 | :--- | :--- |
 | 搜索 | `winget search <keyword>`（可用 `--id/--name/--tag/--command` 过滤） |
@@ -89,5 +88,8 @@ Repair-WinGetPackageManager -Force -Latest
 ## 8. Winget vs Scoop：怎么选
 结合 `docs/knowledge/sharing/Windows/软件推荐/Scoop.md`：GUI/桌面软件优先 `winget`；CLI/开发工具链与“用户目录不污染”优先 `scoop`；常见最佳组合是两者并用。
 
+
 ## 参考链接
-https://learn.microsoft.com/windows/package-manager/winget/ （含 install/upgrade/source/export/import/pinning/troubleshooting 分页）
+
+- [Winget GitHub 仓库](https://github.com/microsoft/winget-cli)
+- [Winget 官方文档](https://learn.microsoft.com/windows/package-manager/winget/)

@@ -46,3 +46,9 @@ cache
 
 # Misc
 repomix-output.xml
+
+# Agents
+.claude/
+.trae/
+.opencode/
+.codex/

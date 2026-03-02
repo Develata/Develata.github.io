@@ -1,13 +1,13 @@
 ---
 title: Scoop
 date: 2026-1-31
-order: 1
+order: 3
 ---
 
 # Scoop 使用指南
 
-## 1. 什么是scoop 
-[scoop github repo](https://github.com/ScoopInstaller/Scoop)
+## 1. 什么是Scoop 
+[Scoop github repo](https://github.com/ScoopInstaller/Scoop)
 
 Scoop 是 Windows 下的命令行包管理器（类似 Debian 的 `apt` 或 macOS 的 `Homebrew`）。
 *   **非侵入式**：默认安装在用户目录 (`~/scoop`)，无需管理员权限。
@@ -172,3 +172,8 @@ Scoop 有一个名为 `sudo` 的包，可以让你在非管理员终端临时提
 scoop install sudo
 sudo Set-Time  # 举例
 ```
+
+
+## 参考链接
+
+- [Scoop GitHub 仓库](https://github.com/ScoopInstaller/Scoop)

@@ -1,9 +1,9 @@
 ---
-title: Antigravity-Manager
+title: Antigravity-Manager（已过期不推荐）
 order: 2
 ---
 
-# Antigravity-Manager 使用指南（不推荐）
+# Antigravity-Manager 使用指南（已过期不推荐）
 
 ## 1. Antigravity-Manager 是什么
 [Github Repo](https://github.com/lbjlaq/Antigravity-Manager)
