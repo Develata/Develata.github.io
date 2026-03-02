@@ -147,6 +147,33 @@ OMO 的关键价值在“任务语义路由”，而不是“手动切模型”�
 5. **后台并行**：检索、实现、验证可并行推进，减少主线程等待。
 6. **可验证编辑**：`LINE#ID` 防止 stale-line 编辑污染。
 
+### 4.2 各 Agent 推荐模型（官方默认）
+
+> 下面是 OMO `features` 文档中的默认推荐映射。你可以覆盖，但建议先按默认跑通。
+
+| Agent | 推荐模型（默认） | 说明 |
+| :--- | :--- | :--- |
+| Sisyphus | `claude-opus-4-6` | 主编排代理，负责复杂任务调度与推进 |
+| Hephaestus | `gpt-5.3-codex` | 深度执行代理，擅长自主探索和落地 |
+| Oracle | `gpt-5.3-codex` | 架构评审与疑难问题咨询（偏只读） |
+| Librarian | `claude-sonnet-4-5` | 文档、跨仓库、开源实现检索 |
+| Explore | `claude-haiku-4-5` | 快速代码库探索与上下文定位 |
+| Multimodal-Looker | `gemini-3-pro-image` | 图片/PDF/图表解析 |
+| Prometheus | `claude-opus-4-6-thinking` | 访谈式规划与计划生成 |
+| Metis | `claude-opus-4-6-thinking` | 规划前缺口分析 |
+| Momus | `gpt-5.3-codex` | 计划质量审查与验收把关 |
+| Atlas | `claude-sonnet-4-5-thinking` | 计划执行编排器 |
+| Sisyphus-Junior | 按 `category` 自动选择 | 委派执行器，模型由任务类别决定 |
+
+补充：内置分类默认模型（常用）
+
+* `visual-engineering` → `google/gemini-3-pro`
+* `ultrabrain` → `openai/gpt-5.3-codex`
+* `deep` → `openai/gpt-5.3-codex`
+* `quick` → `anthropic/claude-haiku-4-5`
+* `unspecified-high` → `anthropic/claude-opus-4-6`
+* `writing` → `kimi-for-coding/k2p5`
+
 ---
 
 ## 5. 常用命令（OMO 工作流侧）
