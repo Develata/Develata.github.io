@@ -34,12 +34,12 @@ Install and configure oh-my-opencode by following the instructions here:
 https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/installation.md
 ```
 
-### 2.2 手动安装（回退）
+### 2.2 手动安装或更新（回退）
 
 ```bash
-bunx oh-my-opencode install
+bunx oh-my-opencode@latest install
 # 或
-npx oh-my-opencode install
+npx oh-my-opencode@latest install
 ```
 
 ### 2.3 初始化项目上下文（项目根目录）
@@ -57,6 +57,10 @@ opencode --version
 ```
 
 并检查 `~/.config/opencode/opencode.json` 的 `plugin` 数组是否包含 `oh-my-opencode`。
+
+### 2.5 配置模型
+
+编辑文件`xxx/.config/opencode/oh-my-opencode.json`
 
 ---
 
