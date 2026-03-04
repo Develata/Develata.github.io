@@ -123,6 +123,14 @@ opencode
 | `/refactor` | slash | 结构化重构入口 | `/refactor src/auth --strategy=safe` | 把功能新增当重构任务 |
 | `/handoff` | slash | 跨会话交接 | `/handoff` | 只写一句话，没带上下文 |
 
+### 自定义命令
+自定义 Slash 命令可从以下位置加载：
+
+`.opencode/command/*.md`（项目）
+`~/.config/opencode/command/*.md`（用户）
+`.claude/commands/*.md`（Claude Code 兼容）
+`~/.claude/commands/*.md`（Claude Code 用户）
+
 ---
 
 ## 5. 配置与文件（你要改哪里）
@@ -165,29 +173,53 @@ opencode
 
 ---
 
-## 6. 模型路由（了解即可）
+## 6. 模型路由
 
 OMO 的重点是“任务语义路由”，而不是“手动切模型”。常见角色如下：
 
-| 代理/类别 | 核心职责 |
-| --- | --- |
-| Sisyphus | 主编排、拆解任务、推动闭环 |
-| Hephaestus | 深度实现、复杂调试、架构落地 |
-| Prometheus | 访谈式规划、定义可执行计划 |
-| Atlas | 按计划推进与校验结果 |
-| Librarian | 文档与开源实现检索 |
-| Explore | 快速代码库探索与上下文定位 |
+| 代理/类别                 | 核心职责                                                           |
+| --------------------- | -------------------------------------------------------------- |
+| **Sisyphus（总控）**          | 默认总编排器：规划、拆解、并行委派子任务并执行闭环（todo 驱动，强并发）。                        |
+| **Hephaestus（执行）**        | 深度自主实现：复杂调试、架构落地、端到端完成任务（“深度模式/工匠”）。                           |
+| **Oracle（分析推理）**            | 架构决策/代码审查/疑难 Debug 咨询：只读分析，给高质量推理建议。                           |
+| **Librarian（资料库）**         | 多仓库/文档/开源实现检索与对比：证据驱动的解释与定位。                                   |
+| **Explore（代码库）**           | 快速扫代码库、grep/上下文定位：为主 Agent 提供“快而准”的线索。                         |
+| **Multimodal-Looker（眼睛）** | 视觉内容专家：分析 PDF / 图片 / 图表 / 截图提取信息（只读）。                          |
+| **Prometheus（需求访谈）**        | 访谈式规划：通过迭代提问产出可执行的详细计划。                                        |
+| **Metis（规划）**             | 计划顾问（pre-planning）：挖掘隐藏意图、歧义、潜在失败点。                            |
+| **Momus（挑刺）**             | 计划审稿人：按清晰度/可验证性/完整性标准“挑刺”与校验。                                  |
+| **Atlas（团队管理）**             | todo-list 执行编排：按计划逐项推进、管理 todo 并协调执行（自身不再委派）。                  |
+| **Sisyphus-Junior（临时工）**   | 被 `task(category=...)` 生成的执行体：模型随 category 自动选择；禁止再次委派，防止无限递归。 |
 
-默认模型映射（来自 OMO `features` 文档，建议先按默认跑通）：
 
-| Agent | 推荐模型（默认） |
-| --- | --- |
-| Sisyphus | `claude-opus-4-6` |
-| Hephaestus | `gpt-5.3-codex` |
-| Librarian | `claude-sonnet-4-5` |
-| Explore | `claude-haiku-4-5` |
-| Prometheus | `claude-opus-4-6-thinking` |
-| Atlas | `claude-sonnet-4-5-thinking` |
+默认模型映射（来自 OMO `features`[文档](https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/dev/docs/reference/features.md) ，建议先按默认跑通）：
+
+| Agent                 | 推荐模型（默认/备选）                                                                                                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sisyphus**          | `claude-opus-4-6`（Fallback：`gpt-5.3-codex` → deep quality chain）                                                                                                                    |
+| **Hephaestus**        | `gpt-5.3-codex`（Fallback：deep quality chain：`claude-opus-4-6-thinking` → `step-3.5-flash` → `glm-5` → …）                                                                            |
+| **Oracle**            | `gpt-5.3-codex`（Fallback：`claude-opus-4-6-thinking` → `claude-sonnet-4-5-thinking` → deep quality chain）                                                                            |
+| **Librarian**         | `claude-sonnet-4-5`（Fallback：speed chain：`claude-haiku-4-5` → `gpt-5-mini` → … → quality chain）                                                                                     |
+| **Explore**           | `claude-haiku-4-5`（Fallback：`oswe-vscode-prime` → `gpt-5-mini` → `gpt-4.1` → extended speed chain）                                                                                  |
+| **Multimodal-Looker** | `gemini-3-pro-image`（Fallback：`gemini-3-pro-high` → `gemini-3-flash` → `kimi-k2.5` → `claude-opus-4-6-thinking` → `claude-sonnet-4-5-thinking` → `claude-haiku-4-5` → `gpt-5-nano`） |
+| **Prometheus**        | `claude-opus-4-6-thinking`（Fallback：`gpt-5.3-codex` → `claude-sonnet-4-5-thinking` → deep quality chain）                                                                            |
+| **Metis**             | `claude-opus-4-6-thinking`（Fallback：`gpt-5.3-codex` → `claude-sonnet-4-5-thinking` → deep quality chain）                                                                            |
+| **Momus**             | `gpt-5.3-codex`（Fallback：`claude-opus-4-6-thinking` → deep quality chain）                                                                                                           |
+| **Atlas**             | `claude-sonnet-4-5-thinking`（Fallback：`claude-opus-4-6-thinking` → `gpt-5.3-codex` → deep quality chain）                                                                            |
+| **Sisyphus-Junior**   | *(category-dependent)*（随 category 自动选模型）                                                                                                                                            |
+
+
+| Category             | 默认模型                             | 典型用途                   |
+| -------------------- | -------------------------------- | ---------------------- |
+| `visual-engineering` | `google/gemini-3-pro`            | 前端 / UI/UX / 动效 / 视觉实现 |
+| `ultrabrain`         | `openai/gpt-5.3-codex`（xhigh）    | 极深推理、复杂架构决策            |
+| `deep`               | `openai/gpt-5.3-codex`（medium）   | “深度模式”自主问题解决           |
+| `artistry`           | `google/gemini-3-pro`（max）       | 创意/审美/新颖方案             |
+| `quick`              | `anthropic/claude-haiku-4-5`     | 小修小补、低成本快速改动           |
+| `unspecified-low`    | `anthropic/claude-sonnet-4-6`    | 通用低难任务                 |
+| `unspecified-high`   | `anthropic/claude-opus-4-6`（max） | 通用高难任务                 |
+| `writing`            | `kimi-for-coding/k2p5`           | 文档、说明、技术写作             |
+
 
 ---
 
