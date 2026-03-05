@@ -193,8 +193,6 @@ scoop install sudo
 sudo Set-Time  # 举例
 ```
 
-## 7. scoop list
-
 ## 参考链接
 
 - [Scoop GitHub 仓库](https://github.com/ScoopInstaller/Scoop)
