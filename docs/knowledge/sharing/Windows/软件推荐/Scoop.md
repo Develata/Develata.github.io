@@ -24,8 +24,11 @@ Scoop 是 Windows 下的命令行包管理器（类似 Debian 的 `apt` 或 macO
 打开 PowerShell，直接运行：
 
 ```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser; irm get.scoop.sh | iex
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
 ```
+
+它将把 Scoop 安装到默认位置：`C:\Users\<YOUR USERNAME>\scoop`
 
 如果系统询问你是否更改策略，输入 Y 并回车确认。
 
@@ -53,17 +56,33 @@ scoop config aria2-enabled true
 ```
 
 ### 3.2 启用常用软件库 (Buckets)
-Scoop 默认只有 `main` 库（精简 CLI 工具）。我们需要启用 `extras` 以获取更多常用软件：
+Scoop 默认只有 `main` 库（精简 CLI 工具）。我们需要启用桶拓展 `bucket add` 以获取更多常用软件：
+
 
 ```powershell
 # 通用软件库 (浏览器、VS Code 等)
 scoop bucket add extras
 
+# 游戏 - 开源及免费软件类视频游戏与游戏相关工具
+scoop bucket add games
+
 # 字体库 (Fira Code, JetBrains Mono 等)
 scoop bucket add nerd-fonts
 
+# 来自 Nirsoft 的 250 多款应用合集
+scoop bucket add nirsoft
+
+# 来自微软的 Sysinternals 工具集
+scoop bucket add sysinternals
+
+# nonportable 应用程序（可能触发 UAC 提示）
+scoop bucket add nonportable
+
 # 软件历史版本 (如 Python 2.7, Java 8)
 scoop bucket add versions
+
+# 适用于大多数版本的 PHP 安装程序
+scoop bucket add php
 
 # Java 专用库
 scoop bucket add java
@@ -74,6 +93,7 @@ scoop bucket add java
 | 操作 | 命令 | 示例 |
 | :--- | :--- | :--- |
 | **搜索** | `scoop search <app>` | `scoop search python` |
+| **搜索** | `scoop search` |显示所有支持的软件|
 | **安装** | `scoop install <app>` | `scoop install vscode` |
 | **更新** | `scoop update *` | 更新所有软件 |
 | **清理** | `scoop cleanup *` | 删除旧版本安装包 |
@@ -173,6 +193,7 @@ scoop install sudo
 sudo Set-Time  # 举例
 ```
 
+## 7. scoop list
 
 ## 参考链接
 
