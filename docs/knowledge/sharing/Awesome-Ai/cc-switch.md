@@ -40,9 +40,23 @@ brew upgrade --cask cc-switch
 ```
 
 ### 2.2 Windows
+
+推荐使用 scoop 安装:
+```
+scoop install --cask cc-switch
+```
+
+更新：
+```bash
+scoop upgrade --cask cc-switch
+```
+
+其它安装方式：
 *   **安装包**：下载 `.msi` 安装程序。
 *   **便携版**：下载 `.zip` 解压即用。
 *   [前往 GitHub Releases 下载](https://github.com/farion1231/cc-switch/releases)
+
+
 
 ### 2.3 Linux
 *   **Arch Linux (AUR)**:

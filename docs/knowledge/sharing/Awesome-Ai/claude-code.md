@@ -23,12 +23,35 @@ Claude Code（命令 `claude`）是一个终端内的 Agent：读代码、改文
 
 > 官方说明：NPM 安装已标记为 deprecated，优先使用 Native 安装脚本 / Homebrew / WinGet。
 
-### 2.1 macOS / Linux / WSL (推荐)
+### 2.1 安装
+
+#### macOS / Linux / WSL 
+
+##### Homebrew (macOS/Linux)：
+
+```bash
+brew install --cask claude-code
+```
+
+##### 直接安装：
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
 ```
 
-### 2.2 Windows (推荐)
+
+#### Windows 
+##### scoop包管理器：
+```
+scoop install claude-code
+```
+
+##### WinGet (Windows)：
+
+```powershell
+winget install Anthropic.ClaudeCode
+```
+
+##### 直接安装：
 ```powershell
 irm https://claude.ai/install.ps1 | iex
 ```
@@ -39,19 +62,11 @@ Windows CMD：
 curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
 ```
 
-WinGet (Windows)：
 
-```powershell
-winget install Anthropic.ClaudeCode
-```
 
-Homebrew (macOS/Linux)：
 
-```bash
-brew install --cask claude-code
-```
 
-NPM (Deprecated)：
+#### NPM (Deprecated)：
 
 ```bash
 npm install -g @anthropic-ai/claude-code
@@ -64,7 +79,7 @@ npm install -g @anthropic-ai/claude-code
 claude update
 ```
 
-> Homebrew/WinGet 安装不会自动更新：用 `brew upgrade claude-code` 或 `winget upgrade Anthropic.ClaudeCode`。
+> Homebrew/WinGet/Scoop 安装不会自动更新：用 `brew upgrade claude-code` 或 `winget upgrade Anthropic.ClaudeCode` 或 `scoop update claude-code`。
 
 ### 2.4 健康检查
 ```bash
