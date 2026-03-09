@@ -1,7 +1,7 @@
 ---
 title: OpenClaw附录
 date: 2026-2-24
-order: 2
+order: 9999
 ---
 
 ## A. `openclaw onboard`
