@@ -69,7 +69,7 @@ Linux 下推荐安装位置是：
 ```bash
 test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)"
 test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-echo 'eval "$($(brew --prefix)/bin/brew shellenv)"' >> ~/.bashrc
+echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
 ```
 
 如果你用的是 `zsh`，把最后一行写入 `~/.zshrc` 即可。
