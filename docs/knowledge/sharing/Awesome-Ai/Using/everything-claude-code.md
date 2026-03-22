@@ -46,6 +46,9 @@ claude --version
 
 ```text
 /plugin marketplace add affaan-m/everything-claude-code
+```
+
+```text
 /plugin install everything-claude-code@everything-claude-code
 ```
 
