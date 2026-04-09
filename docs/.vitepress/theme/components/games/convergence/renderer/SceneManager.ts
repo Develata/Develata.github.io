@@ -10,31 +10,16 @@ import { CameraRig } from './CameraRig';
 import { VFXSystem } from './VFXSystem';
 import { RoomLayout, RoomLayoutResult } from '../core/map/RoomLayout';
 import { GRID_SIZE, COLOR_PALETTE } from '../config';
-import {
-  ActionLogEntry,
-  BuffDefinition,
-  BuffId,
-  PlayerStats,
-  RoomTopology,
-  WeaponArchetype,
-  WeaponContext,
-  EnemyProfile,
-} from '../core/types';
+import { WeaponArchetype } from '../core/types';
+import type { ActionLogEntry, BuffDefinition, BuffId, EnemyProfile, PlayerStats } from '../core/types';
 import { WeaponStrategy } from '../core/strategies/WeaponStrategy';
 import { EuclideanStrategy } from '../core/strategies/Euclidean';
 import { GradientStrategy } from '../core/strategies/Gradient';
 import { DistributedStrategy } from '../core/strategies/Distributed';
-
-type PlayerAction = 'attack' | 'move';
-
-interface InteractionState {
-  playerSelected: boolean;
-  selectedEnemyId: string | null;
-  plannedAction: PlayerAction | null;
-  targetX: number | null;
-  targetY: number | null;
-  movePath?: { x: number; y: number }[];
-}
+import { SceneQueries } from '../application/SceneQueries';
+import type { EntitySnapshot, InteractionState, PlayerAction } from '../application/types';
+import { TurnController } from '../application/TurnController';
+import { InteractionController } from '../application/InteractionController';
 
 export class SceneManager {
   private container: HTMLDivElement;
@@ -48,8 +33,6 @@ export class SceneManager {
   private rightDir = new THREE.Vector3();
   private tempDir = new THREE.Vector3();
   private lastAimDir: { x: number; y: number } | null = null;
-  private raycaster = new THREE.Raycaster();
-  private pointer = new THREE.Vector2();
   private interactionState: InteractionState = {
     playerSelected: false,
     selectedEnemyId: null,
@@ -58,10 +41,6 @@ export class SceneManager {
     targetY: null,
   };
   private groundPlane: THREE.Plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-  private cachedHeatmap: number[][] | null = null;
-  private lastFieldVersion = -1;
-  private lastHeatmapResolution = 0;
-  
   // 游戏核心与视图组件
   private fieldSystem: FieldSystem;
   private gameState: GameState;
@@ -74,28 +53,12 @@ export class SceneManager {
   private activeStrategy: WeaponArchetype = WeaponArchetype.Gradient;
   private currentRoom: RoomLayoutResult | null = null;
   private roomLayout = new RoomLayout();
+  private queries: SceneQueries;
+  private turnController: TurnController;
+  private interactionController: InteractionController;
   private starField: THREE.Points | null = null;
   private handleCanvasClick = (event: MouseEvent) => {
-    // 如果已经规划了行动（攻击/移动），优先处理地面点击，忽略实体选择
-    if (this.interactionState.playerSelected && this.interactionState.plannedAction) {
-      this.handleGroundClick(event);
-      return;
-    }
-
-    // 优先检测敌人点击
-    if (this.trySelectEnemy(event)) {
-      return;
-    }
-
-    // 检测玩家点击
-    if (this.trySelectPlayer(event)) {
-      return;
-    }
-
-    // 如果选中了玩家但未规划行动，则处理地面点击（可能用于取消选择或其他交互）
-    if (this.interactionState.playerSelected) {
-      this.handleGroundClick(event);
-    }
+    this.interactionController.handleCanvasClick(event);
   };
 
   constructor(container: HTMLDivElement) {
@@ -133,6 +96,12 @@ export class SceneManager {
     this.gameState = new GameState(this.fieldSystem);
     this.currentRoom = this.roomLayout.generate();
     this.gameState.loadRoom(this.currentRoom);
+    this.queries = new SceneQueries(
+      this.fieldSystem,
+      this.gameState,
+      () => this.currentRoom,
+      () => this.interactionState.selectedEnemyId
+    );
     this.applyRoomTheme();
 
     // --- 3. 视图组件初始化 (Phase 2 & 3 & 4) ---
@@ -147,6 +116,29 @@ export class SceneManager {
       [WeaponArchetype.Gradient]: new GradientStrategy(this.ballistics),
       [WeaponArchetype.Distributed]: new DistributedStrategy(),
     };
+    this.turnController = new TurnController({
+      gameState: this.gameState,
+      cameraRig: this.cameraRig,
+      interactionState: this.interactionState,
+      forwardDir: this.forwardDir,
+      strategies: this.strategies,
+      getActiveStrategy: () => this.activeStrategy,
+      getLastAimDir: () => this.lastAimDir,
+      setPlayerSelection: (selected) => this.setPlayerSelection(selected),
+      syncPlayerView: () => this.syncPlayerView(),
+      updateAimFromCamera: (force) => this.updateAimFromCamera(force),
+    });
+    this.interactionController = new InteractionController({
+      camera: this.camera,
+      domElement: this.renderer.domElement,
+      groundPlane: this.groundPlane,
+      fieldSystem: this.fieldSystem,
+      gameState: this.gameState,
+      entityView: this.entityView,
+      interactionState: this.interactionState,
+      setPlayerSelection: (selected) => this.setPlayerSelection(selected),
+      updateAim: (dirX, dirY) => this.updateAim(dirX, dirY),
+    });
     
     // 初始同步玩家和敌人位置，并将相机放到玩家视角
     this.syncPlayerView(false);
@@ -178,162 +170,7 @@ export class SceneManager {
   }
 
   public deselectAll() {
-    this.setPlayerSelection(false);
-    this.interactionState.selectedEnemyId = null;
-  }
-
-  private trySelectEnemy(event: MouseEvent): boolean {
-    const meshes = this.entityView.getEnemyMeshes();
-    if (meshes.length === 0) return false;
-
-    this.updatePointer(event);
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    
-    // 只检测可见的 mesh
-    const visibleMeshes = meshes.filter(m => m.visible);
-    const hits = this.raycaster.intersectObjects(visibleMeshes, false);
-
-    if (hits.length > 0) {
-      // 找到对应的敌人 ID
-      const hitMesh = hits[0].object;
-      const index = meshes.indexOf(hitMesh as THREE.Mesh);
-      if (index !== -1) {
-        const enemies = this.gameState.entities.getEnemies();
-        if (enemies[index]) {
-          this.interactionState.selectedEnemyId = enemies[index].id;
-          this.setPlayerSelection(false); // 选中敌人时取消选中玩家
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  public getSelectedEnemyStats(): EnemyProfile | null {
-    if (!this.interactionState.selectedEnemyId) return null;
-    const enemy = this.gameState.entities.findEnemy(this.interactionState.selectedEnemyId);
-    if (!enemy) return null;
-    return {
-      id: enemy.id,
-      name: enemy.name,
-      hp: enemy.hp,
-      maxHp: enemy.maxHp,
-      traits: enemy.traits,
-      singularity: {
-        x: enemy.x,
-        y: enemy.y,
-        strength: enemy.strength,
-        radius: enemy.radius,
-      },
-    };
-  }
-
-  private updatePointer(event: MouseEvent) {
-    const rect = this.renderer.domElement.getBoundingClientRect();
-    this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-  }
-
-  private trySelectPlayer(event: MouseEvent): boolean {
-    const mesh = this.entityView.getPlayerMesh();
-    if (!mesh) return false;
-    this.updatePointer(event);
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hit = this.raycaster.intersectObject(mesh, false);
-    if (hit.length > 0) {
-      this.setPlayerSelection(true);
-      return true;
-    }
-    return false;
-  }
-
-  private getGridFromRay(event: MouseEvent): { gx: number; gy: number } | null {
-    this.updatePointer(event);
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const intersection = new THREE.Vector3();
-    if (!this.raycaster.ray.intersectPlane(this.groundPlane, intersection)) {
-      return null;
-    }
-
-    const half = (this.fieldSystem.size - 1) / 2;
-    const gx = Math.round(intersection.x + half);
-    const gy = Math.round(intersection.z + half);
-
-    if (gx < 0 || gx >= this.fieldSystem.size || gy < 0 || gy >= this.fieldSystem.size) {
-      return null;
-    }
-
-    return { gx, gy };
-  }
-
-  private handleGroundClick(event: MouseEvent) {
-    const hit = this.getGridFromRay(event);
-    if (!hit) return;
-
-    if (this.interactionState.plannedAction === 'move') {
-      // 计算路径
-      const path = this.findPath(this.gameState.playerX, this.gameState.playerY, hit.gx, hit.gy);
-      if (path.length > 0) {
-        this.interactionState.movePath = path;
-        const next = path[0];
-        this.interactionState.targetX = next.x;
-        this.interactionState.targetY = next.y;
-      } else {
-        this.interactionState.movePath = [];
-        this.interactionState.targetX = hit.gx;
-        this.interactionState.targetY = hit.gy;
-      }
-      return;
-    }
-
-    this.interactionState.targetX = hit.gx;
-    this.interactionState.targetY = hit.gy;
-
-    if (this.interactionState.plannedAction === 'attack') {
-      const dirX = hit.gx - this.gameState.playerX;
-      const dirY = hit.gy - this.gameState.playerY;
-      if (dirX === 0 && dirY === 0) return;
-      const len = Math.hypot(dirX, dirY) || 1;
-      this.updateAim(dirX / len, dirY / len);
-    }
-  }
-
-  private findPath(startX: number, startY: number, endX: number, endY: number): { x: number; y: number }[] {
-    // 简单的 BFS 寻路
-    const size = this.fieldSystem.size;
-    const queue: { x: number; y: number; path: { x: number; y: number }[] }[] = [
-      { x: startX, y: startY, path: [] }
-    ];
-    const visited = new Set<string>();
-    visited.add(`${startX},${startY}`);
-
-    while (queue.length > 0) {
-      const { x, y, path } = queue.shift()!;
-      if (x === endX && y === endY) {
-        return path;
-      }
-
-      const dirs = [
-        { dx: 0, dy: -1 },
-        { dx: 0, dy: 1 },
-        { dx: -1, dy: 0 },
-        { dx: 1, dy: 0 },
-      ];
-
-      for (const dir of dirs) {
-        const nx = x + dir.dx;
-        const ny = y + dir.dy;
-
-        if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
-          const key = `${nx},${ny}`;
-          if (!visited.has(key)) {
-            visited.add(key);
-            queue.push({ x: nx, y: ny, path: [...path, { x: nx, y: ny }] });
-          }
-        }
-      }
-    }
-    return [];
+    this.interactionController.deselectAll();
   }
 
   private applyRoomTheme() {
@@ -458,21 +295,7 @@ export class SceneManager {
     this.cameraRig.follow(world, !animate);
   }
 
-  private vectorToGrid(vec: THREE.Vector3): { dx: number; dy: number } {
-    const absX = Math.abs(vec.x);
-    const absZ = Math.abs(vec.z);
-    if (absX < 0.1 && absZ < 0.1) {
-      return { dx: 0, dy: 0 };
-    }
-    if (absX > absZ) {
-      return { dx: Math.sign(vec.x), dy: 0 };
-    }
-    if (absZ > absX) {
-      return { dx: 0, dy: Math.sign(vec.z) };
-    }
-    // Fallback for exact diagonal: prioritize X axis to enforce orthogonal movement
-    return { dx: Math.sign(vec.x), dy: 0 };
-  }
+
 
   public setStrategy(strategy: WeaponArchetype): void {
     if (this.activeStrategy === strategy) return;
@@ -480,11 +303,12 @@ export class SceneManager {
     this.updateAimFromCamera(true);
   }
 
-  public planAction(action: PlayerAction): void {
-    if (!this.interactionState.playerSelected) return;
+  public planAction(action: PlayerAction | null): void {
+    if (!this.interactionState.playerSelected && action !== null) return;
     this.interactionState.plannedAction = action;
     this.interactionState.targetX = null;
     this.interactionState.targetY = null;
+    this.interactionState.movePath = undefined;
     if (action === 'attack') {
       this.updateAimFromCamera(true);
     } else {
@@ -497,77 +321,15 @@ export class SceneManager {
   }
 
   public performMoveAction(): boolean {
-    let moved = false;
-    if (this.interactionState.targetX != null && this.interactionState.targetY != null) {
-      const dx = this.interactionState.targetX - this.gameState.playerX;
-      const dy = this.interactionState.targetY - this.gameState.playerY;
-      if (dx === 0 && dy === 0) return false;
-      
-      // Enforce orthogonal movement: prioritize the axis with larger distance
-      let stepX = 0;
-      let stepY = 0;
-      if (Math.abs(dx) >= Math.abs(dy)) {
-        stepX = Math.sign(dx);
-      } else {
-        stepY = Math.sign(dy);
-      }
-      
-      moved = this.gameState.movePlayer(stepX, stepY);
-    } else {
-      const forward = this.cameraRig.getForwardDirection(this.forwardDir);
-      const { dx, dy } = this.vectorToGrid(forward);
-      if (dx === 0 && dy === 0) return false;
-      moved = this.gameState.movePlayer(dx, dy);
-    }
-    if (moved) {
-      this.syncPlayerView();
-      this.updateAimFromCamera(true);
-      
-      // 更新路径逻辑
-      if (this.interactionState.movePath && this.interactionState.movePath.length > 0) {
-        // 移除已经到达的第一个点
-        this.interactionState.movePath.shift();
-        
-        if (this.interactionState.movePath.length > 0) {
-          // 如果还有路径，设置下一个目标
-          const next = this.interactionState.movePath[0];
-          this.interactionState.targetX = next.x;
-          this.interactionState.targetY = next.y;
-          // 保持选中状态，允许连续移动
-          return moved;
-        }
-      }
-      
-      // 路径走完或没有路径，取消选择
-      this.setPlayerSelection(false);
-      this.interactionState.movePath = undefined;
-    }
-    return moved;
+    return this.turnController.performMoveAction();
   }
 
   public performAttackAction(): AttackResolution | null {
-    const result = this.simulateAttack();
-    if (!result) {
-      return null;
-    }
-
-    this.gameState.resolveAttack(result);
-    this.syncPlayerView();
-    this.setPlayerSelection(false);
-    this.updateAimFromCamera(true);
-    return result;
+    return this.turnController.performAttackAction();
   }
 
   public executeTurn(): void {
-    if (!this.interactionState.playerSelected || !this.interactionState.plannedAction) {
-      return;
-    }
-
-    if (this.interactionState.plannedAction === 'attack') {
-      this.performAttackAction();
-    } else {
-      this.performMoveAction();
-    }
+    this.turnController.executeTurn();
   }
 
   public getActiveStrategy(): WeaponArchetype {
@@ -575,151 +337,53 @@ export class SceneManager {
   }
 
   public getPlayerLoss(): number {
-    if (!this.gameState) return 0;
-    return this.fieldSystem.getHeightAt(this.gameState.playerX, this.gameState.playerY);
+    return this.queries.getPlayerLoss();
   }
 
   public getTurnCount(): number {
-    return this.gameState?.turnCount ?? 0;
+    return this.queries.getTurnCount();
   }
 
   public getRoomDescription(): string {
-    return this.currentRoom?.label ?? '未初始化空间';
+    return this.queries.getRoomDescription();
   }
 
   public getTopologyLabel(): string {
-    return this.describeTopology(this.gameState?.getTopology());
+    return this.queries.getTopologyLabel();
   }
 
   public getRoomSeed(): number | null {
-    return this.currentRoom?.seed ?? null;
+    return this.queries.getRoomSeed();
   }
 
   public getPlayerStats(): PlayerStats {
-    return this.gameState.getPlayerStats();
+    return this.queries.getPlayerStats();
   }
 
   public getAmmoCapacity(): number {
-    return this.gameState.getAmmoCapacity();
+    return this.queries.getAmmoCapacity();
   }
 
   public getActionLog(): ActionLogEntry[] {
-    return this.gameState.getActionLog();
+    return this.queries.getActionLog();
   }
 
   public getPendingBuffs(): BuffDefinition[] {
-    return this.gameState.getPendingBuffs();
+    return this.queries.getPendingBuffs();
   }
 
   public consumeBuff(buffId: BuffId) {
-    this.gameState.consumeBuff(buffId);
+    this.queries.consumeBuff(buffId);
   }
 
   public getFieldHeatmap(resolution = 32): number[][] {
-    if (
-      this.cachedHeatmap &&
-      this.fieldSystem.version === this.lastFieldVersion &&
-      this.lastHeatmapResolution === resolution
-    ) {
-      return this.cachedHeatmap;
-    }
-
-    const size = Math.max(4, Math.floor(resolution));
-    const data: number[][] = [];
-    let min = Infinity;
-    let max = -Infinity;
-    for (let y = 0; y < size; y++) {
-      const row: number[] = [];
-      for (let x = 0; x < size; x++) {
-        const sampleX = (x / size) * this.fieldSystem.size;
-        const sampleY = (y / size) * this.fieldSystem.size;
-        const h = this.fieldSystem.getHeightAt(sampleX, sampleY);
-        min = Math.min(min, h);
-        max = Math.max(max, h);
-        row.push(h);
-      }
-      data.push(row);
-    }
-
-    const range = max - min || 1;
-    this.cachedHeatmap = data.map((row) => row.map((value) => (value - min) / range));
-    this.lastFieldVersion = this.fieldSystem.version;
-    this.lastHeatmapResolution = resolution;
-    return this.cachedHeatmap;
+    return this.queries.getFieldHeatmap(resolution);
   }
 
-  public getEntitySnapshot() {
-    return {
-      player: { x: this.gameState.playerX, y: this.gameState.playerY },
-      enemies: this.gameState.entities.getEnemies().map((enemy) => ({
-        id: enemy.id,
-        x: enemy.position.x,
-        y: enemy.position.y,
-      })),
-    };
+  public getEntitySnapshot(): EntitySnapshot {
+    return this.queries.getEntitySnapshot();
   }
 
-  private describeTopology(topology?: RoomTopology): string {
-    switch (topology) {
-      case RoomTopology.Torus:
-        return '环面拓扑';
-      case RoomTopology.Mobius:
-        return '莫比乌斯拓扑';
-      case RoomTopology.Plane:
-        return '欧氏平面';
-      default:
-        return '未知拓扑';
-    }
-  }
-
-  private simulateAttack(): AttackResolution | null {
-    if (!this.gameState) return null;
-    const strategy = this.strategies[this.activeStrategy];
-    if (!strategy) return null;
-
-    const context: WeaponContext = {
-      originX: this.gameState.playerX,
-      originY: this.gameState.playerY,
-      dirX: this.lastAimDir?.x ?? 1,
-      dirY: this.lastAimDir?.y ?? 0,
-    };
-
-    const path = strategy.simulate(context);
-    if (!path.length) {
-      return null;
-    }
-
-    const enemies = this.gameState.entities.getEnemies();
-    let best: AttackResolution | null = null;
-
-    enemies.forEach((enemy) => {
-      for (let i = 1; i < path.length; i++) {
-        const point = path[i];
-        const dx = point.x - enemy.position.x;
-        const dy = point.y - enemy.position.y;
-        const radius = Math.max(0.6, enemy.radius);
-        if (dx * dx + dy * dy <= radius * radius) {
-          if (!best || i < best.impactStep) {
-            best = { enemyId: enemy.id, impactStep: i };
-          }
-          break;
-        }
-      }
-    });
-
-    if (best) return best;
-
-    for (let i = 1; i < path.length; i++) {
-      const point = path[i];
-      const dx = point.x - this.gameState.playerX;
-      const dy = point.y - this.gameState.playerY;
-      if (dx * dx + dy * dy <= 0.4) {
-        return { enemyId: null, impactStep: i, friendlyFire: true };
-      }
-    }
-
-    return { enemyId: null, impactStep: path.length - 1 };
-  }
 
   /**
    * 资源清理
@@ -776,3 +440,7 @@ export class SceneManager {
     console.log('SceneManager disposed.');
   }
 }
+
+
+
+
