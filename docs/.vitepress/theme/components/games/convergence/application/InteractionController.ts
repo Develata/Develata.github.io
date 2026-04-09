@@ -15,6 +15,7 @@ interface InteractionControllerOptions {
   interactionState: InteractionState;
   setPlayerSelection: (selected: boolean) => void;
   updateAim: (dirX: number, dirY: number) => void;
+  onStateChange: () => void;
 }
 
 export class InteractionController {
@@ -26,6 +27,7 @@ export class InteractionController {
   deselectAll() {
     this.options.setPlayerSelection(false);
     this.options.interactionState.selectedEnemyId = null;
+    this.options.onStateChange();
   }
 
   handleCanvasClick(event: MouseEvent) {
@@ -66,6 +68,7 @@ export class InteractionController {
 
     this.options.interactionState.selectedEnemyId = enemies[index].id;
     this.options.setPlayerSelection(false);
+    this.options.onStateChange();
     return true;
   }
 
@@ -79,6 +82,7 @@ export class InteractionController {
     if (hit.length === 0) return false;
 
     this.options.setPlayerSelection(true);
+    this.options.onStateChange();
     return true;
   }
 
@@ -115,6 +119,7 @@ export class InteractionController {
         interactionState.targetX = hit.gx;
         interactionState.targetY = hit.gy;
       }
+      this.options.onStateChange();
       return;
     }
 
@@ -127,5 +132,6 @@ export class InteractionController {
       const len = Math.hypot(dirX, dirY) || 1;
       this.options.updateAim(dirX / len, dirY / len);
     }
+    this.options.onStateChange();
   }
 }

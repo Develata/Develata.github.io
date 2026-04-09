@@ -10,14 +10,14 @@ import { CameraRig } from './CameraRig';
 import { VFXSystem } from './VFXSystem';
 import { RoomLayout, RoomLayoutResult } from '../core/map/RoomLayout';
 import { GRID_SIZE, COLOR_PALETTE } from '../config';
-import { WeaponArchetype } from '../core/types';
+import { WeaponArchetype, WeaponContext } from '../core/types';
 import type { ActionLogEntry, BuffDefinition, BuffId, EnemyProfile, PlayerStats } from '../core/types';
 import { WeaponStrategy } from '../core/strategies/WeaponStrategy';
 import { EuclideanStrategy } from '../core/strategies/Euclidean';
 import { GradientStrategy } from '../core/strategies/Gradient';
 import { DistributedStrategy } from '../core/strategies/Distributed';
 import { SceneQueries } from '../application/SceneQueries';
-import type { EntitySnapshot, InteractionState, PlayerAction } from '../application/types';
+import type { EntitySnapshot, InteractionState, PlayerAction, SceneUiSnapshot } from '../application/types';
 import { TurnController } from '../application/TurnController';
 import { InteractionController } from '../application/InteractionController';
 
@@ -56,6 +56,7 @@ export class SceneManager {
   private queries: SceneQueries;
   private turnController: TurnController;
   private interactionController: InteractionController;
+  private readonly uiListeners = new Set<(snapshot: SceneUiSnapshot) => void>();
   private starField: THREE.Points | null = null;
   private handleCanvasClick = (event: MouseEvent) => {
     this.interactionController.handleCanvasClick(event);
@@ -138,6 +139,7 @@ export class SceneManager {
       interactionState: this.interactionState,
       setPlayerSelection: (selected) => this.setPlayerSelection(selected),
       updateAim: (dirX, dirY) => this.updateAim(dirX, dirY),
+      onStateChange: () => this.notifyUiStateChanged(),
     });
     
     // 初始同步玩家和敌人位置，并将相机放到玩家视角
@@ -167,10 +169,12 @@ export class SceneManager {
       this.trajectoryGhost?.setVisible(false);
     }
     this.entityView.setPlayerSelected(selected);
+    this.notifyUiStateChanged();
   }
 
   public deselectAll() {
     this.interactionController.deselectAll();
+    this.notifyUiStateChanged();
   }
 
   private applyRoomTheme() {
@@ -301,6 +305,7 @@ export class SceneManager {
     if (this.activeStrategy === strategy) return;
     this.activeStrategy = strategy;
     this.updateAimFromCamera(true);
+    this.notifyUiStateChanged();
   }
 
   public planAction(action: PlayerAction | null): void {
@@ -314,10 +319,43 @@ export class SceneManager {
     } else {
       this.trajectoryGhost.setVisible(false);
     }
+    this.notifyUiStateChanged();
   }
 
   public getInteractionState(): InteractionState {
     return { ...this.interactionState };
+  }
+
+  public getUiSnapshot(): SceneUiSnapshot {
+    return {
+      lossValue: this.getPlayerLoss(),
+      playerStats: this.getPlayerStats(),
+      selectedEnemyStats: this.getSelectedEnemyStats(),
+      ammoCapacity: this.getAmmoCapacity(),
+      actionLog: this.getActionLog(),
+      pendingBuffs: this.getPendingBuffs(),
+      interactionState: this.getInteractionState(),
+      heatmap: this.getFieldHeatmap(36),
+      entities: this.getEntitySnapshot(),
+      activeStrategy: this.getActiveStrategy(),
+      topologyLabel: this.getTopologyLabel(),
+      roomLabel: this.getRoomDescription(),
+      turnCount: this.getTurnCount(),
+    };
+  }
+
+  public subscribeUiState(listener: (snapshot: SceneUiSnapshot) => void): () => void {
+    this.uiListeners.add(listener);
+    listener(this.getUiSnapshot());
+    return () => {
+      this.uiListeners.delete(listener);
+    };
+  }
+
+  private notifyUiStateChanged() {
+    if (this.uiListeners.size === 0) return;
+    const snapshot = this.getUiSnapshot();
+    this.uiListeners.forEach((listener) => listener(snapshot));
   }
 
   public performMoveAction(): boolean {
@@ -330,6 +368,7 @@ export class SceneManager {
 
   public executeTurn(): void {
     this.turnController.executeTurn();
+    this.notifyUiStateChanged();
   }
 
   public getActiveStrategy(): WeaponArchetype {
@@ -374,6 +413,7 @@ export class SceneManager {
 
   public consumeBuff(buffId: BuffId) {
     this.queries.consumeBuff(buffId);
+    this.notifyUiStateChanged();
   }
 
   public getFieldHeatmap(resolution = 32): number[][] {
@@ -384,6 +424,10 @@ export class SceneManager {
     return this.queries.getEntitySnapshot();
   }
 
+  public getSelectedEnemyStats(): EnemyProfile | null {
+    return this.queries.getSelectedEnemyStats();
+  }
+
 
   /**
    * 资源清理
@@ -392,6 +436,7 @@ export class SceneManager {
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId);
     }
+    this.uiListeners.clear();
 
     // 移除事件监听
     this.renderer.domElement.removeEventListener('click', this.handleCanvasClick);
