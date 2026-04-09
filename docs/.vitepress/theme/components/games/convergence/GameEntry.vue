@@ -135,20 +135,8 @@ import ActionLog from './ui/ActionLog.vue';
 import { SceneManager } from './renderer/SceneManager';
 import { GRID_SIZE } from './config';
 import { WeaponArchetype } from './core/types';
+import type { InteractionState, EntitySnapshot, PlayerAction } from './application/types';
 import type { PlayerStats, ActionLogEntry, BuffDefinition, BuffId, EnemyProfile } from './core/types';
-
-type InteractionSnapshot = {
-  playerSelected: boolean;
-  selectedEnemyId: string | null;
-  plannedAction: 'attack' | 'move' | null;
-  targetX: number | null;
-  targetY: number | null;
-};
-
-interface EntitySnapshot {
-  player: { x: number; y: number };
-  enemies: { id: string; x: number; y: number }[];
-}
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 let sceneManager: SceneManager | null = null;
@@ -160,7 +148,7 @@ const selectedEnemyStats = ref<EnemyProfile | null>(null);
 const ammoCapacity = ref(0);
 const actionLog = ref<ActionLogEntry[]>([]);
 const pendingBuffs = ref<BuffDefinition[]>([]);
-const interactionState = ref<InteractionSnapshot>({
+const interactionState = ref<InteractionState>({
   playerSelected: false,
   selectedEnemyId: null,
   plannedAction: null,
@@ -292,11 +280,10 @@ const handleStrategySelect = (strategy: WeaponArchetype) => {
   activeStrategy.value = sceneManager.getActiveStrategy();
 };
 
-const planAction = (action: 'attack' | 'move') => {
+const planAction = (action: PlayerAction) => {
   if (!sceneManager) return;
-  // 再次点击同一动作时切换为取消效果
   if (interactionState.value.plannedAction === action) {
-    sceneManager.planAction(action === 'attack' ? 'move' : 'attack');
+    sceneManager.planAction(null);
   } else {
     sceneManager.planAction(action);
   }
@@ -734,3 +721,4 @@ const handleActionLogToggle = () => {
   color: #00ffcc;
 }
 </style>
+
