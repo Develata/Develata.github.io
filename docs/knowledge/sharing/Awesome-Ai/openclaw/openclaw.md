@@ -597,7 +597,7 @@ OpenClaw 实际内建了一个可视化管理面板和极其方便的内网穿�
 
 示例（官方给的关键片段）：
 
-```sshconfig
+```
 Host remote-gateway
     HostName <REMOTE_IP>
     User <REMOTE_USER>
