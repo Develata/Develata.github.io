@@ -38,6 +38,7 @@ Desktop.ini
 dist
 .vitepress/dist
 .vitepress/cache
+docs/.vitepress/*.timestamp-*.mjs
 cache
 
 # Environment

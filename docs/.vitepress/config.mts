@@ -48,11 +48,13 @@ export default withMermaid(
         provider: 'local',
         options: {
           /**
-           * 控制本地搜索索引的体积：保留正文语义，剔除超长代码块。
+           * 本地搜索只应索引 Markdown 的自然语言文本，而不是示例代码。
+           * 这里直接在 Markdown 源文本层做裁剪，避免把代码块送进搜索索引。
            * 不变量：
            * 1. frontmatter 显式 `search: false` 的页面必须完全排除；
            * 2. 页面标题仍应进入索引，避免结果只剩正文片段；
-           * 3. 代码块不参与索引，防止本地搜索索引膨胀到数 MB。
+           * 3. fenced code / inline code 不参与索引，防止搜索结果被代码噪声污染；
+           * 4. 搜索输入只来自 `.md` 页面源文本的非代码部分。
            */
           _render(src, env) {
             if (env.frontmatter?.search === false) {
