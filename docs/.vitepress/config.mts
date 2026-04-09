@@ -46,6 +46,34 @@ export default withMermaid(
 
       search: {
         provider: 'local',
+        options: {
+          /**
+           * 控制本地搜索索引的体积：保留正文语义，剔除超长代码块。
+           * 不变量：
+           * 1. frontmatter 显式 `search: false` 的页面必须完全排除；
+           * 2. 页面标题仍应进入索引，避免结果只剩正文片段；
+           * 3. 代码块不参与索引，防止本地搜索索引膨胀到数 MB。
+           */
+          _render(src, env) {
+            if (env.frontmatter?.search === false) {
+              return '';
+            }
+
+            const title = typeof env.frontmatter?.title === 'string'
+              ? env.frontmatter.title
+              : '';
+
+            return `${title}\n${src}`
+              .replace(/```[\s\S]*?```/g, ' ')
+              .replace(/~~~[\s\S]*?~~~/g, ' ')
+              .replace(/`[^`\n]+`/g, ' ')
+              .replace(/^#{1,6}\s+/gm, '')
+              .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+              .replace(/\[[^\]]+\]\([^)]+\)/g, '$1')
+              .replace(/\s+/g, ' ')
+              .trim();
+          },
+        },
       },
 
       socialLinks: [
