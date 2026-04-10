@@ -4,9 +4,6 @@ on:
   push:
     branches: [main]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 permissions:
   contents: read
   pages: write
@@ -28,15 +25,27 @@ jobs:
           node-version: 24
           cache: npm
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Install dependencies
         run: npm ci
       - name: Build with VitePress
         run: npm run build
+      - name: Package Pages artifact
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory docs/.vitepress/dist \
+            -cvf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=".[^/]*" \
+            .
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          path: docs/.vitepress/dist
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
 
   deploy:
     environment:
@@ -48,4 +57,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
