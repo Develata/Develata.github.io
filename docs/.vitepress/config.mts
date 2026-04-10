@@ -13,6 +13,47 @@ import { nav } from './configs/nav';
 import { sidebar } from './configs/sidebar';
 import { autoInjectTitle } from './plugins/auto-inject-title';
 
+const SEARCHABLE_PREFIXES = [
+  'index.md',
+  'about/',
+  'books/',
+  'design/',
+  'games/',
+  'knowledge/',
+];
+
+function tokenizeMixedText(text: string): string[] {
+  const normalized = text.toLowerCase().trim();
+  if (!normalized) return [];
+
+  const tokens = new Set<string>();
+  const latinTokens = normalized.match(/[a-z0-9][a-z0-9_-]*/g) ?? [];
+  latinTokens.forEach((token) => tokens.add(token));
+
+  const cjkSegments = normalized.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]+/gu) ?? [];
+  cjkSegments.forEach((segment) => {
+    tokens.add(segment);
+    if (segment.length === 1) {
+      tokens.add(segment);
+      return;
+    }
+    for (let i = 0; i < segment.length - 1; i += 1) {
+      tokens.add(segment.slice(i, i + 2));
+    }
+  });
+
+  return [...tokens];
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 export default withMermaid(
   defineConfig({
     lang: 'zh-CN',
@@ -20,6 +61,9 @@ export default withMermaid(
     description: 'Math & Code',
     base: '/',
     cleanUrls: true,
+    head: [
+      ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ],
 
     // --------------------------------------------------
     // Vite 插件配置
@@ -47,33 +91,32 @@ export default withMermaid(
       search: {
         provider: 'local',
         options: {
+          miniSearch: {
+            options: {
+              tokenize: tokenizeMixedText,
+            },
+            searchOptions: {
+              tokenize: tokenizeMixedText,
+            },
+          },
           /**
-           * 本地搜索只应索引 Markdown 的自然语言文本，而不是示例代码。
-           * 这里直接在 Markdown 源文本层做裁剪，避免把代码块送进搜索索引。
+           * 本地搜索只索引指定栏目中的 Markdown 文本内容。
            * 不变量：
            * 1. frontmatter 显式 `search: false` 的页面必须完全排除；
-           * 2. 页面标题仍应进入索引，避免结果只剩正文片段；
-           * 3. fenced code / inline code 不参与索引，防止搜索结果被代码噪声污染；
-           * 4. 搜索输入只来自 `.md` 页面源文本的非代码部分。
+           * 2. `news/` 与未来新增的未列入白名单目录默认不进入索引；
+           * 3. 页面标题与正文文本仍保留，但代码块不参与索引；
+           * 4. `_render` 必须返回 HTML，交给 VitePress 的 section 抽取逻辑继续处理。
            */
-          _render(src, env) {
-            if (env.frontmatter?.search === false) {
+          _render(src, env, md) {
+            if (env.frontmatter?.search === false || !SEARCHABLE_PREFIXES.some((prefix) => env.relativePath.startsWith(prefix))) {
               return '';
             }
-
             const title = typeof env.frontmatter?.title === 'string'
-              ? env.frontmatter.title
+              ? `<h1>${escapeHtml(env.frontmatter.title)}</h1><p>${escapeHtml(env.frontmatter.title)}</p>`
               : '';
-
-            return `${title}\n${src}`
-              .replace(/```[\s\S]*?```/g, ' ')
-              .replace(/~~~[\s\S]*?~~~/g, ' ')
-              .replace(/`[^`\n]+`/g, ' ')
-              .replace(/^#{1,6}\s+/gm, '')
-              .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
-              .replace(/\[[^\]]+\]\([^)]+\)/g, '$1')
-              .replace(/\s+/g, ' ')
-              .trim();
+            return `${title}${md.render(src, env)}`
+              .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
+              .replace(/<code[\s\S]*?<\/code>/g, ' ');
           },
         },
       },

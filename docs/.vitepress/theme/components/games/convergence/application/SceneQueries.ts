@@ -1,7 +1,8 @@
 import { FieldSystem } from '../core/math/FieldSystem';
 import { GameState } from '../core/GameState';
 import type { RoomLayoutResult } from '../core/map/RoomLayout';
-import type { ActionLogEntry, BuffDefinition, BuffId, EnemyProfile, PlayerStats, RoomTopology } from '../core/types';
+import { RoomTopology } from '../core/types';
+import type { ActionLogEntry, BuffDefinition, BuffId, EnemyProfile, PlayerStats } from '../core/types';
 import type { EntitySnapshot } from './types';
 
 interface HeatmapCache {
