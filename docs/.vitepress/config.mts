@@ -12,6 +12,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid';
 import { nav } from './configs/nav';
 import { sidebar } from './configs/sidebar';
 import { autoInjectTitle } from './plugins/auto-inject-title';
+import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
 
 const SEARCHABLE_PREFIXES = [
   'index.md',
@@ -46,29 +47,6 @@ function parseFrontmatter(src: string): { searchDisabled: boolean; title?: strin
     : undefined;
 
   return { searchDisabled, title };
-}
-
-function tokenizeMixedText(text: string): string[] {
-  const normalized = text.toLowerCase().trim();
-  if (!normalized) return [];
-
-  const tokens = new Set<string>();
-  const latinTokens = normalized.match(/[a-z0-9][a-z0-9_-]*/g) ?? [];
-  latinTokens.forEach((token) => tokens.add(token));
-
-  const cjkSegments = normalized.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]+/gu) ?? [];
-  cjkSegments.forEach((segment) => {
-    tokens.add(segment);
-    if (segment.length === 1) {
-      tokens.add(segment);
-      return;
-    }
-    for (let i = 0; i < segment.length - 1; i += 1) {
-      tokens.add(segment.slice(i, i + 2));
-    }
-  });
-
-  return [...tokens];
 }
 
 export default withMermaid(
@@ -113,7 +91,7 @@ export default withMermaid(
               tokenize: tokenizeMixedText,
             },
             searchOptions: {
-              tokenize: tokenizeMixedText,
+              tokenize: tokenizeSearchQuery,
             },
           },
           /**
