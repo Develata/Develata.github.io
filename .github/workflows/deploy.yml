@@ -33,10 +33,16 @@ jobs:
         run: npm ci
       - name: Build with VitePress
         run: npm run build
+      - name: Package Pages artifact
+        run: |
+          tar --directory docs/.vitepress/dist --create --file github-pages.tar .
+          gzip --force --best github-pages.tar
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v6
         with:
-          path: docs/.vitepress/dist
+          name: github-pages
+          path: github-pages.tar.gz
+          retention-days: 1
 
   deploy:
     environment:
