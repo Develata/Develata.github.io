@@ -22,6 +22,32 @@ const SEARCHABLE_PREFIXES = [
   'knowledge/',
 ];
 
+function escapeHtml(text: string): string {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function parseFrontmatter(src: string): { searchDisabled: boolean; title?: string } {
+  const match = src.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!match) {
+    return { searchDisabled: false };
+  }
+
+  const block = match[1];
+  const searchDisabled = /^search:\s*false\s*$/m.test(block);
+  const titleMatch = block.match(/^title:\s*(.+)\s*$/m);
+  const rawTitle = titleMatch?.[1]?.trim();
+  const title = rawTitle
+    ? rawTitle.replace(/^['"]/, '').replace(/['"]$/, '')
+    : undefined;
+
+  return { searchDisabled, title };
+}
+
 function tokenizeMixedText(text: string): string[] {
   const normalized = text.toLowerCase().trim();
   if (!normalized) return [];
@@ -43,15 +69,6 @@ function tokenizeMixedText(text: string): string[] {
   });
 
   return [...tokens];
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
 }
 
 export default withMermaid(
@@ -108,13 +125,14 @@ export default withMermaid(
            * 4. `_render` 必须返回 HTML，交给 VitePress 的 section 抽取逻辑继续处理。
            */
           _render(src, env, md) {
-            if (env.frontmatter?.search === false || !SEARCHABLE_PREFIXES.some((prefix) => env.relativePath.startsWith(prefix))) {
+            const frontmatter = parseFrontmatter(src);
+            if (frontmatter.searchDisabled || !SEARCHABLE_PREFIXES.some((prefix) => env.relativePath.startsWith(prefix))) {
               return '';
             }
-            const title = typeof env.frontmatter?.title === 'string'
-              ? `<h1>${escapeHtml(env.frontmatter.title)}</h1><p>${escapeHtml(env.frontmatter.title)}</p>`
+            const titlePrefix = typeof frontmatter.title === 'string'
+              ? `<h1>${escapeHtml(frontmatter.title)}<a href="#">#</a></h1><p>${escapeHtml(frontmatter.title)}</p>`
               : '';
-            return `${title}${md.render(src, env)}`
+            return `${titlePrefix}${md.render(src, env)}`
               .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
               .replace(/<code[\s\S]*?<\/code>/g, ' ');
           },
