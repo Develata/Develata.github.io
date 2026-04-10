@@ -1,10 +1,9 @@
 /**
  * @file search-tokenize.ts
- * @description 本地搜索分词与短语辅助函数。
+ * @description 本地搜索的索引分词与查询分词工具。
  */
 
 const LATIN_ONLY_RE = /^[a-z0-9][a-z0-9_-]*$/;
-const QUERY_TERM_RE = /[a-z0-9][a-z0-9_-]*|[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]+/gu;
 
 export function buildAdjacentLatinPhrases(tokens: string[]): string[] {
   const phrases = new Set<string>();
@@ -16,12 +15,6 @@ export function buildAdjacentLatinPhrases(tokens: string[]): string[] {
     }
   }
   return [...phrases];
-}
-
-export function extractQueryTerms(text: string): string[] {
-  const normalized = text.toLowerCase().trim();
-  if (!normalized) return [];
-  return normalized.match(QUERY_TERM_RE) ?? [];
 }
 
 export function tokenizeSearchQuery(text: string): string[] {
@@ -51,7 +44,6 @@ export function tokenizeMixedText(text: string): string[] {
 
   const latinTokenRe = /[a-z0-9][a-z0-9_-]*/g;
   const cjkSegmentRe = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]+/gu;
-  const latinOnlyRe = /^[a-z0-9][a-z0-9_-]*$/;
   const tokens = new Set<string>();
   const latinTokens = normalized.match(latinTokenRe) ?? [];
 
@@ -68,7 +60,7 @@ export function tokenizeMixedText(text: string): string[] {
   for (let i = 0; i < latinTokens.length - 1; i += 1) {
     const left = latinTokens[i];
     const right = latinTokens[i + 1];
-    if (latinOnlyRe.test(left) && latinOnlyRe.test(right)) {
+    if (LATIN_ONLY_RE.test(left) && LATIN_ONLY_RE.test(right)) {
       tokens.add(`${left} ${right}`);
     }
   }

@@ -18,7 +18,6 @@ const SEARCHABLE_PREFIXES = [
   'index.md',
   'about/',
   'books/',
-  'design/',
   'games/',
   'knowledge/',
 ];
@@ -32,10 +31,27 @@ function escapeHtml(text: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function parseFrontmatter(src: string): { searchDisabled: boolean; title?: string } {
+type SearchFrontmatter = {
+  aliases: string[];
+  keywords: string[];
+  searchDisabled: boolean;
+  title?: string;
+};
+
+function parseListField(block: string, field: string): string[] {
+  const match = block.match(new RegExp(`^${field}:\\s*\\r?\\n((?:\\s+-\\s+.*\\r?\\n?)*)`, 'm'));
+  if (!match) return [];
+  return match[1]
+    .split(/\r?\n/)
+    .map((line) => line.match(/^\s+-\s+(.+)\s*$/)?.[1]?.trim())
+    .filter((value): value is string => Boolean(value))
+    .map((value) => value.replace(/^['"]|['"]$/g, ''));
+}
+
+function parseFrontmatter(src: string): SearchFrontmatter {
   const match = src.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if (!match) {
-    return { searchDisabled: false };
+    return { aliases: [], keywords: [], searchDisabled: false };
   }
 
   const block = match[1];
@@ -45,8 +61,10 @@ function parseFrontmatter(src: string): { searchDisabled: boolean; title?: strin
   const title = rawTitle
     ? rawTitle.replace(/^['"]/, '').replace(/['"]$/, '')
     : undefined;
+  const aliases = parseListField(block, 'aliases');
+  const keywords = parseListField(block, 'keywords');
 
-  return { searchDisabled, title };
+  return { aliases, keywords, searchDisabled, title };
 }
 
 export default withMermaid(
@@ -107,12 +125,27 @@ export default withMermaid(
             if (frontmatter.searchDisabled || !SEARCHABLE_PREFIXES.some((prefix) => env.relativePath.startsWith(prefix))) {
               return '';
             }
+            const keywordHints = frontmatter.keywords
+              .filter((value) => value.trim())
+              .flatMap((value) => [
+                `<h2>${escapeHtml(value)}<a href="#">#</a></h2>`,
+                `<p>${escapeHtml(value)}</p>`,
+                `<p>${escapeHtml(value)}</p>`,
+              ])
+              .join('');
+            const aliasHints = frontmatter.aliases
+              .filter((value) => value.trim())
+              .map((value) => `<p>${escapeHtml(value)}</p>`)
+              .join('');
+            const pathHint = env.relativePath.trim()
+              ? `<p>${escapeHtml(env.relativePath.replace(/\/+/g, ' ').replace(/[-_./]/g, ' '))}</p>`
+              : '';
             const titlePrefix = typeof frontmatter.title === 'string'
               ? `<h1>${escapeHtml(frontmatter.title)}<a href="#">#</a></h1><p>${escapeHtml(frontmatter.title)}</p>`
               : '';
-            return `${titlePrefix}${md.render(src, env)}`
+            return `${keywordHints}${titlePrefix}${aliasHints}${pathHint}${md.render(src, env)}`
               .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
-              .replace(/<code[\s\S]*?<\/code>/g, ' ');
+              .replace(/<div class="language-[\s\S]*?<\/div>/g, ' ');
           },
         },
       },

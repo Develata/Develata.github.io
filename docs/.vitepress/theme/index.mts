@@ -9,7 +9,6 @@
 import { h, defineAsyncComponent } from 'vue' // Vue 的核心函数
 import DefaultTheme from 'vitepress/theme' // 引入默认主题
 import './custom.css' // 引入自定义样式
-import './search/patch-minisearch'
 import RandomJump from './components/RandomJump.vue' // 引入随机跳转组件
 import FolderTree from './components/FolderTree.vue'// 引入文件夹树组件
 import ParticlesBg from './components/Background.vue' // 引入背景组件
