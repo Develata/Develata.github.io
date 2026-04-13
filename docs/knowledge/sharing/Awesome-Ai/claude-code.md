@@ -1,6 +1,6 @@
 ---
 title: Claude Code
-date: 2026-2-11
+date: 2026-04-13
 order: 4
 ---
 
@@ -10,6 +10,8 @@ order: 4
 [GitHub Repo](https://github.com/anthropics/claude-code)
 
 Claude Code（命令 `claude`）是一个终端内的 Agent：读代码、改文件、执行命令、做 git 工作流。
+
+> 补充：Claude Code 的官方 GitHub 仓库现在已经公开，仓库内也直接包含 `plugins/`、`.claude/commands/`、`examples/hooks/` 等官方示例。
 
 官方文档：
 * https://code.claude.com/docs/en/overview
@@ -110,6 +112,7 @@ claude
 /agents
 /hooks
 /plugin
+/reload-plugins
 /terminal-setup
 /sandbox
 /compact
@@ -367,6 +370,16 @@ Hooks：用 `/hooks` 配置，写入 `settings.json` 的 `hooks` 字段；常用
 Plugins：用于打包分发 skills/agents/hooks/MCP。
 * 入口：插件目录下 `.claude-plugin/plugin.json`
 * 本地调试：`claude --plugin-dir ./my-plugin`
+
+补充：
+
+* 官方 Anthropic marketplace `claude-plugins-official` 现在默认可直接使用。
+* 安装/启用/禁用插件后，可执行 `/reload-plugins` 无需重启会话。
+* 例如安装官方 GitHub 插件：
+
+```text
+/plugin install github@claude-plugins-official
+```
 
 ---
 

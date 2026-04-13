@@ -1,6 +1,6 @@
 ---
 title: everything-claude-code
-date: 2026-2-11
+date: 2026-04-13
 order: 1
 ---
 
@@ -13,6 +13,8 @@ order: 1
 [GitHub Repo](https://github.com/affaan-m/everything-claude-code)
 
 everything-claude-code（简称 ECC）是一套“可直接落地”的 Claude Code 配置集合，目标是把 Claude Code 变成可复用的工程工作流：
+
+> 补充：ECC 近几个版本已经不再只面向 Claude Code，本体仍叫 `everything-claude-code`，但当前 README 已明确扩展到 **Claude Code、Cursor、OpenCode、Codex** 等多工具使用场景。
 
 * Agents（子代理）
 * Skills（技能/工作流）
@@ -28,7 +30,7 @@ everything-claude-code（简称 ECC）是一套“可直接落地”的 Claude C
 ## 2. 前置要求
 
 1. 已安装 Claude Code CLI。
-2. 版本要求：仓库说明 ECC 插件需要 Claude Code `v2.1.0+`。
+2. 版本要求：这篇文章原先记录的 `v2.1.0+` 已偏旧；当前更稳妥的理解是应使用**支持 marketplace / plugins / agents / hooks 的新版本 Claude Code**。
 
 检查版本：
 
@@ -51,6 +53,8 @@ claude --version
 ```text
 /plugin install everything-claude-code@everything-claude-code
 ```
+
+补充：仓库近版本也开始强调 GitHub Marketplace 入口，`ECC Tools` 已可作为 marketplace 插件分发。
 
 如果你更偏好直接改配置，也可以在 `~/.claude/settings.json` 写入（示例以仓库 README 为准）：
 
@@ -76,9 +80,9 @@ claude --version
 /plugin list everything-claude-code@everything-claude-code
 ```
 
-### 3.2 安装 Rules（必做）
+### 3.2 安装 Rules（仍然重要）
 
-重要限制：Claude Code 插件系统无法自动分发 `rules`，需要你手动安装（或用仓库脚本安装）。
+重要限制：即使现在插件体系已经更完整，`rules` 仍然通常需要你手动安装（或用仓库脚本安装），这一点没有本质改变。
 
 先克隆仓库：
 
@@ -153,6 +157,8 @@ ECC 的规则目录结构（必须按目录安装，而不是把文件拍平到�
 * `rules/typescript/`：TypeScript/JavaScript 扩展 common
 * `rules/python/`：Python 扩展 common
 * `rules/golang/`：Go 扩展 common
+
+补充：ECC 后续版本还继续扩展了更多语言/栈支持，因此这里这三组语言规则更适合理解成“最基础、最常用的内置规则层”，而不是全部支持范围。
 
 > 规则文件会互相引用（语言目录的规则会引用 `../common/...`），因此必须保留目录结构。
 
@@ -1073,7 +1079,7 @@ Hooks（推荐）：
 
 ## 13. OpenCode 支持（可选）
 
-ECC 也提供 OpenCode 的插件形态（仓库文档名为 “OpenCode ECC Plugin”）：
+ECC 也提供 OpenCode / Codex 等其他工具的兼容形态；本文这里保留最早整理时的 OpenCode 入口示例：
 
 ```bash
 npm install opencode-ecc

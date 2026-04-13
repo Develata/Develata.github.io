@@ -1,6 +1,6 @@
 ---
 title: Spec Kit（spec-kit）
-date: 2026-03-02
+date: 2026-04-13
 order: 6
 ---
 
@@ -16,6 +16,8 @@ Spec Kit 是 GitHub 出品的“Spec Driven Development”工具包：用 `speci
 * 用 `speckit.*` 命令生成 `specs/<feature>/` 下的规格、计划与任务拆解。
 * 支持两种脚本模板：`--script sh`（Bash）与 `--script ps`（PowerShell）。
 * 提供扩展系统（extensions）：在 `.specify/extensions.yml` 声明并按需启用额外命令/规则。
+
+> 补充：当前官方流程已经明确包含 `/speckit.implement`，并新增 `/speckit.clarify`、`/speckit.analyze`、`/speckit.checklist` 这些增强命令。
 
 ---
 
@@ -68,8 +70,11 @@ specify init --script ps   # PowerShell 模板（无需 WSL）
 
 1. `/speckit.constitution` -> `.specify/memory/constitution.md`
 2. `/speckit.specify` -> `specs/<feature>/spec.md`
-3. `/speckit.plan` -> `specs/<feature>/plan.md` + `research.md` + `data-model.md` + `quickstart.md` + `contracts/`
-4. `/speckit.tasks` -> `specs/<feature>/tasks.md`（注意：`tasks.md` 不由 `/speckit.plan` 生成）
+3. `/speckit.clarify`（推荐） -> 先补清需求中的歧义项
+4. `/speckit.plan` -> `specs/<feature>/plan.md` + `research.md` + `data-model.md` + `quickstart.md` + `contracts/`
+5. `/speckit.tasks` -> `specs/<feature>/tasks.md`（注意：`tasks.md` 不由 `/speckit.plan` 生成）
+6. `/speckit.analyze`（可选） -> 在实现前做规格/计划/任务之间的一致性检查
+7. `/speckit.implement` -> 按计划和任务开始实现
 
 > 注意：`<feature>` 默认来自当前 git 分支（如 `001-photo-albums`）；非 git 工作流可设置 `SPECIFY_FEATURE`。
 
