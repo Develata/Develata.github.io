@@ -1,6 +1,6 @@
 ---
 title: OpenCode
-date: 2026-1-28
+date: 2026-04-13
 order: 1
 ---
 
@@ -10,6 +10,8 @@ order: 1
 [Github Repo](https://github.com/anomalyco/opencode)
 
 OpenCode（命令通常为 `opencode`）是一个面向代码库的 AI 编码agent
+
+> 截至 **2026-04-13**，GitHub 发布页显示的最新版本为 **v1.4.3（2026-04-10）**。
 
 ---
 
@@ -30,10 +32,22 @@ curl -fsSL https://opencode.ai/install | bash
 brew install anomalyco/tap/opencode
 ```
 
+#### C. Homebrew（官方 formula，更新通常比 tap 慢）
+
+```bash
+brew install opencode
+```
+
 ### 2.2 Arch Linux（Paru）
 
 ```bash
 paru -S opencode-bin
+```
+
+如需稳定仓库版本，也可使用：
+
+```bash
+sudo pacman -S opencode
 ```
 
 ### 2.3 Windows
@@ -56,6 +70,20 @@ scoop install opencode
 npm install -g opencode-ai
 ```
 
+### 2.4 其他安装方式
+
+```bash
+mise use -g opencode
+nix run nixpkgs#opencode
+```
+
+### 2.5 Desktop App（Beta）
+
+OpenCode 现在还提供桌面版应用，可从以下地址下载：
+
+- [GitHub Releases](https://github.com/anomalyco/opencode/releases)
+- [opencode.ai/download](https://opencode.ai/download)
+
 > 更新：使用你的包管理器进行更新（brew upgrade / choco upgrade / scoop update / npm update -g opencode-ai
 等）。
 
@@ -68,6 +96,12 @@ npm install -g opencode-ai
 ```bash
 cd /path/to/your/project
 opencode
+```
+
+也可以直接：
+
+```bash
+opencode /path/to/your/project
 ```
 
 启动后会进入终端交互界面（TUI）。
@@ -205,6 +239,8 @@ OpenCode 的做法是：先在 `opencode.json/jsonc` 里把该中转服务配置
 
 它会生成（或更新）当前目录下的`AGENTS.md`，用于帮助 OpenCode 更快理解项目结构与约定。建议提交到 Git。
 
+补充：当前官方文档对 `/init` 的描述更接近“**引导式创建/更新 `AGENTS.md`**”。
+
 ---
 
 ## 4. TUI 交互基础（核心用法）
@@ -275,7 +311,9 @@ OpenCode 的做法是：先在 `opencode.json/jsonc` 里把该中转服务配置
 * `/share` / `/unshare`：分享/取消分享当前会话
 * `/editor`：调用外部编辑器（如 VS Code）编写长输入
 * `/export`：将对话导出为 Markdown 文件
-* `/theme`：切换界面主题
+* `/details`：切换工具执行细节显示
+* `/thinking`：切换思考内容显示
+* `/themes`：切换界面主题
 * `/exit` (`/quit`, `/q`)：退出
 
 ---
@@ -319,9 +357,8 @@ OpenCode 并非单一的对话框，它通过不同的 Agent 协同工作。
 *   **`@general`**：用于处理需要多步推理、跨文件搜索的复杂任务。
     *   *示例*：“@general 在整个项目中搜索所有使用了 localStorage 的地方并总结用途。”
     *   *示例*：“@general 分析项目依赖，找出是否存在循环引用。”
-*   **`@explore`**：专注于代码库的快速探索与定位。
-    *   *示例*：“@explore 找到所有包含 'TODO' 或 'FIXME' 注释的文件。”
-    *   *示例*：“@explore 这个项目的入口文件和核心路由定义在哪里？”
+
+> 补充：当前官方 README 明确写出的内置子代理是 `@general`；`@explore` 不再适合作为“稳定内置能力”来介绍。
 
 ---
 
