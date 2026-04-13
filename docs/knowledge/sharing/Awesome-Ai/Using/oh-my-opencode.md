@@ -1,15 +1,17 @@
 ---
 title: Oh My OpenCode
-date: 2026-03-02
+date: 2026-04-13
 order: 5
 ---
 
 # Oh My OpenCode (OMO) 使用指南
 
 ## 1. OMO 是什么
-[Github Repo](https://github.com/code-yeongyu/oh-my-opencode)
+[Github Repo](https://github.com/code-yeongyu/oh-my-openagent)
 
 Oh My OpenCode（OMO）不是独立 IDE，也不是新命令行工具。它是 OpenCode 的增强层：你仍然使用 `opencode`，但获得一套多代理、多模型、可编排的工程工作流。
+
+> 补充：仓库/项目名现在已经迁移到 **`oh-my-openagent`**，但产品名、npm 包名、很多配置名与命令仍然沿用 **`oh-my-opencode`** 兼容层。
 
 核心能力：
 
@@ -31,7 +33,7 @@ Oh My OpenCode（OMO）不是独立 IDE，也不是新命令行工具。它是 O
 
 ```text
 Install and configure oh-my-opencode by following the instructions here:
-https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/installation.md
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
 ```
 
 ### 2.2 手动安装或更新（回退）
@@ -41,6 +43,8 @@ bunx oh-my-opencode@latest install
 # 或
 npx oh-my-opencode@latest install
 ```
+
+> 当前发布包名仍然是 `oh-my-opencode`。
 
 ### 2.3 初始化项目上下文（项目根目录）
 
@@ -58,9 +62,16 @@ opencode --version
 
 并检查 `~/.config/opencode/opencode.json` 的 `plugin` 数组是否包含 `oh-my-opencode`。
 
+补充：现在更推荐识别/使用的插件条目名是 `oh-my-openagent`；旧的 `oh-my-opencode` 仍可加载，但通常会进入兼容路径。
+
 ### 2.5 配置模型
 
 编辑文件`xxx/.config/opencode/oh-my-opencode.json`
+
+补充：当前兼容层通常同时识别：
+
+* `oh-my-openagent.json[c]`
+* `oh-my-opencode.json[c]`
 
 ---
 
@@ -126,8 +137,8 @@ opencode
 ### 自定义命令
 自定义 Slash 命令可从以下位置加载：
 
-`.opencode/command/*.md`（项目）
-`~/.config/opencode/command/*.md`（用户）
+`.opencode/commands/*.md`（项目）
+`~/.config/opencode/commands/*.md`（用户）
 `.claude/commands/*.md`（Claude Code 兼容）
 `~/.claude/commands/*.md`（Claude Code 用户）
 
@@ -141,6 +152,13 @@ opencode
 * 用户级：`~/.config/opencode/oh-my-opencode.jsonc`
 
 另外，OpenCode 自身插件列表在：`~/.config/opencode/opencode.json`（用于确认 `oh-my-opencode` 是否被加载）。
+
+补充：迁移期内，下面两组文件名通常都能被识别：
+
+* `.opencode/oh-my-openagent.jsonc`
+* `.opencode/oh-my-opencode.jsonc`
+* `~/.config/opencode/oh-my-openagent.jsonc`
+* `~/.config/opencode/oh-my-opencode.jsonc`
 
 ### 5.2 最小配置示例
 
@@ -169,7 +187,7 @@ opencode
 | `AGENTS.md`（分层） | `/init-deep` 生成 | 给 agent 提供“就近上下文约束”，减少上下文污染 | 以为它会自动更新业务规则 |
 | `.opencode/oh-my-opencode.jsonc` | 你维护（项目级） | 团队共享的 OMO 路由/模型覆盖 | 提交了本地密钥或私密模型名 |
 | `~/.config/opencode/oh-my-opencode.jsonc` | 你维护（用户级） | 个人偏好覆盖（不影响仓库） | 用用户级配置覆盖掉团队约束 |
-| `~/.config/opencode/opencode.json` | OpenCode 维护 | OpenCode 全局配置；用于确认插件已加载 | 把 OMO 配置写进这里导致难以迁移 |
+| `~/.config/opencode/opencode.json` | OpenCode 维护 | OpenCode 全局配置；用于确认插件已加载（`oh-my-openagent` / `oh-my-opencode`） | 把 OMO 配置写进这里导致难以迁移 |
 
 ---
 
@@ -192,7 +210,7 @@ OMO 的重点是“任务语义路由”，而不是“手动切模型”。常�
 | **Sisyphus-Junior（临时工）**   | 被 `task(category=...)` 生成的执行体：模型随 category 自动选择；禁止再次委派，防止无限递归。 |
 
 
-默认模型映射（来自 OMO `features`[文档](https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/dev/docs/reference/features.md) ，建议先按默认跑通）：
+默认模型映射（来自 OMO `features`[文档](https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/docs/reference/features.md) ，建议先按默认跑通）：
 
 | Agent                 | 推荐模型（默认/备选）                                                                                                                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -244,10 +262,10 @@ OMO 的重点是“任务语义路由”，而不是“手动切模型”。常�
 ## 8. 参考链接
 
 ```text
-https://github.com/code-yeongyu/oh-my-opencode
-https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/installation.md
-https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/overview.md
-https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/orchestration.md
-https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/reference/features.md
-https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/reference/configuration.md
+https://github.com/code-yeongyu/oh-my-openagent
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/overview.md
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/orchestration.md
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/reference/features.md
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/reference/configuration.md
 ```
