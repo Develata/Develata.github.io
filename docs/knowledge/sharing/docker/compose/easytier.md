@@ -1,40 +1,60 @@
 ---
 title: easytier
-date: 2025-12-9
+date: 2026-4-14
 order: 1
 ---
-```bash
+
+## Github Repo
+
+[EasyTier Github Repo](https://github.com/EasyTier/EasyTier)
+
+## docker-compose
+
+```yaml
 services:
-  watchtower: # 用于自动更新easytier镜像，若不需要请删除这部分
-    image: m.daocloud.io/docker.io/containrrr/watchtower:latest
-    container_name: watchtower
-    restart: unless-stopped
-    environment:
-      - TZ=Asia/Shanghai
-      - WATCHTOWER_NO_STARTUP_MESSAGE
-      - DOCKER_API_VERSION=1.44
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 3600 --cleanup --label-enable
-  easytier:
-    image: m.daocloud.io/docker.io/easytier/easytier:latest
-    hostname: ali_ecs
-    container_name: easytier
-    labels:
-      com.centurylinklabs.watchtower.enable: 'true'
-    restart: unless-stopped
-    network_mode: host
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    environment:
-      - TZ=Asia/Shanghai
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    volumes:
-      - /etc/easytier:/root
-      - /etc/machine-id:/etc/machine-id:ali_ecs # 映射宿主机机器码
-    command: -d --network-name 你的用户名 --network-secret 你的密码 -p tcp://public.easytier.top:11010（官方服务器，-p可填多个，可以换成你自己的） -p 指定你的easytier服务器 -i 指定你的内网ipv4
+    easytier:
+        container_name: easytier
+        image: easytier/easytier:latest
+        hostname: ${EASYTIER_HOSTNAME}
+        labels:
+            createdBy: Apps
+            com.centurylinklabs.watchtower.enable: 'true'
+        restart: unless-stopped
+        network_mode: host
+        cap_add:
+            - NET_ADMIN
+            - NET_RAW
+        environment:
+            - TZ=${TIME_ZONE}
+        devices:
+            - /dev/net/tun:/dev/net/tun
+        volumes:
+            - ${EASYTIER_DATA_PATH}:/root
+            - /etc/machine-id:/etc/machine-id:ro
+        command: >
+            -d
+            --network-name ${EASYTIER_NETWORK_NAME}
+            --network-secret ${EASYTIER_NETWORK_SECRET}
+            ${EASYTIER_PEERS}
+            ${EASYTIER_IPV4}
+```
+
+## env
+```
+TIME_ZONE=Asia/Shanghai
+
+EASYTIER_HOSTNAME=ali_ecs
+EASYTIER_DATA_PATH=/etc/easytier
+
+EASYTIER_NETWORK_NAME=
+EASYTIER_NETWORK_SECRET=
+
+# 可填多个 -p，留空也可以
+EASYTIER_PEERS=-p tcp://public.easytier.top:11010
+
+# 例如: EASYTIER_IPV4=-i 10.144.144.2
+# 不需要就留空
+EASYTIER_IPV4=
 ```
 
 **防火墙记得放开端口11010**
