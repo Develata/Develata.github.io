@@ -289,9 +289,71 @@ AstrBot 更适合：
 
 ---
 
-## 7. FAQ（常见问题）
+## 7. 配套组件
 
-### 7.1 AstrBot 和 OpenCode / Codex / Claude Code 是一类东西吗？
+### 7.1 AstrBot-desktop 是什么
+
+`AstrBot-desktop` 可以理解为 AstrBot 的**桌面端客户端形态**。
+
+它和主仓库的关系是：
+
+* `AstrBot`：主平台 / 主服务 / 主功能底座
+* `AstrBot-desktop`：偏本地桌面使用的应用形态
+
+适合场景：
+
+* 你主要在自己电脑上使用
+* 更关注 ChatUI / 本地交互体验
+* 不想先自己部署一套服务端环境
+
+不太适合场景：
+
+* 长期稳定托管
+* 云服务器部署
+* 多人共用的正式服务
+
+这也是为什么主 README 里把它单独列出来，但同时明确说明：  
+**AstrBot-desktop 更偏桌面使用，不推荐作为服务端场景方案。**
+
+### 7.2 builtin-command-extension 是什么
+
+`builtin-command-extension` 是 AstrBot 当前生态里一个很关键的**命令扩展插件**。
+
+在 `v4.23.0` 的 changelog 里，主仓库已经明确说明：
+
+* 大部分低频内置命令被移出主仓库
+* 命令能力被整合到独立插件
+* 对应仓库就是 [builtin-command-extension](https://github.com/AstrBotDevs/builtin_commands_extension)
+
+这件事的含义是：
+
+* 旧教程里某些“内置命令默认就有”的说法，可能已经过时
+* 现在这些命令不一定在主仓库里默认保留
+* 如果你发现某些命令在新版 AstrBot 里找不到，就要先检查是否需要安装这个扩展插件
+
+从工程角度看，这样拆分是合理的：
+
+* 主仓库更聚焦平台底座
+* 命令能力做成插件，升级和维护成本更低
+* 用户也可以按需安装，而不是被迫带上一整套低频功能
+
+### 7.3 该怎么理解这三个仓库的关系
+
+最简单的记法：
+
+* `AstrBot`：主系统
+* `AstrBot-desktop`：桌面端形态
+* `builtin-command-extension`：命令扩展包
+
+如果你只想先把 AstrBot 跑起来，优先关注主仓库。  
+如果你偏桌面使用，再看 `AstrBot-desktop`。  
+如果你需要补回一些旧教程里提到的命令能力，再看 `builtin-command-extension`。
+
+---
+
+## 8. FAQ（常见问题）
+
+### 8.1 AstrBot 和 OpenCode / Codex / Claude Code 是一类东西吗？
 
 不是。
 
@@ -300,7 +362,7 @@ AstrBot 更适合：
 
 它们的定位不冲突，很多场景甚至可以互补。
 
-### 7.2 AstrBot 和普通“聊天机器人框架”有什么区别？
+### 8.2 AstrBot 和普通“聊天机器人框架”有什么区别？
 
 AstrBot 当前已经不只是“收消息 -> 调模型 -> 回消息”的传统机器人框架，而是把这些都做成了更完整的能力层：
 
@@ -313,7 +375,7 @@ AstrBot 当前已经不只是“收消息 -> 调模型 -> 回消息”的传统�
 所以更准确的理解是：  
 它是一个**面向 Agent 场景的聊天机器人基础设施平台**。
 
-### 7.3 新手该选哪种部署方式？
+### 8.3 新手该选哪种部署方式？
 
 最简单的建议：
 
@@ -322,7 +384,7 @@ AstrBot 当前已经不只是“收消息 -> 调模型 -> 回消息”的传统�
 * 纯桌面体验：AstrBot-desktop
 * 需要桌面多实例：AstrBot Launcher
 
-### 7.4 它支持私有模型吗？
+### 8.4 它支持私有模型吗？
 
 支持。
 
@@ -336,7 +398,7 @@ README 当前明确列了：
 
 ---
 
-## 8. 参考链接
+## 9. 参考链接
 
 ```text
 https://github.com/AstrBotDevs/AstrBot
@@ -344,5 +406,6 @@ https://github.com/AstrBotDevs/AstrBot/releases
 https://astrbot.app/
 https://astrbot.app/deploy/astrbot/docker.html
 https://github.com/AstrBotDevs/AstrBot-desktop
+https://github.com/AstrBotDevs/builtin_commands_extension
 https://github.com/Raven95676/astrbot-launcher
 ```

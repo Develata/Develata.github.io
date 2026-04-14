@@ -1,12 +1,12 @@
 ---
 title: OpenClaw Skills 推荐
-date: 2026-03-09
+date: 2026-04-14
 order: 2
 ---
 
 # OpenClaw Skills 推荐
 
-本文主要参考：[ClawHub](https://clawhub.ai/) 与 [OpenClaw Skills 官方文档](https://docs.openclaw.ai/skills/overview)
+本文主要参考：[ClawHub](https://clawhub.ai/) 与 [OpenClaw Skills 官方文档](https://docs.openclaw.ai/tools/skills)
 
 ## 0. 最短安装建议
 
@@ -244,7 +244,7 @@ clawhub login
 ## 参考
 
 * [ClawHub](https://clawhub.ai/)
-* [OpenClaw Skills Overview](https://docs.openclaw.ai/skills/overview)
-* [OpenClaw Skills Safety](https://docs.openclaw.ai/skills/safety)
+* [OpenClaw Skills Overview](https://docs.openclaw.ai/tools/skills)
+* [OpenClaw Skills Safety](https://docs.openclaw.ai/tools/skills)
 * [Tom's Hardware: 恶意 ClawHub skill 事件](https://www.tomshardware.com/tech-industry/cyber-security/malicious-moltbot-skill-targets-crypto-users-on-clawhub)
 * [The Verge: OpenClaw 技能市场安全问题报道](https://www.theverge.com/news/874011/openclaw-ai-skill-clawhub-extensions-security-nightmare)

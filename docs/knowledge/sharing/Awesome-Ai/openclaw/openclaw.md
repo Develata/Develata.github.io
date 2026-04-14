@@ -1,6 +1,6 @@
 ---
 title: OpenClaw
-date: 2026-2-24
+date: 2026-04-14
 order: 1
 ---
 
@@ -10,15 +10,17 @@ order: 1
 
 本文主要参考：[官方说明文档](https://docs.openclaw.ai)
 
+> 截至 **2026-04-14**，我已用 `gh api repos/openclaw/openclaw/releases/latest` 直接核对：最新 GitHub release 为 **v2026.4.12（2026-04-13）**。当前主仓库 README 已把 OpenClaw 明确定位为 **personal AI assistant**，并强调“产品本体是 assistant，Gateway 只是 control plane”。
+
 ## 0. 最短上手路径
 
 如果你只想先跑起来，再慢慢细化配置，可以按下面这 5 步：
 
 1. 安装（按系统二选一）：
-   - macOS / Linux：`curl -fsSL https://openclaw.ai/install.sh | bash`
-   - Windows PowerShell：`iwr -useb https://openclaw.ai/install.ps1 | iex`
+   - 全局安装：`npm install -g openclaw@latest`
+   - 或：`pnpm add -g openclaw@latest`
 2. 初始化：`openclaw onboard --install-daemon`
-3. 打开控制台：`openclaw dashboard`
+3. 直接对 assistant 发送消息：`openclaw agent --message "Ship checklist" --thinking high`
 4. 连接渠道（可选）：`openclaw channels login`
 5. 健康检查：`openclaw status --deep`
 
@@ -28,7 +30,7 @@ order: 1
 
 ### 1）Gateway 网关
 
-* OpenClaw 的 **Gateway 网关**是一个 WebSocket 服务器：负责 **渠道接入、会话、hooks、节点、控制 UI** 等。CLI、桌面 App、Web UI 都是通过它来交互。
+* OpenClaw 的 **Gateway 网关**是一个 WebSocket 服务器：负责 **渠道接入、会话、hooks、节点、Control UI / WebChat** 等。CLI、桌面 App、Web UI 都是通过它来交互。
 
 ### 2）智能体（Agent）与工作区（Workspace）
 
@@ -51,32 +53,36 @@ order: 1
 
 ### 2.1 安装
 
-#### 推荐方式：安装器 + 新手引导
+#### 推荐方式：npm / pnpm + 新手引导
 
-官方推荐走安装器，它会装 CLI 并引导你把网关、模型、工作区、渠道与守护进程（服务）一起配好。
+当前主 README 的推荐安装方式已经收敛为：先全局安装 CLI，再执行 `openclaw onboard`。它会引导你把网关、模型、工作区、渠道与守护进程（服务）一起配好。
 
 ```bash
-# macOS / Linux
-curl -fsSL https://openclaw.ai/install.sh | bash
-
-# Windows PowerShell（官方强烈建议在 WSL2 环境下运行）
-iwr -useb https://openclaw.ai/install.ps1 | iex
-
-# Windows CMD
-curl -fsSL https://openclaw.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+npm install -g openclaw@latest
+# 或
+pnpm add -g openclaw@latest
 ```
-更新 OpenClaw：在安装命令最后添加 `--no-onboard` 可跳过新手引导。
+
+然后执行：
+
+```bash
+openclaw onboard --install-daemon
+```
+
+补充：
+
+* 当前 README 写明：**Node 24 推荐，最低 Node 22.16+**
+* Windows 仍然建议通过 **WSL2** 使用
+
 #### npm 包管理器（全局）
 
 如果你已经安装 Node：
 
 ```bash
-# 官方安装版本
 npm install -g openclaw@latest
 
-# 某个第三方汉化
-npm install -g @qingchencloud/openclaw-zh@latest
-# [Github Repo](https://github.com/1186258278/OpenClawChineseTranslation)
+# 或
+pnpm add -g openclaw@latest
 ```
 
 更新 OpenClaw：`npm install -g openclaw@latest`
@@ -95,7 +101,7 @@ npm install -g @qingchencloud/openclaw-zh@latest
 openclaw onboard --install-daemon
 ```
 
-* 系统要求：Node >= 22（官方明确）。
+* 系统要求：**Node 24 推荐，最低 22.16+**（官方 README 当前明确）。
 * 新手引导入口：`openclaw onboard`，并支持后续用 `openclaw configure` 做二次配置。
 * 具体选项不清楚可见附录或参考官方 onboarding 文档或执行 `openclaw onboard --help`
 
@@ -109,15 +115,15 @@ openclaw onboard --install-daemon
 openclaw update
 ```
 
-### 2.3 不接任何渠道也能聊天：Dashboard（浏览器）
+### 2.3 不接任何渠道也能聊天：CLI / Control UI / WebChat
 
-如果你只想最快开始对话（先不管 WhatsApp/Telegram），官方给的“最快开聊方式”就是：直接开 Web 控制界面/仪表板。
+如果你只想最快开始对话（先不管 WhatsApp/Telegram），当前 README 的 quick start 更强调 CLI 直接发消息给 assistant：
 
 ```bash
-openclaw dashboard
+openclaw agent --message "Ship checklist" --thinking high
 ```
 
-它会打开浏览器，让你在本地就能跟智能体聊天（无需先配置任何消息渠道）。
+如果你更喜欢浏览器界面，当前主 README 已经把 **Control UI / WebChat** 作为 Gateway 自带的 Web surface 来介绍，而不只是早期“单独 dashboard 命令”的理解。
 
 ---
 
@@ -492,6 +498,12 @@ tools: {
 
 OpenClaw 支持把工具执行放进 Docker 沙箱里，降低影响面：网关仍在主机上，工具执行在隔离容器里跑。这对于防止 Agent 误删文件或被“提示词注入”后作恶非常关键。
 
+补充：最新 `v2026.4.12` 又进一步强调了本地执行与安全策略，例如：
+
+* 新增本地 `openclaw exec-policy` 命令
+* 安全修复里继续收紧 shell-wrapper / approval / busybox 等边界
+* 文档和默认行为更强调显式权限策略，而不是“默认全放开”
+
 开启沙盒：
 ```json5
 agents: {
@@ -643,9 +655,9 @@ ssh -N remote-gateway &
 
 ```text
 https://github.com/openclaw/openclaw
-https://docs.openclaw.ai/zh-CN
-https://www.80aj.com/2026/02/03/openclaw-memsearch-configuration/
-https://holtchas.github.io/openclaw-docs-zh/
-https://clawd.org.cn/
-https://open-claw.me/zh
+https://docs.openclaw.ai
+https://docs.openclaw.ai/start/getting-started
+https://docs.openclaw.ai/start/wizard
+https://docs.openclaw.ai/install/updating
+https://docs.openclaw.ai/tools/skills
 ```
