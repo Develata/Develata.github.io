@@ -38,6 +38,12 @@ const MathHub = createGameComponent(() => import('./components/games/MathHub.vue
 const TicTacToe = createGameComponent(() => import('./components/games/TicTacToe.vue'))
 const Gomoku = createGameComponent(() => import('./components/games/Gomoku.vue'))
 const GameOfLife = createGameComponent(() => import('./components/games/GameOfLife.vue'))
+const ElementaryCellularAutomata = createGameComponent(() => import('./components/games/math-lab/ElementaryCellularAutomata.vue'))
+const Sandpile = createGameComponent(() => import('./components/games/math-lab/Sandpile.vue'))
+const Percolation = createGameComponent(() => import('./components/games/math-lab/Percolation.vue'))
+const LangtonsAnt = createGameComponent(() => import('./components/games/math-lab/LangtonsAnt.vue'))
+const IsingModel = createGameComponent(() => import('./components/games/math-lab/IsingModel.vue'))
+const ReactionDiffusion = createGameComponent(() => import('./components/games/math-lab/ReactionDiffusion.vue'))
 const Minesweeper = createGameComponent(() => import('./components/games/Minesweeper.vue'))
 const Game2048 = createGameComponent(() => import('./components/games/Game2048.vue'))
 const Sudoku = createGameComponent(() => import('./components/games/Sudoku.vue'))
@@ -64,6 +70,12 @@ export default {
     app.component('TicTacToe', TicTacToe)// 注册井字棋组件
     app.component('Gomoku', Gomoku)// 注册五子棋组件
     app.component('GameOfLife', GameOfLife)// 注册生命游戏组件
+    app.component('ElementaryCellularAutomata', ElementaryCellularAutomata)// 注册一维元胞自动机组件
+    app.component('Sandpile', Sandpile)// 注册沙堆模型组件
+    app.component('Percolation', Percolation)// 注册渗流模型组件
+    app.component('LangtonsAnt', LangtonsAnt)// 注册 Langton 蚂蚁组件
+    app.component('IsingModel', IsingModel)// 注册 Ising 模型组件
+    app.component('ReactionDiffusion', ReactionDiffusion)// 注册反应扩散组件
     app.component('Minesweeper', Minesweeper)// 注册扫雷组件
     app.component('Game2048', Game2048)// 注册2048组件
     app.component('Sudoku', Sudoku)// 注册数独组件
