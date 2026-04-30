@@ -89,7 +89,10 @@ class SandpileRuntime implements SimulationRuntime {
   pointerDown(x: number, y: number) {
     const col = Math.floor((x - this.ox) / this.cell);
     const row = Math.floor(y / this.cell);
-    if (col >= 0 && col < this.n && row >= 0 && row < this.n) this.grid[row * this.n + col] += 256;
+    if (col < 0 || col >= this.n || row < 0 || row >= this.n) return;
+    const i = row * this.n + col;
+    this.grid[i] += 256;
+    if (this.grid[i] >= this.threshold) this.queue.push(i);
   }
 }
 

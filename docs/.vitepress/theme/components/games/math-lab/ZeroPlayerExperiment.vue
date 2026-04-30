@@ -16,6 +16,7 @@ const speed = ref(1);
 const seed = ref(20260428);
 const preset = ref(props.spec.presets[0]?.id ?? 'default');
 const pointerActive = ref(false);
+const editedInitialState = ref(false);
 const stats = ref<StatItem[]>([]);
 
 const configValues = reactive<Record<string, number>>({});
@@ -51,7 +52,7 @@ function resizeCanvas() {
   canvasRef.value.style.height = `${canvasHeight}px`;
   ctx = canvasRef.value.getContext('2d');
   if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  if (!running.value && generation.value === 0) {
+  if (!running.value && generation.value === 0 && !editedInitialState.value) {
     reset(false);
   } else {
     runtime.resize?.(canvasWidth, canvasHeight);
@@ -68,6 +69,7 @@ function refresh() {
 function reset(stop = true) {
   if (stop) stopRun();
   generation.value = 0;
+  editedInitialState.value = false;
   runtime.reset(canvasWidth, canvasHeight, buildConfig());
   refresh();
 }
@@ -75,8 +77,9 @@ function reset(stop = true) {
 function randomize() {
   if (running.value) return;
   seed.value = Math.floor(Math.random() * 2 ** 31);
-  if (props.spec.presets.some((item) => item.id === 'random')) {
-    preset.value = 'random';
+  const randomPreset = props.spec.randomPreset ?? 'random';
+  if (props.spec.presets.some((item) => item.id === randomPreset)) {
+    preset.value = randomPreset;
   }
   reset();
 }
@@ -84,7 +87,7 @@ function randomize() {
 function stepOnce() {
   const count = props.spec.stepsPerFrame ?? 1;
   for (let i = 0; i < count; i++) runtime.step();
-  generation.value++;
+  generation.value += count;
   refresh();
 }
 
@@ -131,6 +134,7 @@ function onPointerDown(event: PointerEvent) {
   pointerActive.value = true;
   canvasRef.value?.setPointerCapture(event.pointerId);
   runtime.pointerDown(point.x, point.y);
+  editedInitialState.value = true;
   refresh();
 }
 
@@ -139,6 +143,7 @@ function onPointerMove(event: PointerEvent) {
   const point = canvasPoint(event);
   if (!point) return;
   runtime.pointerMove(point.x, point.y);
+  editedInitialState.value = true;
   refresh();
 }
 

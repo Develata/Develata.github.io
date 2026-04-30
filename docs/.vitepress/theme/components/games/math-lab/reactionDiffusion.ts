@@ -116,6 +116,7 @@ export const reactionDiffusionSpec: ExperimentSpec = {
     { id: 'kill', label: '杀灭率', min: 0.03, max: 0.08, step: 0.001, value: 0.06 },
   ],
   canvasHeight: 360,
+  randomPreset: 'noise',
   stepsPerFrame: 2,
   create: () => new ReactionDiffusionRuntime(),
 };

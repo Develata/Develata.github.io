@@ -43,6 +43,7 @@ export interface ExperimentSpec {
   presets: SelectOption[];
   controls?: NumberOption[];
   canvasHeight?: number;
+  randomPreset?: string;
   stepsPerFrame?: number;
   create(): SimulationRuntime;
 }

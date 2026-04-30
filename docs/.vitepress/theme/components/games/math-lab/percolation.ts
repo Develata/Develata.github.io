@@ -52,6 +52,7 @@ class PercolationRuntime implements SimulationRuntime {
     const i = y * this.n + x;
     if (this.grid[i] !== 1) return;
     this.grid[i] = 2;
+    if (y === this.n - 1) this.percolates = true;
     this.queue.push(i);
   }
 
