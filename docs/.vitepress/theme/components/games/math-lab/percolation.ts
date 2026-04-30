@@ -10,14 +10,14 @@ class PercolationRuntime implements SimulationRuntime {
   private cell = 5;
   private ox = 0;
   private grid = new Uint8Array(0);
-  private queue: number[] = [];
+  private frontier: number[] = [];
   private percolates = false;
 
   reset(width: number, height: number, config: RuntimeConfig) {
     this.n = Math.max(24, Math.min(120, Math.floor(config.values.size ?? 64)));
     this.resize(width, height);
     this.grid = new Uint8Array(this.n * this.n);
-    this.queue = [];
+    this.frontier = [];
     this.percolates = false;
     const p = Math.max(0, Math.min(1, config.values.p ?? 0.59));
     const rng = createRng(config.seed);
@@ -25,7 +25,7 @@ class PercolationRuntime implements SimulationRuntime {
     for (let x = 0; x < this.n; x++) {
       if (this.grid[x] === 1) {
         this.grid[x] = 2;
-        this.queue.push(x);
+        this.frontier.push(x);
       }
     }
   }
@@ -36,9 +36,9 @@ class PercolationRuntime implements SimulationRuntime {
   }
 
   step() {
-    const limit = 900;
-    for (let k = 0; k < limit && this.queue.length > 0; k++) {
-      const i = this.queue.shift() ?? 0;
+    const current = this.frontier;
+    this.frontier = [];
+    for (const i of current) {
       if (this.grid[i] !== 2) continue;
       const x = i % this.n;
       const y = Math.floor(i / this.n);
@@ -53,13 +53,21 @@ class PercolationRuntime implements SimulationRuntime {
     if (this.grid[i] !== 1) return;
     this.grid[i] = 2;
     if (y === this.n - 1) this.percolates = true;
-    this.queue.push(i);
+    this.frontier.push(i);
+  }
+
+  private rebuildFrontier() {
+    this.frontier = [];
+    this.percolates = false;
+    for (let x = 0; x < this.n; x++) {
+      if (this.grid[x] === 2) this.frontier.push(x);
+    }
   }
 
   draw(ctx: CanvasRenderingContext2D, width: number, height: number) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#020617';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(this.ox, 0, this.n * this.cell, this.n * this.cell);
     for (let y = 0; y < this.n; y++) {
       for (let x = 0; x < this.n; x++) {
         const v = this.grid[y * this.n + x];
@@ -87,10 +95,10 @@ class PercolationRuntime implements SimulationRuntime {
     const i = row * this.n + col;
     if (this.grid[i] === 0) {
       this.grid[i] = row === 0 ? 2 : 1;
-      if (row === 0) this.queue.push(i);
     } else {
       this.grid[i] = 0;
     }
+    this.rebuildFrontier();
   }
 }
 

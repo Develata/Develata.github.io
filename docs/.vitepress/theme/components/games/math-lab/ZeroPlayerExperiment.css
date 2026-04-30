@@ -1,4 +1,4 @@
-.sim { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; user-select: none; }
+.sim { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 100%; min-width: 0; margin-top: 20px; user-select: none; }
 .sim-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
 .sim-head h2 { margin: 0; font-size: 1.35rem; }
 .sim-head p { margin: 4px 0 0; color: var(--vp-c-text-2); }
@@ -14,6 +14,12 @@ input { width: 88px; }
 .sim-canvas { width: 100%; max-width: 100%; overflow: hidden; border: 1px solid var(--vp-c-divider); border-radius: 12px; background: var(--vp-c-bg-alt); line-height: 0; }
 canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
 @media (max-width: 640px) {
-  .sim-controls button { flex: 1 1 40%; }
-  .sim-config label { flex: 1 1 140px; }
+  .sim-controls, .sim-config { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sim-controls button { width: 100%; }
+  .sim-controls label { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .sim-config label { display: grid; grid-template-columns: auto minmax(0, 1fr); min-width: 0; }
+  select, input { width: 100%; min-width: 0; }
+}
+@media (max-width: 420px) {
+  .sim-config { grid-template-columns: 1fr; }
 }

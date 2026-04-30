@@ -85,6 +85,12 @@ function randomize() {
 }
 
 function stepOnce() {
+  runtime.step();
+  generation.value += 1;
+  refresh();
+}
+
+function stepFrame() {
   const count = props.spec.stepsPerFrame ?? 1;
   for (let i = 0; i < count; i++) runtime.step();
   generation.value += count;
@@ -94,7 +100,7 @@ function stepOnce() {
 function loop(timestamp: number) {
   if (!running.value) return;
   if (timestamp - lastTime >= interval.value) {
-    stepOnce();
+    stepFrame();
     lastTime = timestamp;
   }
   frameId = requestAnimationFrame(loop);
