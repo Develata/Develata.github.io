@@ -58,6 +58,7 @@ class ReactionDiffusionRuntime implements SimulationRuntime {
     }
     [this.u, this.u2] = [this.u2, this.u];
     [this.v, this.v2] = [this.v2, this.v];
+    return true;
   }
 
   private setPatch(x: number, y: number, u: number, v: number) {

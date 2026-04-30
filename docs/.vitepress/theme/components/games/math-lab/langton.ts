@@ -52,12 +52,13 @@ class LangtonRuntime implements SimulationRuntime {
     if (this.dir === 1) this.x = (this.x + 1) % this.n;
     if (this.dir === 2) this.y = (this.y + 1) % this.n;
     if (this.dir === 3) this.x = (this.x - 1 + this.n) % this.n;
+    return true;
   }
 
   draw(ctx: CanvasRenderingContext2D, width: number, height: number) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(this.ox, 0, this.n * this.cell, this.n * this.cell);
     ctx.fillStyle = '#111827';
     for (let y = 0; y < this.n; y++) {
       for (let x = 0; x < this.n; x++) {

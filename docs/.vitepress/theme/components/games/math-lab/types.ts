@@ -30,7 +30,7 @@ export interface RuntimeConfig {
 export interface SimulationRuntime {
   reset(width: number, height: number, config: RuntimeConfig): void;
   resize?(width: number, height: number): void;
-  step(): void;
+  step(): boolean;
   draw(ctx: CanvasRenderingContext2D, width: number, height: number): void;
   stats(): StatItem[];
   pointerDown?(x: number, y: number): void;

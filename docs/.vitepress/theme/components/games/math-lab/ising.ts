@@ -47,6 +47,7 @@ class IsingRuntime implements SimulationRuntime {
       const delta = 2 * s * (sum + this.field);
       if (delta <= 0 || this.rng() < Math.exp(-delta / this.temp)) this.spins[i] = -s;
     }
+    return true;
   }
 
   private at(x: number, y: number) {
@@ -58,7 +59,7 @@ class IsingRuntime implements SimulationRuntime {
   draw(ctx: CanvasRenderingContext2D, width: number, height: number) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(this.ox, 0, this.n * this.cell, this.n * this.cell);
     for (let y = 0; y < this.n; y++) {
       for (let x = 0; x < this.n; x++) {
         ctx.fillStyle = this.spins[y * this.n + x] > 0 ? '#f8fafc' : '#334155';

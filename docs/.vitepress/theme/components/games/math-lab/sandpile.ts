@@ -23,6 +23,14 @@ class SandpileRuntime implements SimulationRuntime {
     const rng = createRng(config.seed);
     if (config.preset === 'random') {
       for (let i = 0; i < this.grid.length; i++) this.grid[i] = Math.floor(rng() * this.threshold);
+    } else if (config.preset === 'random-active') {
+      for (let i = 0; i < this.grid.length; i++) this.grid[i] = Math.floor(rng() * this.threshold);
+      const piles = Math.max(8, Math.floor(this.grid.length / 512));
+      for (let k = 0; k < piles; k++) {
+        const i = Math.floor(rng() * this.grid.length);
+        this.grid[i] += this.threshold * (4 + Math.floor(rng() * 20));
+        this.queue.push(i);
+      }
     } else if (config.preset === 'center') {
       this.grid[center] = Math.floor(config.values.grains ?? 3200);
       this.queue.push(center);
@@ -36,8 +44,7 @@ class SandpileRuntime implements SimulationRuntime {
 
   step() {
     if (this.queue.length === 0) this.seedActive();
-    const limit = 1800;
-    for (let k = 0; k < limit && this.queue.length > 0; k++) {
+    while (this.queue.length > 0) {
       const i = this.queue.pop() ?? 0;
       if (this.grid[i] < this.threshold) continue;
       this.grid[i] -= this.threshold;
@@ -45,7 +52,9 @@ class SandpileRuntime implements SimulationRuntime {
       const y = Math.floor(i / this.n);
       this.add(x - 1, y); this.add(x + 1, y); this.add(x, y - 1); this.add(x, y + 1);
       if (this.grid[i] >= this.threshold) this.queue.push(i);
+      return true;
     }
+    return false;
   }
 
   private add(x: number, y: number) {
@@ -64,7 +73,7 @@ class SandpileRuntime implements SimulationRuntime {
   draw(ctx: CanvasRenderingContext2D, width: number, height: number) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(this.ox, 0, this.n * this.cell, this.n * this.cell);
     const colors = ['#111827', '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#f8fafc'];
     for (let y = 0; y < this.n; y++) {
       for (let x = 0; x < this.n; x++) {
@@ -101,6 +110,7 @@ export const sandpileSpec: ExperimentSpec = {
   subtitle: '局部坍塌与守恒律产生自组织临界图案。',
   presets: [
     { id: 'center', label: '中心沙堆' },
+    { id: 'random-active', label: '随机扰动' },
     { id: 'random', label: '随机稳定态' },
     { id: 'empty', label: '空网格' },
   ],
@@ -109,5 +119,7 @@ export const sandpileSpec: ExperimentSpec = {
     { id: 'grains', label: '中心沙量', min: 100, max: 12000, step: 100, value: 3200 },
   ],
   canvasHeight: 360,
+  randomPreset: 'random-active',
+  stepsPerFrame: 1800,
   create: () => new SandpileRuntime(),
 };

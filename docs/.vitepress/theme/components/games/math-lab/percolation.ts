@@ -37,14 +37,18 @@ class PercolationRuntime implements SimulationRuntime {
 
   step() {
     const current = this.frontier;
+    if (current.length === 0) return false;
     this.frontier = [];
+    let advanced = false;
     for (const i of current) {
       if (this.grid[i] !== 2) continue;
+      advanced = true;
       const x = i % this.n;
       const y = Math.floor(i / this.n);
       if (y === this.n - 1) this.percolates = true;
       this.flow(x - 1, y); this.flow(x + 1, y); this.flow(x, y - 1); this.flow(x, y + 1);
     }
+    return advanced;
   }
 
   private flow(x: number, y: number) {

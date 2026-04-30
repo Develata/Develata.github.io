@@ -85,15 +85,23 @@ function randomize() {
 }
 
 function stepOnce() {
-  runtime.step();
-  generation.value += 1;
+  if (runtime.step()) generation.value += 1;
   refresh();
 }
 
 function stepFrame() {
   const count = props.spec.stepsPerFrame ?? 1;
-  for (let i = 0; i < count; i++) runtime.step();
-  generation.value += count;
+  let advanced = 0;
+  let halted = false;
+  for (let i = 0; i < count; i++) {
+    if (!runtime.step()) {
+      halted = true;
+      break;
+    }
+    advanced++;
+  }
+  generation.value += advanced;
+  if (halted) stopRun();
   refresh();
 }
 
@@ -103,7 +111,7 @@ function loop(timestamp: number) {
     stepFrame();
     lastTime = timestamp;
   }
-  frameId = requestAnimationFrame(loop);
+  if (running.value) frameId = requestAnimationFrame(loop);
 }
 
 function startRun() {

@@ -53,6 +53,7 @@ class ElementaryRuntime implements SimulationRuntime {
       this.grid[dst + x] = (this.rule >> code) & 1;
     }
     this.row++;
+    return true;
   }
 
   draw(ctx: CanvasRenderingContext2D, width: number, height: number) {
