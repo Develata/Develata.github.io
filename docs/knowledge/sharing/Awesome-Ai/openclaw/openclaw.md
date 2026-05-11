@@ -1,61 +1,36 @@
 ---
 title: OpenClaw
-date: 2026-04-14
+date: 2026-05-11
 order: 1
 ---
 
-# OpenClaw 使用说明
+# OpenClaw 使用指南
+
+## 1. OpenClaw 是什么
 
 [Github Repo](https://github.com/openclaw/openclaw)
 
-本文主要参考：[官方说明文档](https://docs.openclaw.ai)
+OpenClaw（命令 `openclaw`）是 self-hosted personal AI assistant：一个常驻 Gateway 连接 WhatsApp、Telegram、Slack、Discord、飞书 / Lark、Signal、iMessage、Matrix、Teams、WebChat 等渠道，再把消息交给 agent、tools、skills、memory、cron 处理。
 
-> 截至 **2026-04-14**，我已用 `gh api repos/openclaw/openclaw/releases/latest` 直接核对：最新 GitHub release 为 **v2026.4.12（2026-04-13）**。当前主仓库 README 已把 OpenClaw 明确定位为 **personal AI assistant**，并强调“产品本体是 assistant，Gateway 只是 control plane”。
+官方文档：
 
-## 0. 最短上手路径
+* https://docs.openclaw.ai
+* https://docs.openclaw.ai/start/getting-started
+* https://docs.openclaw.ai/install/docker
+* https://docs.openclaw.ai/channels/feishu
 
-如果你只想先跑起来，再慢慢细化配置，可以按下面这 5 步：
+> 截至 **2026-05-11**，官方 README 仍把 OpenClaw 定位为 **Personal AI Assistant**，并强调 Gateway 只是 control plane，产品本体是 assistant。当前推荐运行时是 **Node 24**，最低 **Node 22.16+**；Windows 建议通过 WSL2 使用。最新 GitHub release 已到 **v2026.5.6（2026-05-06）**，旧文中的 `v2026.4.12` 已过时。
 
-1. 安装（按系统二选一）：
-   - 全局安装：`npm install -g openclaw@latest`
-   - 或：`pnpm add -g openclaw@latest`
-2. 初始化：`openclaw onboard --install-daemon`
-3. 直接对 assistant 发送消息：`openclaw agent --message "Ship checklist" --thinking high`
-4. 连接渠道（可选）：`openclaw channels login`
-5. 健康检查：`openclaw status --deep`
-
----
-
-## 1. 3 个关键概念
-
-### 1）Gateway 网关
-
-* OpenClaw 的 **Gateway 网关**是一个 WebSocket 服务器：负责 **渠道接入、会话、hooks、节点、Control UI / WebChat** 等。CLI、桌面 App、Web UI 都是通过它来交互。
-
-### 2）智能体（Agent）与工作区（Workspace）
-
-* OpenClaw 默认就能跑一个内置智能体 + 默认工作区（通常在 `~/.openclaw/workspace`）。只有当你需要 **限制触发人、群聊策略、改工作区、多智能体、模型/工具/沙箱** 等时，才需要写配置。
-* **多智能体并发 (Multi-Agent)**：你甚至可以在配置文件中写多个完全不同的智能体，根据渠道或人来做自动路由（比如家里用一个，Slack里用另一个）。
-
-### 3）“记忆”不是聊天记录，而是一套可索引的笔记体系
-
-* 记忆的核心是工作区里的 `MEMORY.md` 与 `memory/*.md`（以及你额外加入的路径），OpenClaw可对它们做语义索引，用 `memory_search` / `memory_get` 工具按需召回。
-
----
-
-## 2. 快速上手
-
-### 推荐配置
+### 1.1 推荐配置
 
 `>= 2 核 2G`（建议开 SWAP），最好 `>= 2 核 4G`。
 
 若服务器性能不足，可考虑基于 Rust 的轻量替代方案 [zeroclaw](https://github.com/zeroclaw-labs/zeroclaw)。
 
-### 2.1 安装
 
-#### 推荐方式：npm / pnpm + 新手引导
+## 2. 安装与更新
 
-当前主 README 的推荐安装方式已经收敛为：先全局安装 CLI，再执行 `openclaw onboard`。它会引导你把网关、模型、工作区、渠道与守护进程（服务）一起配好。
+### 2.1 npm / pnpm
 
 ```bash
 npm install -g openclaw@latest
@@ -63,247 +38,381 @@ npm install -g openclaw@latest
 pnpm add -g openclaw@latest
 ```
 
-然后执行：
+初始化：
 
 ```bash
 openclaw onboard --install-daemon
 ```
 
-补充：
+`onboard` 会引导你配置 Gateway、模型、工作区、聊天渠道、skills 和后台服务。
 
-* 当前 README 写明：**Node 24 推荐，最低 Node 22.16+**
-* Windows 仍然建议通过 **WSL2** 使用
+### 2.2 onboard 关键选择
 
-#### npm 包管理器（全局）
+`openclaw onboard` 默认 quickstart：本地 Gateway、默认工作区、端口 `18789`、Token 认证、Tailscale 关闭。单机自用直接选默认；要远程访问、多设备、公开渠道，再走 advanced。
 
-如果你已经安装 Node：
+已有配置时：
 
-```bash
-npm install -g openclaw@latest
+* `Keep`：保留现有配置，只补缺项
+* `Modify`：保留为主，逐步修改关键项
+* `Reset`：重置配置；优先 `Config only`，不要一开始 full reset
 
-# 或
-pnpm add -g openclaw@latest
-```
-
-更新 OpenClaw：`npm install -g openclaw@latest`
-
-#### Docker（隔离但配置复杂）
-
-从仓库根目录：
+非交互模式必须显式承认风险：
 
 ```bash
-./docker-setup.sh
+openclaw onboard --non-interactive --accept-risk \
+  --mode local \
+  --gateway-bind loopback \
+  --gateway-port 18789 \
+  --install-daemon \
+  --daemon-runtime node
 ```
 
-安装完成后（或如果你跳过了新手引导），最关键的一步通常是：
+### 2.3 Docker
+
+Docker Compose部署：
+
+* [OpenClaw Docker Compose 1panel版](/knowledge/sharing/docker/compose/openclaw)
+
+官方 Docker 流程推荐从仓库根目录执行：
 
 ```bash
-openclaw onboard --install-daemon
+export OPENCLAW_IMAGE="ghcr.io/openclaw/openclaw:latest"
+./scripts/docker/setup.sh
 ```
 
-* 系统要求：**Node 24 推荐，最低 22.16+**（官方 README 当前明确）。
-* 新手引导入口：`openclaw onboard`，并支持后续用 `openclaw configure` 做二次配置。
-* 具体选项不清楚可见附录或参考官方 onboarding 文档或执行 `openclaw onboard --help`
+这个脚本会自动 onboarding、生成 Gateway token、写入 `.env` 并启动 compose。手写 compose 时，也要先跑一次 onboarding / config 写入，否则 Gateway 可能因为缺少 `gateway.mode=local` 拒绝启动。
 
-### 2.2 更新
-
-推荐：重新安装即可（原地升级）。
-
-或执行
+### 2.4 更新
 
 ```bash
 openclaw update
+openclaw doctor
 ```
 
-### 2.3 不接任何渠道也能聊天：CLI / Control UI / WebChat
-
-如果你只想最快开始对话（先不管 WhatsApp/Telegram），当前 README 的 quick start 更强调 CLI 直接发消息给 assistant：
+Docker 部署：
 
 ```bash
-openclaw agent --message "Ship checklist" --thinking high
+docker compose pull
+docker compose up -d
+docker compose run --rm openclaw-cli doctor
 ```
-
-如果你更喜欢浏览器界面，当前主 README 已经把 **Control UI / WebChat** 作为 Gateway 自带的 Web surface 来介绍，而不只是早期“单独 dashboard 命令”的理解。
 
 ---
 
-### 2.4 立刻接入 WhatsApp（最常用）
+## 3. 快速开始
 
-WhatsApp 渠道的推荐流程是：
+本地最短路径：
 
-1. 在配置文件中写 WhatsApp 配置（至少建议做 allowlist / pairing，避免公开暴露）
-2. 用 CLI 扫码登录（关联设备）
-3. 启动 Gateway 网关
-4. 让机器人只响应你（allowFrom / dmPolicy / group requireMention）
+```bash
+openclaw onboard --install-daemon
+openclaw agent --message "Ship checklist" --thinking high
+openclaw status --deep
+```
 
-官方 WhatsApp 文档明确：用 `openclaw channels login` 扫二维码。
+前台启动 Gateway：
+
+```bash
+openclaw gateway run
+```
+
+默认端口：
+
+* `18789`：Gateway WebSocket、Control UI / WebChat、health endpoint
+* `18790`：bridge port，官方 compose 默认也暴露
+
+浏览器打开：
+
+```text
+http://127.0.0.1:18789/
+```
+
+Docker 健康检查：
+
+```bash
+curl http://127.0.0.1:18789/healthz
+curl http://127.0.0.1:18789/readyz
+```
+
+---
+
+## 4. 常用命令
+
+```bash
+openclaw onboard --install-daemon
+openclaw configure
+openclaw config get
+openclaw agent --message "..."
+openclaw gateway run
+openclaw gateway restart
+openclaw status --deep
+openclaw logs --follow
+openclaw doctor
+openclaw health
+openclaw gateway status
+openclaw gateway probe
+```
+
+Docker 管理：
+
+```bash
+docker compose up -d
+docker compose down
+docker compose logs -f openclaw-gateway
+docker compose run --rm openclaw-cli dashboard --no-open
+```
+
+渠道命令：
+
+```bash
+docker compose run --rm openclaw-cli channels login
+docker compose run --rm openclaw-cli channels add
+docker compose run --rm openclaw-cli channels add --channel telegram --token "<token>"
+```
+
+---
+
+## 5. 配置与数据目录
+
+默认配置：
+
+```text
+~/.openclaw/openclaw.json
+~/.openclaw/.env
+~/.openclaw/workspace/
+```
+
+`openclaw.json` 是 JSON5：支持注释和尾逗号，但 schema 校验严格。未知键、类型错误、非法值都会让 Gateway 拒绝启动。
+
+Docker 内路径：
+
+```text
+/home/node/.openclaw
+/home/node/.openclaw/workspace
+```
+
+常见内容：
+
+```text
+openclaw.json                 Gateway / agents / channels 配置
+.env                          Gateway token 与模型服务 key
+agents/*/agent/auth-profiles   provider OAuth / API-key auth
+workspace/MEMORY.md            主记忆
+workspace/memory/*.md          结构化记忆
+workspace/sessions/            会话数据
+workspace/cron/                定时任务运行记录
+```
+
+规则：
+
+* 定期备份 `.openclaw/` 或 Docker 的 `config/`、`workspace/`
+* 不提交 `.env`、auth profiles、sessions、memory
+* Docker 中不要把宿主机路径写进容器运行时的 `OPENCLAW_CONFIG_DIR`
+* 多 agent 用 `openclaw agents add work`，不要手动复制工作区混用
+
+改配置的三种入口：
+
+```bash
+openclaw configure
+openclaw configure --section models --section channels
+openclaw config get
+openclaw config set gateway.mode local
+```
+
+远程 / UI 场景可用 Gateway RPC：
+
+```bash
+openclaw gateway call config.get --params '{}'
+openclaw gateway call config.patch --params '{"raw":"{ gateway: { mode: \"local\" } }","baseHash":"<hash>"}'
+```
+
+如果通过 systemd / launchd 常驻运行，模型 Key 要同时对服务进程可见。Linux user service 常见做法是把 key 放进环境文件，再重启 Gateway；CLI 侧也可放入 `~/.openclaw/.env`。
+
+---
+
+## 6. 模型与中转
+
+常见认证方式：
+
+* OpenAI / Codex OAuth
+* OpenAI API key
+* Anthropic API key
+* OpenRouter API key
+* 自定义 OpenAI-compatible / Anthropic-compatible endpoint
+
+第三方 OpenAI-compatible 示例：
+
+```json5
+{
+  models: {
+    providers: {
+      moonshot: {
+        baseUrl: "https://api.moonshot.ai/v1",
+        auth: "api-key",
+        apiKey: "${MOONSHOT_API_KEY}",
+        api: "openai-responses",
+        models: [
+          { id: "kimi-k2.5", name: "Kimi K2.5" }
+        ]
+      }
+    }
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "moonshot/kimi-k2.5",
+        fallbacks: [
+          "anthropic/claude-sonnet-4-5",
+          "openai/gpt-5.2"
+        ]
+      }
+    }
+  }
+}
+```
+
+Docker 里访问宿主机 Ollama / LM Studio：
+
+```text
+http://host.docker.internal:11434
+http://host.docker.internal:1234
+```
+
+宿主机模型服务要监听 `0.0.0.0`，不是只监听 `127.0.0.1`。
+
+---
+
+## 7. 聊天渠道
+
+官方 README 列出的渠道包括 WhatsApp、Telegram、Slack、Discord、Google Chat、Signal、iMessage、IRC、Teams、Matrix、飞书 / Lark、LINE、Mattermost、Nextcloud Talk、Nostr、Synology Chat、Twitch、Zalo、WeChat、QQ、WebChat 等。
+
+安全默认：
+
+* 私信默认 pairing：陌生人先收到配对码，批准后才处理消息
+* 群聊默认建议 require mention
+* 不要把 `dmPolicy` 改成 `open` 后再放开 `"*"`，除非你非常明确风险
+
+批准配对：
+
+```bash
+openclaw pairing approve <channel> <code>
+```
+
+### 7.1 WhatsApp / Telegram
+
+WhatsApp 扫码：
 
 ```bash
 openclaw channels login
 ```
 
-然后启动网关（前台）：
+Telegram：
 
 ```bash
-openclaw gateway run
-# 或简写
-openclaw gateway
+openclaw channels add --channel telegram --token "<bot-token>"
+openclaw gateway restart
 ```
 
-> 注意：默认情况下，Gateway **要求配置里设置** `gateway.mode=local` 才允许启动；临时调试可以用 `--allow-unconfigured`。
+### 7.2 飞书 / Lark
 
-#### 立刻接入 Feishu（国内常用）
+官方 Feishu/Lark 渠道默认事件传输是 `websocket`，`webhook` 为可选模式。WebSocket 长连接不需要公网回调 URL，更适合个人服务器。
 
-Feishu/Lark 一般通过渠道配置接入，建议按下面流程做最小可用联通：
-
-1. 在飞书开放平台创建应用，拿到 App ID / App Secret，并配置事件订阅回调地址。
-2. 在 OpenClaw 配置中补充 Feishu 渠道，并先限制触发范围（测试账号或测试群）。
-3. 启动 Gateway，完成事件校验与消息回调连通。
-4. 用日志和状态命令确认是否收发正常。
+最短流程：
 
 ```bash
-openclaw configure --section channels
-openclaw gateway run
-openclaw logs --follow
+openclaw channels add
+openclaw gateway restart
 ```
 
-安全建议（强烈建议先做）：
+选择 Feishu 后填入 App ID / App Secret。飞书开放平台需要启用 Bot 能力、导入权限、事件订阅选择长连接，并添加 `im.message.receive_v1`。
 
-* 先用测试账号/测试群验证，不要直接全员放开
-* 群聊开启 mention 门控，避免机器人“见消息就回”
-* token/secret 优先放环境变量或受限权限文件，不要明文入库
+手动配置结构：
 
-
-
-## 3. 日常管理（配置/服务/诊断）
-
-### 配置文件在哪里、是什么格式
-
-默认配置路径：
-
-* `~/.openclaw/openclaw.json`
-
-它是 **JSON5**（支持斜杠 `//` 注释、也支持尾逗号），这对复杂的环境变配非常友好，并且有着 **严格 schema 校验**：
-
-* 任何未知键、类型不对、非法值都会导致 Gateway 拒绝启动（安全护栏）。
-
-### 3 种改配置方式：向导 / config set / RPC patch
-
-#### 方式 1：向导（最稳）
-
-```bash
-openclaw configure
-# 或分段
-openclaw configure --section models --section channels
+```json5
+{
+  channels: {
+    feishu: {
+      enabled: true,
+      domain: "feishu",
+      dmPolicy: "pairing",
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["oc_xxx"],
+      requireMention: true,
+      accounts: {
+        main: {
+          appId: "cli_xxx",
+          appSecret: "${FEISHU_APP_SECRET}",
+          name: "My AI assistant"
+        }
+      }
+    }
+  }
+}
 ```
 
-#### 方式 2：非交互式改键（适合脚本）
+说明：
 
-官方推荐 `openclaw config get|set|unset` 做非交互编辑。
-
-例如（把网关模式设为本地）：
-
-```bash
-openclaw config set gateway.mode local
-```
-
-#### 方式 3：RPC 级别（适合远程/控制台 UI）
-
-网关提供 `config.apply`（整份替换）与 `config.patch`（merge patch 语义局部更新）。
-
-示例（先取 hash，再 patch）：
-
-```bash
-openclaw gateway call config.get --params '{}'
-openclaw gateway call config.patch --params '{
-  "raw": "{\n  channels: { telegram: { groups: { \"*\": { requireMention: false } } } }\n}\n",
-  "baseHash": "<hash-from-config.get>",
-  "restartDelayMs": 1000
-}'
-```
+* `domain: "feishu"` 用国内飞书，`"lark"` 用国际版
+* group ID 通常形如 `oc_xxx`
+* 私聊默认 pairing；allowlist 模式下用 open_id，通常形如 `ou_xxx`
+* 支持文本、图片、文件、音频、视频 / media、交互卡片
 
 ---
 
-### Gateway 网关怎么跑、怎么装成服务
+## 8. 核心功能
 
-#### 前台运行
+### 8.1 Gateway
 
-```bash
-openclaw gateway run
-# 或
-openclaw gateway
+Gateway 是 OpenClaw 的常驻控制平面，负责 channels、nodes、sessions、hooks、tools 和 WebChat。默认要求配置中存在：
+
+```json5
+{
+  gateway: {
+    mode: "local"
+  }
+}
 ```
 
-关键点（官方）：
+如果缺少该项，Gateway 会拒绝启动；临时调试可用 `--allow-unconfigured`，但不要把它当成生产配置。
 
-* 默认会拒绝启动，除非配置了 `gateway.mode=local`（安全护栏）。
-* 非 loopback 绑定时，如果没有认证会被阻止（建议始终用 token）。
-* 设备需要pairing
+绑定与认证：
 
-#### 装成服务（launchd/systemd/schtasks）
+* `loopback`：只允许本机访问，适合 SSH 隧道
+* `tailnet`：通过 Tailscale 访问，优先于直接开 LAN
+* `lan`：局域网访问，必须配 token / 反代认证 / 防火墙
+* 非 loopback 绑定不要关闭认证
+
+服务管理：
 
 ```bash
 openclaw gateway install
 openclaw gateway start
-openclaw gateway status
 openclaw gateway restart
 openclaw gateway stop
 openclaw gateway uninstall
 ```
 
-### 诊断：status / logs / doctor / health
+Tailscale：
 
-官方给了一套“60 秒快速分类命令”，非常实用：
-
-* `openclaw status`：本地摘要（网关可达性、服务、会话、提供商配置状态）
-* `openclaw logs --follow`：实时日志
-* `openclaw doctor`：配置/环境/服务诊断（配置不合法时尤其关键）
-* `openclaw gateway status` / `openclaw gateway probe`：探测你到底连的是哪个网关、端口有没有错
-* `openclaw health` / `openclaw status --deep`：更深的健康检查（需要网关可达）
-
-其中一个高频坑：如果你曾经用 `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` 之类设置过环境变量，它可能覆盖配置文件导致持续“未授权”，doctor 文档专门提醒了检查/取消方式。
-
----
-
-## 4. 进阶：多智能体与路由
-
-当你要把 OpenClaw变成“多机器人/多工作区/多身份”的系统时，核心在：
-
-* `agents.defaults`：默认智能体的通用设置
-* `agents.list[]`：定义多个智能体（每个可不同 workspace、model、sandbox、tools…）
-* `bindings`：把不同渠道/账号/会话匹配路由到不同 agent（配置页有专门章节提示多智能体路由与绑定思路）。
-
-新增一个隔离智能体（向导提到的方式）：
-
-```bash
-openclaw agents add work
+```json5
+{
+  gateway: {
+    tailscale: {
+      mode: "serve"
+    }
+  }
+}
 ```
 
-它会为新智能体创建独立工作区、会话与认证配置文件（这点非常关键：**认证是按智能体隔离**的，不是全局共享）。
+`serve` 只暴露到 tailnet；`funnel` 是公网入口，默认不建议。
 
----
+### 8.2 Memory
 
-## 5. 进阶：记忆系统（MemSearch / MEMORY.md）
+OpenClaw 的记忆不是黑盒数据库，而是工作区内可编辑的 Markdown：
 
-### 记忆检索的工作方式（你必须知道的“真实行为”）
-
-官方概念页讲得很透：OpenClaw 会对 `MEMORY.md`、`memory/**/*.md`（以及 `memorySearch.extraPaths`）构建向量索引，用于“措辞不同也能召回”的语义检索。
-
-并且有几条关键事实：
-
-* **默认启用**记忆索引与文件变更监视（去抖）。
-* provider 自动选择逻辑（未显式设置时）：
-
-  * 若 `memorySearch.local.modelPath` 可用 → local
-  * 否则若能解析 OpenAI key → openai
-  * 否则若能解析 Gemini key → gemini
-  * 否则记忆检索保持禁用直到配置完成 
-* `memory_search` 返回的是 **片段（snippet）+ 路径 + 行号范围 + 分数**，不是整个文件；需要再用 `memory_get` 读指定行范围。
-
-
-### memory CLI：索引、探测、搜索
-
-OpenClaw 的 `memory` CLI 由当前启用的 memory 插件提供（默认 memory-core），可用于检查状态、强制索引与测试搜索。
+```text
+MEMORY.md
+memory/**/*.md
+```
 
 常用命令：
 
@@ -314,28 +423,17 @@ openclaw memory index --verbose
 openclaw memory search "release checklist"
 ```
 
+关键行为：
 
-### memorySearch 配置全解（含 provider、batch、hybrid）
+* 默认会索引 `MEMORY.md`、`memory/**/*.md`
+* 可用 `memorySearch.extraPaths` 加入额外路径
+* `memory_search` 返回片段、路径、行号和分数；完整上下文再用 `memory_get`
+* direct chat 默认展示引用；group / channel 默认可能不展示 source 行号
+* OAuth 不等于 embedding key；记忆检索需要单独可用的 embedding provider
 
-#### 1）memorySearch 在 schema 里到底有哪些字段？
+provider 自动选择逻辑：先看本地模型，再看 OpenAI key，再看 Gemini key；都不可用则 memory search disabled。
 
-从配置 schema（源码）可以确认 memorySearch 的关键结构如下（我用“路径 → 含义”来讲）：
-
-* `agents.defaults.memorySearch.enabled`：开关
-* `agents.defaults.memorySearch.sources`：可选 `["memory","sessions"]`（会话记忆是实验性）
-* `agents.defaults.memorySearch.extraPaths`：额外索引路径
-* `agents.defaults.memorySearch.provider`：支持 `openai | local | gemini | voyage | mistral`（比很多旧教程多）
-* `agents.defaults.memorySearch.remote`：`baseUrl/apiKey/headers` + `batch`（批处理）
-* `agents.defaults.memorySearch.fallback`：`openai | gemini | local | voyage | mistral | none` 
-* `agents.defaults.memorySearch.local`：本地嵌入模型路径/缓存目录
-* `agents.defaults.memorySearch.store`：SQLite 存储、sqlite-vec 向量扩展等
-* `agents.defaults.memorySearch.chunking`：chunk tokens/overlap
-* `agents.defaults.memorySearch.sync`：watch、interval、会话增量阈值等
-* `agents.defaults.memorySearch.query.hybrid`：BM25 + 向量混合检索参数（权重、候选倍率、MMR、时间衰减等）
-
-#### 2）一个“靠谱、可控”的 memorySearch 示例（推荐起点）
-
-**（a）最省事：用 OpenAI 兼容嵌入端点（也支持自定义 baseUrl）**
+OpenAI-compatible embedding 示例：
 
 ```json5
 {
@@ -346,19 +444,18 @@ openclaw memory search "release checklist"
         model: "text-embedding-3-small",
         remote: {
           baseUrl: "https://api.example.com/v1/",
-          apiKey: "${OPENAI_COMPAT_API_KEY}",
-          headers: { "X-Project": "myproj" }
+          apiKey: "${OPENAI_COMPAT_API_KEY}"
         },
-        sync: { watch: true }
+        sync: {
+          watch: true
+        }
       }
     }
   }
 }
 ```
 
-官方概念页明确支持“自定义 OpenAI 兼容端点”通过 `remote.baseUrl/apiKey/headers` 来配置。
-
-**（b）不想用任何远程：强制本地嵌入 + 禁止回退**
+本地 embedding 示例：
 
 ```json5
 {
@@ -366,161 +463,100 @@ openclaw memory search "release checklist"
     defaults: {
       memorySearch: {
         provider: "local",
-        local: { modelPath: "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf" },
-        fallback: "none"
+        fallback: "none",
+        local: {
+          modelPath: "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf"
+        }
       }
     }
   }
 }
 ```
 
-概念页对 local 模式（node-llama-cpp）和 fallback 行为写得非常明确。
+### 8.3 Multi-Agent
 
-#### 补充：如何添加API_KEY环境变量
-1.网关服务（systemd）环境变量
-```
-mkdir ~/.config/systemd/user/openclaw-gateway.service.d
-nano override.conf
-```
-写入
-```
-[Service]
-# 目录里面的user需要换成自己的用户名
-EnvironmentFile=-/home/user/.config/openclaw/env
-Environment="NODE_OPTIONS=--dns-result-order=ipv4first --require=/home/user/.openclaw/patches/undici-connect-timeout.js"
-```
-```
-nano ~/.config/openclaw/env
-# 写入env环境变量
-# 如OPENAI_COMPAT_API_KEY=sk-xxxxxxxxx
-chmod 600 ~/.config/openclaw/env
-systemctl --user daemon-reload
-systemctl --user restart openclaw-gateway
-```
-2.CLI commands 环境变量
-```
-cp ~/.config/openclaw/env ~/.openclaw/.env
-```
-（访问权限自行chmod设置）
-或者把以下内容加入加到 `~/.bashrc`
-```
-# OpenClaw env (for CLI commands)
-if [ -f "$HOME/.config/openclaw/env" ]; then
-  set -a
-  . "$HOME/.config/openclaw/env"
-  set +a
-fi
+多身份、多工作区、多渠道路由时，核心是：
+
+* `agents.defaults`：默认 agent 设置
+* `agents.list[]`：多个 agent，每个可有独立 workspace、model、tools、sandbox
+* `bindings`：把不同渠道、账号、会话路由到不同 agent
+
+新增隔离 agent：
+
+```bash
+openclaw agents add work
 ```
 
-### 源码补充：引用模式与群聊默认不展示引用
+新 agent 会有独立工作区、会话和认证配置；不要把多个身份直接混在一个 workspace。
 
-源码里有两个容易忽略但非常实用的细节：
+### 8.4 Skills / Tools
 
-1）`memory_search` 的工具描述明确要求：如果返回 `disabled=true`，应把“记忆检索不可用”这件事明确暴露出来（而不是假装你检索过）。
-
-2）引用（Source: path#Lx-Ly）是否插入到 snippet 里，受 `memory.citations` 控制（`on/off/auto`）。并且 `auto` 模式下：
-
-* **direct chat 默认展示引用**
-* **group/channel 默认不展示引用**（通过解析 sessionKey token `group/channel` 来判断）
-
-这意味着：你在群里用 OpenClaw 时，即使记忆召回正常，用户也可能看不到“Source 行号”，这是设计选择，不是 bug。
-
----
-
-## 6. 进阶：工具系统（Tools）与权限策略
-
-### allow / deny / alsoAllow / profile
-
-配置 schema（源码）显示了 tools policy 的核心约束：
-
-* `tools.allow` / `tools.deny`：显式白/黑名单
-* `tools.alsoAllow`：**“增量允许”**（用在 profile 的基础上加工具）
-* 同一作用域里 **不能同时设置 allow 与 alsoAllow**（schema 会报错并阻止启动）
-* `tools.profile`：`minimal | coding | messaging | full`（不同场景的预设工具集）
-
-一个典型策略是：
-
-* 平时用 `profile: "coding"` 或 `"messaging"`
-* 再用 `alsoAllow` 添加少量额外工具
-* 用 `deny` 禁掉你不希望模型碰的高风险工具（例如某些执行类工具）
-
----
-
-### 源码补充：Owner-only 工具与降权行为
-
-OpenClaw 有一类工具是 **owner-only**（只允许“所有者发送者”使用），源码里有两层机制：
-
-* 如果工具对象标记 `ownerOnly: true` → 非 owner 直接不可见/不可执行
-* 还有一个兜底列表：`whatsapp_login`、`cron`、`gateway` 这类工具名会被视为 owner-only（即便插件/工具元数据没标）
-
-这对安全非常关键：
-
-* 你可以把机器人暴露到群里，但仍保证只有 owner 能做“登录 WhatsApp/改网关/改 cron”等高权限动作（前提是你把 allowFrom / pairing / groupChat 策略设置好）。
-
----
-
-### 防止“工具死循环”：loopDetection
-
-在 schema 里能看到 `tools.loopDetection`：支持阈值与多种检测器（重复调用、已知无进展轮询、乒乓等），并且要求 warning/critical/global 阈值有严格大小关系，否则配置校验直接失败。
-
-你想把 OpenClaw 用在“自动化 + 工具链”场景时，我建议你把 loopDetection 明确打开并把阈值调得保守些（尤其是执行工具/网络工具很多时）。
-
----
-
-### 工具权限精细控制 (Tools Policy)
-
-对于暴露给别人用的机器人，务必通过 `tools.allow` 或 `tools.deny` 来控制能力边界：
+OpenClaw 支持 bundled / managed / workspace skills。工具权限用 profile、allow、deny 控制：
 
 ```json5
-tools: { 
-  profile: "messaging", // minimal | coding | messaging | full
-  deny: ["browser", "canvas"] // 直接干掉浏览器与绘图板工具
-}
-```
-
-针对高危的宿主机执行权限，还可以通过白名单限制触发者：
-
-```json5
-tools: {
-  elevated: {
-    enabled: true,
-    allowFrom: {
-      whatsapp: ["+15555550123"],  // 只有自己的手机号能要求执行终端命令
-      discord: ["1234567890123"]
-    }
-  }
-}
-```
-
----
-
-## 7. 进阶：沙箱（Docker Sandbox）与执行安全
-
-OpenClaw 支持把工具执行放进 Docker 沙箱里，降低影响面：网关仍在主机上，工具执行在隔离容器里跑。这对于防止 Agent 误删文件或被“提示词注入”后作恶非常关键。
-
-补充：最新 `v2026.4.12` 又进一步强调了本地执行与安全策略，例如：
-
-* 新增本地 `openclaw exec-policy` 命令
-* 安全修复里继续收紧 shell-wrapper / approval / busybox 等边界
-* 文档和默认行为更强调显式权限策略，而不是“默认全放开”
-
-开启沙盒：
-```json5
-agents: {
-  defaults: {
-    sandbox: {
-      mode: "non-main", // off | non-main | all
-      docker: {
-        image: "openclaw-sandbox:bookworm-slim",
-        network: "none", // 无网环境，极端安全
-        user: "1000:1000"
+{
+  agents: {
+    defaults: {
+      tools: {
+        profile: "messaging",
+        deny: ["browser", "canvas"]
       }
     }
   }
 }
 ```
 
-### 常用沙箱命令
+暴露到群聊或多人渠道时，不要使用无边界的 `full` profile。
+
+补充规则：
+
+* `allow` / `deny` 是显式白名单 / 黑名单
+* `alsoAllow` 用于在 profile 基础上增量放行
+* 同一作用域不要同时写 `allow` 和 `alsoAllow`
+* `whatsapp_login`、`cron`、`gateway` 等高危工具通常应只允许 owner 使用
+* 开自动化前建议启用 `tools.loopDetection`，避免重复工具调用无进展
+
+高危执行权限建议按触发者收紧：
+
+```json5
+{
+  agents: {
+    defaults: {
+      tools: {
+        elevated: {
+          enabled: true,
+          allowFrom: {
+            telegram: ["123456789"]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### 8.5 Sandbox
+
+OpenClaw 支持把工具执行放进 Docker sandbox。Gateway 仍在主机 / 主容器，工具执行在隔离容器，适合开启执行类工具时降低影响面。
+
+```json5
+{
+  agents: {
+    defaults: {
+      sandbox: {
+        mode: "non-main",
+        docker: {
+          image: "openclaw-sandbox:bookworm-slim",
+          network: "none",
+          user: "1000:1000"
+        }
+      }
+    }
+  }
+}
+```
+
+常用命令：
 
 ```bash
 openclaw sandbox explain
@@ -528,136 +564,146 @@ openclaw sandbox list
 openclaw sandbox recreate --all
 ```
 
-并且官方强调：当你更新镜像或配置后，最好用 `sandbox recreate` 强制重建容器，避免“老容器一直带着旧配置跑”。
+安全护栏：
 
-### 源码级安全护栏（非常重要）
+* Docker sandbox 禁止 `network: "host"`
+* 禁止 `seccompProfile: "unconfined"` 和 `apparmorProfile: "unconfined"`
+* `binds.source` 必须是绝对路径
+* 镜像或 sandbox 配置更新后，建议 `sandbox recreate --all`
 
-从 schema 可确认几条“会直接挡住配置”的安全规则：
+### 8.6 Cron / Hooks
 
-* Docker sandbox `network: "host"` **被禁止**（会报错并阻止启动）
-* `seccompProfile: "unconfined"`、`apparmorProfile: "unconfined"` **被禁止**
-* `binds` 的 source 必须是绝对路径（否则报错）
-
-这意味着：如果你是“自托管重度玩家”，想用 host 网络或 unconfined profile，OpenClaw 会硬挡；你需要改架构（比如用 bridge 网络、显式端口映射、或自建安全 profile）。
-
----
-
-## 8. 进阶：自动化（Cron / Hooks）
-
-### Cron：定时任务 / 一次性任务
-
-Cron 是 Gateway 调度器的一部分：
+Cron 适合日报、提醒、巡检、项目跟踪：
 
 ```bash
 openclaw cron --help
 ```
 
-官方提示了两个常见行为点：
+常见行为：
 
-* “隔离式 cron add” 默认用 `--announce` 投递摘要；`--no-deliver` 只内部运行
-* 一次性 `--at` 任务成功后默认删除；用 `--keep-after-run` 保留
+* `cron add` 默认可用 `--announce` 投递摘要
+* `--no-deliver` 只内部运行，不投递消息
+* 一次性 `--at` 任务成功后默认删除；需要保留用 `--keep-after-run`
 
-> 实战建议：先用 `--announce` 把摘要投递到你自己的私聊（或专用频道），确认稳定后再做更激进的自动化。
-
----
-
-### Hooks：事件驱动自动化（如 /new 时写入记忆）
-
-Hooks 由 `openclaw hooks` 管理：可以 list/info/check/enable/disable/install/update。
+Hooks 适合事件驱动自动化：
 
 ```bash
 openclaw hooks list --verbose
 openclaw hooks enable session-memory
 ```
 
-官方还明确区分：
+内置 hooks 可直接 enable / disable；插件 hooks 通常显示为 `plugin:<id>`，由插件启停控制。
 
-* 内置 hooks：可直接 enable/disable
-* 插件 hooks：显示为 `plugin:<id>`，需要通过启用/禁用插件来控制 
+### 8.7 远程访问
 
----
+远程访问优先顺序：
 
-## 9. 进阶：Web 控制台 (Control UI) 与远程访问
+1. Tailscale `serve`
+2. SSH 隧道
+3. 带认证的反向代理
 
-你会遇到两类“远程”：
+SSH 隧道示例：
 
-1）**CLI 远程连接到网关**（`gateway.mode=remote` + remote.url/token 等）
-2）**OpenClaw.app 通过 SSH 隧道连接远程网关**（官方给了完整指南）
-
-### 内置可视化面板与 Tailscale 原生集成
-
-OpenClaw 实际内建了一个可视化管理面板和极其方便的内网穿透能力，只需在 `openclaw.json` 里添加：
-
-```json5
-  gateway: {
-    controlUi: { 
-      enabled: true, 
-      basePath: "/openclaw" 
-    },
-    tailscale: { 
-      mode: "serve" // "off" | "serve" | "funnel"
-    }
-  }
-```
-
-* **Control UI**：启动后即可在浏览器访问 `http://localhost:18789/openclaw`，获取可视化网关和对话管理功能。
-* **Tailscale**：设置 `serve` 后，OpenClaw 会自动化与主机的 Tailscale 通讯，直接将网关服务暴露到你的私有 Tailnet 子网中，无需折腾 SSH 隧道或 Nginx 反代。
-
-### SSH 隧道方式（OpenClaw.app 官方指南）
-
-核心拓扑是：客户端机器连 `ws://127.0.0.1:18789`，由 SSH `LocalForward` 转发到远程机器的 18789。
-
-示例（官方给的关键片段）：
-
-```
-Host remote-gateway
+```text
+Host openclaw-vps
     HostName <REMOTE_IP>
     User <REMOTE_USER>
     LocalForward 18789 127.0.0.1:18789
-    IdentityFile ~/.ssh/id_rsa
 ```
-
-然后：
 
 ```bash
-ssh -N remote-gateway &
+ssh -N openclaw-vps
 ```
 
-并在 macOS 上用 `launchctl setenv OPENCLAW_GATEWAY_TOKEN "<your-token>"` 设置 token（以便 app/CLI 认证）。
-
-> 如果你更偏“运维视角”，也别忘了 `openclaw gateway probe --ssh user@host` 这类命令（gateway CLI 文档里写得很清楚）。
+本机客户端连接 `ws://127.0.0.1:18789`，并提供同一个 `OPENCLAW_GATEWAY_TOKEN`。
 
 ---
 
-## A. 实战最佳实践与常见坑
+## 9. Docker 文件访问与安全
 
-### 1）强烈建议：先把“谁能触发机器人”收紧
+OpenClaw Docker 容器只能访问容器内文件和显式挂载目录。要让 agent 管理宿主机项目，在 compose 中额外挂载：
 
-最小安全姿势（WhatsApp）：
-
-* `channels.whatsapp.dmPolicy` 默认是 `"pairing"`：陌生人先拿配对码，owner 批准后才放行
-* 或者用 `"allowlist"` + `allowFrom` 只允许你的号码
-
-### 2）群聊必做：mention 门控（避免机器人见人就回）
-
-官方配置页推荐了“自聊天模式 / 群组控制”的写法：群里 requireMention=true，只对你 allowFrom。
-
-### 3）记忆检索“不工作”时，优先看两件事
-
-* `openclaw memory status --deep`：provider、模型、向量存储是否可用
-* 如果你用的是 OAuth（比如 Codex OAuth），概念页明确提醒：它可能只覆盖聊天/补全，不等同于嵌入所需的 API key（需要按 memorySearch provider 配齐）。
-
-### 4）配置写错导致网关起不来？别硬猜，直接 doctor
-
-严格 schema 校验会让网关“拒绝启动”，这时只允许诊断命令（status/logs/doctor 等）。
-
-## 参考链接（原始 URL）
-
-```text
-https://github.com/openclaw/openclaw
-https://docs.openclaw.ai
-https://docs.openclaw.ai/start/getting-started
-https://docs.openclaw.ai/start/wizard
-https://docs.openclaw.ai/install/updating
-https://docs.openclaw.ai/tools/skills
+```yaml
+volumes:
+    - ./config:/home/node/.openclaw
+    - ./workspace:/home/node/.openclaw/workspace
+    - /opt/projects:/workspace/projects
 ```
+
+安全规则：
+
+* Gateway 优先绑定 `127.0.0.1` 或只通过 1Panel / Nginx 反代访问
+* `OPENCLAW_GATEWAY_TOKEN` 使用强随机字符串
+* 不直接公网暴露 `18789`
+* 不挂载宿主机根目录
+* secrets 目录不要默认交给 agent
+* 群聊和陌生私信保持 pairing / allowlist
+* 非 main 会话建议启用 sandbox：`agents.defaults.sandbox.mode: "non-main"`
+* Docker 默认用户是 `node`，uid 通常为 `1000`；权限错误时优先修正挂载目录所有权
+
+---
+
+## 10. 排错
+
+### 10.1 Gateway 起不来
+
+确认配置里有：
+
+```json5
+{
+  gateway: {
+    mode: "local",
+    bind: "lan"
+  }
+}
+```
+
+Docker 里修复：
+
+```bash
+docker compose run --rm openclaw-cli config set --batch-json '[{"path":"gateway.mode","value":"local"},{"path":"gateway.bind","value":"lan"}]'
+docker compose up -d
+```
+
+### 10.2 Control UI 访问不了
+
+确认容器健康：
+
+```bash
+docker compose logs -f openclaw-gateway
+curl http://127.0.0.1:18789/healthz
+```
+
+如果需要重新拿 dashboard URL：
+
+```bash
+docker compose run --rm openclaw-cli dashboard --no-open
+```
+
+### 10.3 记忆检索不可用
+
+```bash
+openclaw memory status --deep
+```
+
+OAuth 不一定覆盖 embedding；按 `memorySearch.provider` 配齐 OpenAI / Gemini / local / voyage / mistral 等 embedding provider。
+
+### 10.4 Docker 权限问题
+
+官方镜像默认用 uid `1000`：
+
+```bash
+sudo chown -R 1000:1000 ./config ./workspace
+```
+
+### 10.5 飞书消息不响应
+
+确认：
+
+```bash
+openclaw --version
+openclaw gateway status
+openclaw logs --follow
+```
+
+再检查 `dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`requireMention`。群聊默认不要取消 mention 门控。
