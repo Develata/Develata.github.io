@@ -42,6 +42,7 @@ services:
             - GOOGLE_API_KEY=${GOOGLE_API_KEY}
             - GEMINI_API_KEY=${GEMINI_API_KEY}
             - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+            - TAVILY_API_KEY=${TAVILY_API_KEY}
             - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
             - TELEGRAM_ALLOWED_USERS=${TELEGRAM_ALLOWED_USERS}
         labels:
@@ -93,8 +94,12 @@ GOOGLE_API_KEY=
 GEMINI_API_KEY=
 DEEPSEEK_API_KEY=
 
+# Web-Search Key
+TAVILY_API_KEY=
+
 # Telegram，可选
 TELEGRAM_BOT_TOKEN=
+# 直接搜索 @userinfobot 查询
 TELEGRAM_ALLOWED_USERS=
 ```
 
