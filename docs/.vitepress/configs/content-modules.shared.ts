@@ -99,7 +99,7 @@ export const contentModules: ContentModule[] = [
     root: 'news/',
     baseUrl: '/news/',
     search: false,
-    randomJump: true,
+    randomJump: false,
     titleInject: true,
     sidebar: { sortMode: 'news' },
   },
