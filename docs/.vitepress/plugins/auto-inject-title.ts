@@ -7,20 +7,27 @@
  * 3. 如果已有 H1，强制替换为一致的标题。
  */
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import type { Plugin } from 'vite';
+import { shouldInjectTitle } from '../configs/content-modules.shared';
+
+const pluginDir = path.dirname(fileURLToPath(import.meta.url));
+const docsRoot = path.resolve(pluginDir, '../..');
 
 export function autoInjectTitle(): Plugin {
   return {
     name: 'auto-inject-title',
     enforce: 'pre',
     transform(code, id) {
-      if (!id.endsWith('.md') || id.includes('node_modules')) return;
+      const filePath = id.split('?')[0];
+      if (!filePath.endsWith('.md') || filePath.includes('node_modules')) return;
 
       try {
         const { data, content } = matter(code);
+        const relativePath = path.relative(docsRoot, filePath);
 
-        if (path.basename(id).toLowerCase() === 'index.md' || !data.title) return;
+        if (!shouldInjectTitle(relativePath) || !data.title) return;
 
         // Simplify: Only check first 5 non-empty lines for H1
         const lines = content.split('\n');

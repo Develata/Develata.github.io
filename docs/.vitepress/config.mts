@@ -11,16 +11,9 @@ import markdownItMathjax3 from 'markdown-it-mathjax3';
 import { withMermaid } from 'vitepress-plugin-mermaid';
 import { nav } from './configs/nav';
 import { sidebar } from './configs/sidebar';
+import { isSearchableContent } from './configs/content-modules.shared';
 import { autoInjectTitle } from './plugins/auto-inject-title';
 import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
-
-const SEARCHABLE_PREFIXES = [
-  'index.md',
-  'about/',
-  'books/',
-  'games/',
-  'knowledge/',
-];
 
 function escapeHtml(text: string): string {
   return text
@@ -92,6 +85,9 @@ export default withMermaid(
 
     markdown: {
       lineNumbers: true,
+      languageAlias: {
+        env: 'dotenv',
+      },
       config: (md) => {
         md.use(markdownItMathjax3);
       },
@@ -122,7 +118,7 @@ export default withMermaid(
            */
           _render(src, env, md) {
             const frontmatter = parseFrontmatter(src);
-            if (frontmatter.searchDisabled || !SEARCHABLE_PREFIXES.some((prefix) => env.relativePath.startsWith(prefix))) {
+            if (frontmatter.searchDisabled || !isSearchableContent(env.relativePath)) {
               return '';
             }
             const keywordHints = frontmatter.keywords

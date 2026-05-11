@@ -35,6 +35,7 @@ hero:
 */
 import { useRouter, withBase } from 'vitepress'
 import { onMounted, onUnmounted } from 'vue'
+import { isRandomJumpContent, normalizeContentPath } from '../../configs/content-modules.shared'
 
 const router = useRouter()
 
@@ -51,18 +52,14 @@ const modules = import.meta.glob([
 const urls: string[] = []
 
 for (const path in modules) {
-  // 下面的过滤逻辑可以简化，因为 glob 已经排除了一部分
+  const relativePath = normalizeContentPath(path.replace(/^(\.\.\/)+/, ''))
+  if (!isRandomJumpContent(relativePath)) continue
 
-  let url = path
-    // 移除相对路径前缀
-    .replace(/^(\.\.\/)+/, '/')
+  const url = `/${relativePath}`
     // 移除扩展名
     .replace(/\.md$/, '')
     // 处理 index 文件
     .replace(/\/index$/, '/')
-
-  // 修复：排除首页 (通常是 / )，防止随机跳回主页
-  if (url === '/') continue
 
   urls.push(url)
 }
