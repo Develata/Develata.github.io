@@ -60,9 +60,9 @@ Since this is a documentation site without a dedicated test suite, "testing" pri
     - Prefer lightweight solutions. 
     - Avoid heavy dependencies unless absolutely necessary.
     - Use async/lazy loading for non-critical assets (like the Games).
-2.  **File Size Limits**:
-    - **Soft Limit**: Keep files under **130 lines** to maintain readability.
-    - **Hard Limit**: **250 lines**. If a file exceeds this, strictly Refactor/Split it.
+2.  **File Size Discipline**:
+    - **Soft Rule**: Prefer naturally modular files. Split code when a module mixes unrelated concerns, hides key invariants, or becomes hard to review, rather than optimizing for an arbitrary short line count.
+    - **Hard Limit**: Keep implementation files under **400 lines**. If a file exceeds this, refactor/split it unless there is a clear, documented reason to keep it together.
 3.  **Math & Formalization**:
     - When implementing algorithms, prioritize correctness and clarity.
     - If modifying `math-lab`, ensure the mathematical logic is sound.
