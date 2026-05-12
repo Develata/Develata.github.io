@@ -6,18 +6,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
+import MarkdownIt from 'markdown-it';
 
 const SITE_URL = 'https://develata.me';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const docsRoot = path.resolve(__dirname, '../../');
 const knowledgeRoot = path.join(docsRoot, 'knowledge');
+const md = new MarkdownIt({ html: true, linkify: true });
 
 export interface KnowledgeRssItem {
   title: string;
   url: string;
   date?: Date;
   description?: string;
+  contentHtml?: string;
 }
 
 interface KnowledgeSection {
@@ -112,12 +115,14 @@ function readItem(file: string): KnowledgeRssItem | undefined {
 
   const date = parseDate(data.date);
   if (!date) return undefined;
+  const url = absoluteUrl(markdownPathToUrl(file));
 
   return {
     title: String(data.title || firstHeading(content) || stem(file)).trim(),
-    url: absoluteUrl(markdownPathToUrl(file)),
+    url,
     date,
     description: summarize(data.description || data.excerpt || excerpt || content),
+    contentHtml: renderContent(content, url),
   };
 }
 
@@ -142,7 +147,7 @@ function writeFeed(outDir: string, feed: KnowledgeFeed): void {
 function renderFeed(feed: KnowledgeFeed): string {
   const items = feed.items.map(renderItem).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(feed.title)}</title>
     <link>${escapeXml(absoluteUrl('/'))}</link>
@@ -159,10 +164,13 @@ ${items}
 function renderItem(item: KnowledgeRssItem): string {
   const pubDate = item.date ? `\n    <pubDate>${item.date.toUTCString()}</pubDate>` : '';
   const description = item.description ? `\n    <description>${escapeXml(item.description)}</description>` : '';
+  const content = item.contentHtml
+    ? `\n      <content:encoded><![CDATA[${escapeCdata(item.contentHtml)}]]></content:encoded>`
+    : '';
   return `    <item>
       <title>${escapeXml(item.title)}</title>
       <link>${escapeXml(item.url)}</link>
-      <guid>${escapeXml(item.url)}</guid>${pubDate}${description}
+      <guid isPermaLink="true">${escapeXml(item.url)}</guid>${pubDate}${description}${content}
     </item>`;
 }
 
@@ -177,7 +185,18 @@ function absoluteUrl(urlPath: string): string {
 
 function parseDate(raw: unknown): Date | undefined {
   if (!raw) return undefined;
-  const date = new Date(raw as string | number | Date);
+  const value = raw instanceof Date ? raw : String(raw).trim();
+  const dateOnly = typeof value === 'string' ? value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/u) : undefined;
+  if (dateOnly) {
+    const year = Number(dateOnly[1]);
+    const month = Number(dateOnly[2]);
+    const day = Number(dateOnly[3]);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+      ? date
+      : undefined;
+  }
+  const date = new Date(value);
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
@@ -195,6 +214,48 @@ function summarize(value: unknown): string {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 240);
+}
+
+function renderContent(content: string, pageUrl: string): string {
+  const source = stripVitePressOnlyContent(content);
+  return absolutizeHtmlUrls(md.render(source), pageUrl);
+}
+
+function stripVitePressOnlyContent(content: string): string {
+  return content
+    .replace(/<script\b[\s\S]*?<\/script>/giu, ' ')
+    .replace(/<style\b[\s\S]*?<\/style>/giu, ' ')
+    .replace(/<Badge\b[^>]*\/>/giu, ' ');
+}
+
+function absolutizeHtmlUrls(html: string, pageUrl: string): string {
+  return html.replace(/\b(href|src)=("([^"]*)"|'([^']*)')/g, (match, attr: string, _quoted: string, doubleValue?: string, singleValue?: string) => {
+    const value = doubleValue ?? singleValue ?? '';
+    if (isExternalUrl(value)) return match;
+    return `${attr}="${escapeHtmlAttribute(resolveContentUrl(value, pageUrl))}"`;
+  });
+}
+
+function resolveContentUrl(value: string, pageUrl: string): string {
+  const url = new URL(value, value.startsWith('/') ? SITE_URL : pageUrl);
+  if (url.origin === SITE_URL && url.pathname.endsWith('/index.md')) {
+    url.pathname = url.pathname.replace(/\/index\.md$/u, '/');
+  } else if (url.origin === SITE_URL && url.pathname.endsWith('.md')) {
+    url.pathname = url.pathname.replace(/\.md$/u, '');
+  }
+  return url.toString();
+}
+
+function isExternalUrl(value: string): boolean {
+  return /^(?:[a-z][a-z0-9+.-]*:|#)/iu.test(value);
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+}
+
+function escapeCdata(value: string): string {
+  return value.replaceAll(']]>', ']]]]><![CDATA[>');
 }
 
 function firstHeading(content: string): string | undefined {

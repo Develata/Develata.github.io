@@ -17,6 +17,7 @@
     "@types/node": "^24.10.1",
     "@types/three": "^0.181.0",
     "gray-matter": "^4.0.3",
+    "markdown-it": "^14.1.1",
     "markdown-it-mathjax3": "^4.3.2",
     "mermaid": "^11.12.1",
     "vitepress": "^1.6.4",

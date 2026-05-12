@@ -24,17 +24,11 @@ export function generateRssFeeds(siteConfig: SiteConfig): void {
 }
 
 export function generateRssFeedsToDir(outDir: string): void {
-  const knowledge = generateKnowledgeRss(outDir);
-  const blog = generateBlogRss(outDir);
-  const news = generateNewsRss(outDir);
-  const books = generateBooksRss(outDir);
-
-  generateAllRss(outDir, [
-    knowledge.items,
-    blog,
-    news,
-    books,
-  ]);
+  generateKnowledgeRss(outDir);
+  generateBlogRss(outDir);
+  generateNewsRss(outDir);
+  generateBooksRss(outDir);
+  generateAllRss(outDir);
 }
 
 export function listRssFeeds(): RssFeedLink[] {
