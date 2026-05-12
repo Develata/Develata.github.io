@@ -13,6 +13,7 @@ import { nav } from './configs/nav';
 import { sidebar } from './configs/sidebar';
 import { isSearchableContent } from './configs/content-modules.shared';
 import { autoInjectTitle } from './plugins/auto-inject-title';
+import { generateRssFeeds } from './rss/index';
 import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
 
 function escapeHtml(text: string): string {
@@ -67,6 +68,7 @@ export default withMermaid(
     description: 'Math & Code',
     base: '/',
     cleanUrls: true,
+    buildEnd: generateRssFeeds,
     head: [
       ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ],

@@ -35,6 +35,11 @@ features:
     details: 时事新闻、科技大事。
     link: /news/
     linkText: 新闻
+
+  - title:  RSS
+    details: 按板块订阅站点更新。
+    link: /rss
+    linkText: 订阅
     
   - title:  Gaming
     details: 来点小游戏。
