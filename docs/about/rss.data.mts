@@ -1,5 +1,5 @@
 import { defineLoader } from 'vitepress';
-import { listRssFeeds, type RssFeedLink } from './.vitepress/rss/index';
+import { listRssFeeds, type RssFeedLink } from '../.vitepress/rss/index';
 
 declare const data: RssFeedLink[];
 export { data };

@@ -38,7 +38,7 @@ features:
 
   - title:  RSS
     details: 按板块订阅站点更新。
-    link: /rss
+    link: /about/rss
     linkText: 订阅
     
   - title:  Gaming
