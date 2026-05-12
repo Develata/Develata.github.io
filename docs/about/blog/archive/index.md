@@ -12,6 +12,8 @@ const yearPosts = posts.filter(post => {
 })
 </script>
 
+# 2025
+
 <div v-if="yearPosts.length > 0" class="blog-grid">
   <div v-for="post in yearPosts" :key="post.url" class="blog-card">
     <a :href="post.url" class="card-link">

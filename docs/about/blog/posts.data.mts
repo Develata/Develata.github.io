@@ -10,6 +10,7 @@ interface Post {
     string: string
   }
   excerpt: string | undefined
+  description: string | undefined
 }
 
 declare const data: Post[]
@@ -28,6 +29,7 @@ export default createContentLoader('about/blog/**/*.md', {
         title: frontmatter.title,
         url,
         excerpt,
+        description: frontmatter.description,
         date: formatDate(frontmatter.date)
       }))
       .sort((a, b) => {
