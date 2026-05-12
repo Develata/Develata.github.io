@@ -1,46 +1,36 @@
 ---
 title: AstrBot
-date: 2026-04-13
+date: 2026-05-12
 order: 7
 ---
 
 # AstrBot 使用指南
 
 ## 1. AstrBot 是什么
+
 [Github Repo](https://github.com/AstrBotDevs/AstrBot)
 
-AstrBot 是一个**开源的一体化 Agent 聊天机器人平台**。它的定位不是单一聊天前端，而是“基于即时通讯平台的 AI Agent 基础设施”：
+AstrBot 是开源的一体化 Agentic chatbot infrastructure。它的核心功能是把 Agent 接入 QQ、Telegram、飞书、钉钉、Slack、Discord、企业微信、微信公众号等 IM 平台，并在 WebUI 中统一管理模型、插件、知识库、MCP、Skills、人格设定、上下文压缩和沙盒执行。
 
-* 接入主流 IM 平台
-* 连接多种 LLM / STT / TTS / Agent 平台
-* 提供插件系统、知识库、人格设定、MCP、Skills
-* 带 WebUI / Web ChatUI
-* 支持 Agent Sandbox，用于隔离执行代码、shell 调用与会话级资源复用
+官方文档：
 
-> 截至 **2026-04-13**，已用 `gh api repos/AstrBotDevs/AstrBot/releases/latest` 直接核对：最新 GitHub release 为 **v4.23.0（2026-04-12）**。
+* https://astrbot.app/
+* https://docs.astrbot.app/
+* https://docs.astrbot.app/deploy/astrbot/docker.html
+* https://docs.astrbot.app/use/astrbot-agent-sandbox.html
 
-仓库当前简介里还明确把它描述成：
-
-* 面向个人、开发者和团队的 conversational AI infrastructure
-* 可用于个人 AI 伙伴、客服机器人、自动化助手、企业知识库等场景
-* 可以视作某些 IM Agent 场景下的 **OpenClaw alternative**
+> 截至 **2026-05-12**，官方 README 将 AstrBot 定位为面向个人、开发者和团队的 conversational AI infrastructure；最新 GitHub release 为 **v4.24.2（2026-05-03）**。v4.24.x 的重点包括 Plugin Pages、插件国际化、插件提供 Skills、WebUI 中编辑 Skills、CUA Computer Use 沙盒、后台 Shell、Provider 配置优化和若干安全修复。
 
 ---
 
-## 2. 安装与部署
+## 2. 安装与更新
 
-> AstrBot 当前最推荐的不是“手动源码启动”，而是按场景选择合适部署方式：`uv` 一键部署、Docker、桌面端、Launcher、AUR、面板部署等。
+### 2.1 `uv` 一键部署
 
-### 2.1 `uv` 一键部署（推荐）
-
-适合：
-
-* 想快速体验
-* 能接受命令行
-* 本机可安装 `uv`
+适合本地试用：
 
 ```bash
-uv tool install astrbot
+uv tool install astrbot --python 3.12
 astrbot init
 astrbot run
 ```
@@ -48,26 +38,30 @@ astrbot run
 更新：
 
 ```bash
-uv tool upgrade astrbot
+uv tool upgrade astrbot --python 3.12
 ```
 
 注意：
 
-* 需要先安装 [uv](https://docs.astral.sh/uv/)
-* 用 `uv` 部署的 AstrBot **不支持通过 WebUI 升级**
-* macOS 首次运行 `astrbot` 可能因系统安全检查而更慢（README 提示约 `10-20s`）
+* AstrBot 要求 Python 3.12+
+* `uv` 部署不支持通过 WebUI 升级
+* macOS 首次运行可能因系统安全检查慢 `10-20s`
 
-### 2.2 Docker / Docker Compose
+### 2.2 Docker
 
-适合：
+Docker Compose 部署：
 
-* 生产环境
-* 希望部署更稳定
-* 已有容器经验
+* [AstrBot Docker Compose 1Panel版](/knowledge/sharing/docker/compose/astrbot)
+
+该模板包含三部分：
+
+* AstrBot 主服务
+* NapCat / OneBot：用于接入 QQ 个人号，可选
+* Shipyard Neo：用于 Agent Sandbox，可选
 
 官方文档：
 
-* [Deploy AstrBot with Docker](https://astrbot.app/deploy/astrbot/docker.html#%E4%BD%BF%E7%94%A8-docker-%E9%83%A8%E7%BD%B2-astrbot)
+* [Deploy AstrBot with Docker](https://docs.astrbot.app/deploy/astrbot/docker.html)
 
 仓库根目录当前也直接提供：
 
@@ -75,337 +69,390 @@ uv tool upgrade astrbot
 * `compose.yml`
 * `compose-with-shipyard.yml`
 
-### 2.3 桌面端部署
-
-如果你主要想在桌面环境里使用 ChatUI，官方更推荐：
-
-* [AstrBot-desktop](https://github.com/AstrBotDevs/AstrBot-desktop)
-
-这个方向更偏“桌面使用体验”，不适合作为服务端部署方案。
-
-### 2.4 Launcher 部署
-
-如果你是桌面用户，同时还想要：
-
-* 更快部署
-* 隔离多实例
-
-可以考虑：
-
-* [AstrBot Launcher](https://github.com/Raven95676/astrbot-launcher)
-
-### 2.5 AUR（Arch Linux）
-
 ```bash
-yay -S astrbot-git
+docker compose up -d
+docker compose logs -f astrbot
 ```
 
-### 2.6 其他部署方式
+官方镜像：
 
-README 当前还列出：
+```text
+soulter/astrbot:latest
+```
 
-* RainYun 一键云部署
-* Replit 部署
-* BT Panel 部署
-* 1Panel 部署
-* CasaOS 部署
-* Manual Deployment（手动源码部署）
+默认 WebUI 端口：
 
-如果你是 NAS / 面板 / 家庭服务器用户，这些入口会比自己从头配环境更省时间。
+```text
+6185
+```
+
+### 2.3 其他部署方式
+
+官方还提供桌面端、Launcher、AUR、宝塔、1Panel、CasaOS、RainYun、Replit、Kubernetes、手动源码部署。一般建议：
+
+* 本地试用：`uv`
+* 长期运行：Docker
+* 桌面 ChatUI：AstrBot Desktop
+* 面板用户：直接用 1Panel / 宝塔应用商店
 
 ---
 
 ## 3. 快速开始
 
-### 3.1 最短体验路径
-
-如果你只是想先跑起来：
+最短路径：
 
 ```bash
-uv tool install astrbot
+uv tool install astrbot --python 3.12
 astrbot init
 astrbot run
 ```
 
-然后：
+Docker 路径：
 
-1. 打开 WebUI
-2. 配置模型服务
-3. 接入一个 IM 平台
-4. 安装需要的插件
+```bash
+docker compose up -d
+docker compose logs -f astrbot
+```
 
-### 3.2 你真正需要先配置的三件事
+然后在 WebUI 中完成三件事：
 
-对多数人来说，AstrBot 的落地顺序应该是：
+1. 配置模型服务
+2. 接入一个消息平台
+3. 按需安装插件、知识库、MCP、Skills 或沙盒
 
-1. **模型服务**  
-   例如 OpenAI Compatible / Anthropic / Gemini / DeepSeek / Ollama
-
-2. **平台适配器**  
-   例如 QQ、Telegram、Discord、Slack、飞书、钉钉
-
-3. **插件 / Agent 能力**  
-   根据场景再加知识库、MCP、工具调用、人格设定等
-
-也就是说，AstrBot 的本体更像是一个“可编排底座”，不是装完就自动有完整业务能力。
+如果只启动了 AstrBot 但没有接入平台，它只是一个可管理的 Agent 后端，还不能在 IM 里回复消息。
 
 ---
 
-## 4. 核心能力
+## 4. 常用命令
 
-## 4.1 多平台 IM 接入
+```bash
+astrbot init
+astrbot run
+```
 
-这是 AstrBot 和很多“单模型聊天壳”最不一样的地方。
+Docker 管理：
 
-当前 README 列出的官方支持平台包括：
+```bash
+docker compose up -d
+docker compose down
+docker compose logs -f astrbot
+docker compose pull
+docker compose up -d
+```
 
-* QQ
-* OneBot v11
-* Telegram
-* 企业微信 / Wecom AI Bot
-* 微信公众号
-* 飞书（Lark）
-* 钉钉
-* Slack
-* Discord
-* LINE
-* Satori
-* Misskey
-* Mattermost
+进入容器：
 
-另外还有社区适配器：
+```bash
+docker exec -it astrbot bash
+```
 
-* Matrix
-* KOOK
-* VoceChat
+查看 WebUI：
 
-这意味着 AstrBot 的思路不是“做一个新的聊天窗口”，而是把 Agent 部署到你已经在用的沟通渠道里。
+```text
+http://127.0.0.1:6185
+```
 
-## 4.2 多模型 / 多能力服务接入
+初始账号密码通常为：
 
-AstrBot 当前支持的模型与相关服务非常广：
+```text
+astrbot / astrbot
+```
 
-* OpenAI 及兼容服务
-* Anthropic
-* Google Gemini
-* Moonshot AI
-* 智谱 AI
-* DeepSeek
-* Ollama / LM Studio
-* Dify / Bailian / Coze
-* OpenAI Whisper / SenseVoice 等 STT
-* OpenAI TTS / Gemini TTS / Edge TTS 等 TTS
-
-这说明 AstrBot 不是绑死某一个 Provider 的产品，而是一个**多模型接入层 + IM 交互层**。
-
-## 4.3 插件系统
-
-README 当前强调：
-
-* 1000+ 插件可一键安装
-
-这部分是 AstrBot 的核心扩展能力之一。  
-实际使用时，你通常不会只用“裸 AstrBot”，而是围绕插件去拼出：
-
-* 命令扩展
-* 工具调用
-* 平台增强
-* 知识库
-* 角色玩法
-
-## 4.4 Agent Sandbox
-
-仓库 README 当前明确写到：
-
-* AstrBot 提供 Agent Sandbox
-* 用于隔离、安全执行代码与 shell 调用
-* 支持 session 级资源复用
-
-如果你要把它用于较强的 Agent 执行场景，这个能力很关键，因为它决定了“工具调用”不是纯文本模拟，而是有真正的执行隔离层。
-
-## 4.5 WebUI / ChatUI
-
-AstrBot 不是只有 Bot 后端：
-
-* 有 WebUI
-* 有 Web ChatUI
-* ChatUI 内置 Agent Sandbox 与网页搜索能力
-
-所以它既能做“接入 IM 平台的后端 Agent”，也能在浏览器侧提供直接可用的交互界面。
+首次登录后立刻修改密码。
 
 ---
 
-## 5. 平台与模型支持（速查）
+## 5. 配置与数据目录
 
-### 5.1 适合什么人
+Docker 内数据目录：
 
-AstrBot 更适合：
+```text
+/AstrBot/data
+```
 
-* 想把 Agent 接入 IM 平台的人
-* 想做多平台聊天机器人 / 私人助手 / 自动化助手
-* 想用插件和模型服务拼装复杂能力的人
-* 想在团队或业务环境中部署“可长期运行”的机器人基础设施的人
+宿主机推荐挂载：
 
-### 5.2 不太适合什么人
+```text
+./data:/AstrBot/data
+```
 
-如果你只想要：
+这里会保存：
 
-* 一个轻量命令行 coding agent
-* 一个本地单人聊天壳
-* 不需要 IM 平台适配
+```text
+config/       配置
+plugins/      插件
+data/         运行数据
+temp/         临时文件
+logs/         日志
+```
 
-那 AstrBot 可能会显得比你需要的更重。
+规则：
 
-它的强项在于：
-
-* 平台接入
-* 能力编排
-* 插件生态
-* 长期运行与扩展
-
-而不是“极简单机聊天”。
-
----
-
-## 6. 最近版本变化（按当前 release 理解）
-
-最新的 `v4.23.0` 里，比较值得记住的变化有：
-
-* 新增本地 Computer Use 文件系统工具：`read` / `write` / `edit` / `Grep`
-* 新增 Brave Search 网页搜索工具
-* 新增 Mattermost 平台适配器
-* 新增 OpenAI / Gemini 音频输入支持
-* 合并 Cron 工具并增强 Cron 任务编辑
-* 大量优化 ChatUI、MCP 配置校验、内置工具管理
-* 把很多低频内置命令迁移到独立插件 [builtin-command-extension](https://github.com/AstrBotDevs/builtin_commands_extension)
-
-这说明 AstrBot 当前仍在非常活跃地迭代，而且重点不只是“接更多模型”，还包括：
-
-* 工具调用链路
-* MCP
-* UI
-* 适配器
-* 插件拆分
+* 定期备份 `data/`
+* 不提交 API keys、平台 token、会话数据
+* 不让多个 AstrBot 实例同时写同一个 `data/`
+* 迁移服务器时，`data/` 比 compose 文件更重要
 
 ---
 
-## 7. 配套组件
+## 6. 模型与中转
 
-### 7.1 AstrBot-desktop 是什么
+AstrBot 支持 OpenAI-compatible、Anthropic、Gemini、Moonshot、智谱、DeepSeek、Ollama、LM Studio、硅基流动、PPIO、ModelScope、OneAPI、Dify、百炼、Coze 等。
 
-`AstrBot-desktop` 可以理解为 AstrBot 的**桌面端客户端形态**。
+常见顺序：
 
-它和主仓库的关系是：
+1. 在 WebUI 添加 Provider
+2. 填写 API Key / Base URL / 模型名
+3. 测试 Provider
+4. 设置默认模型
 
-* `AstrBot`：主平台 / 主服务 / 主功能底座
-* `AstrBot-desktop`：偏本地桌面使用的应用形态
+OpenAI-compatible endpoint 常见检查：
 
-适合场景：
+```text
+base_url = https://api.example.com/v1
+model = provider暴露的真实模型名
+```
 
-* 你主要在自己电脑上使用
-* 更关注 ChatUI / 本地交互体验
-* 不想先自己部署一套服务端环境
+Docker 访问宿主机 Ollama / LM Studio 时，优先使用：
 
-不太适合场景：
+```text
+http://host.docker.internal:11434
+http://host.docker.internal:1234
+```
 
-* 长期稳定托管
-* 云服务器部署
-* 多人共用的正式服务
-
-这也是为什么主 README 里把它单独列出来，但同时明确说明：  
-**AstrBot-desktop 更偏桌面使用，不推荐作为服务端场景方案。**
-
-### 7.2 builtin-command-extension 是什么
-
-`builtin-command-extension` 是 AstrBot 当前生态里一个很关键的**命令扩展插件**。
-
-在 `v4.23.0` 的 changelog 里，主仓库已经明确说明：
-
-* 大部分低频内置命令被移出主仓库
-* 命令能力被整合到独立插件
-* 对应仓库就是 [builtin-command-extension](https://github.com/AstrBotDevs/builtin_commands_extension)
-
-这件事的含义是：
-
-* 旧教程里某些“内置命令默认就有”的说法，可能已经过时
-* 现在这些命令不一定在主仓库里默认保留
-* 如果你发现某些命令在新版 AstrBot 里找不到，就要先检查是否需要安装这个扩展插件
-
-从工程角度看，这样拆分是合理的：
-
-* 主仓库更聚焦平台底座
-* 命令能力做成插件，升级和维护成本更低
-* 用户也可以按需安装，而不是被迫带上一整套低频功能
-
-### 7.3 该怎么理解这三个仓库的关系
-
-最简单的记法：
-
-* `AstrBot`：主系统
-* `AstrBot-desktop`：桌面端形态
-* `builtin-command-extension`：命令扩展包
-
-如果你只想先把 AstrBot 跑起来，优先关注主仓库。  
-如果你偏桌面使用，再看 `AstrBot-desktop`。  
-如果你需要补回一些旧教程里提到的命令能力，再看 `builtin-command-extension`。
+Linux Docker 下还需要在 compose 里加入 `host.docker.internal:host-gateway`。同时确保宿主机模型服务监听 `0.0.0.0`，不是只监听 `127.0.0.1`。
 
 ---
 
-## 8. FAQ（常见问题）
+## 7. 消息平台
 
-### 8.1 AstrBot 和 OpenCode / Codex / Claude Code 是一类东西吗？
+官方 README 当前列出的官方平台包括：
 
-不是。
+```text
+QQ / OneBot v11 / Telegram / 企业微信 / Wecom AI Bot
+微信公众号 / 飞书 / 钉钉 / Slack / Discord / LINE
+Satori / KOOK / Misskey / Mattermost
+```
 
-* OpenCode / Codex / Claude Code 更偏**终端 coding agent**
-* AstrBot 更偏**IM 平台上的 Agent 基础设施**
+社区平台包括：
 
-它们的定位不冲突，很多场景甚至可以互补。
+```text
+Matrix / Rocket.Chat / VoceChat
+```
 
-### 8.2 AstrBot 和普通“聊天机器人框架”有什么区别？
+流程基本一致：
 
-AstrBot 当前已经不只是“收消息 -> 调模型 -> 回消息”的传统机器人框架，而是把这些都做成了更完整的能力层：
+1. 在目标平台创建 bot / app
+2. 在 WebUI 添加平台适配器
+3. 填写 token、secret、回调地址或 websocket 配置
+4. 保存并重启 / 热加载
+5. 通过日志确认连接成功
 
-* 多平台适配
-* 多模型接入
-* 插件生态
-* Agent Sandbox
-* 知识库 / Persona / MCP / Skills
+飞书、钉钉、企业微信、Telegram 更适合正式机器人场景；QQ 个人号通常走 NapCat / OneBot v11。
 
-所以更准确的理解是：  
-它是一个**面向 Agent 场景的聊天机器人基础设施平台**。
+### 7.1 NapCat / OneBot
 
-### 8.3 新手该选哪种部署方式？
+NapCat 是常见的 QQ 个人号接入方案，通常通过 OneBot v11 WebSocket 和 AstrBot 通信。部署关系可以理解为：
 
-最简单的建议：
+```text
+QQ 个人号
+    ↓
+NapCat
+    ↓ OneBot v11
+AstrBot
+```
 
-* 本地试用：`uv`
-* 稳定运行：Docker
-* 纯桌面体验：AstrBot-desktop
-* 需要桌面多实例：AstrBot Launcher
+1Panel / Docker 部署时，建议让 `astrbot` 和 `napcat` 放在同一个 Docker network 中，再在 AstrBot WebUI 添加 OneBot v11 适配器。常见端口：
 
-### 8.4 它支持私有模型吗？
+```text
+6099  NapCat WebUI
+6199  AstrBot OneBot v11 WebSocket
+```
 
-支持。
+注意：
 
-README 当前明确列了：
-
-* Ollama
-* LM Studio
-* 各类 OpenAI Compatible 网关
-
-所以本地模型、自建网关、第三方聚合 API 都是可行方向。
+* NapCat 需要独立保存 QQ 登录态和配置
+* 不要把 NapCat WebUI 无保护暴露到公网
+* QQ 个人号方案有平台风控风险，生产业务更建议用官方机器人、企业微信、飞书、钉钉或 Telegram
 
 ---
 
-## 9. 参考链接
+## 8. 核心功能
+
+### 8.1 WebUI / Web ChatUI
+
+WebUI 用于管理 Provider、平台、插件、知识库、MCP、Skills、配置和日志；Web ChatUI 可以直接作为浏览器聊天入口，并集成 Agent Sandbox 和网页搜索。
+
+### 8.2 插件
+
+AstrBot 的插件生态很大，官方 README 当前写明有 `1000+` 插件可一键安装。v4.24.x 后插件能力继续增强：
+
+* 插件可以暴露 Dashboard 页面
+* 插件支持国际化
+* 插件可以提供 Skills
+* 插件详情页、短描述、置顶和官方插件存储下载能力增强
+
+旧教程里某些“内置命令默认存在”的说法可能已经过时；部分低频命令已经迁移到插件，例如 `builtin_commands_extension`。
+
+### 8.3 Skills / MCP / 知识库
+
+AstrBot 支持：
+
+* Skills：沉淀可复用能力和提示结构
+* MCP：接入外部工具服务器
+* 知识库：上传文档后做检索增强
+* 自动上下文压缩：长会话中降低上下文溢出概率
+
+使用顺序建议先配模型和平台，再逐步加知识库、MCP 和 Skills。
+
+### 8.4 Agent Sandbox
+
+AstrBot 从 `v4.12.0` 起引入 Agent 沙盒，用于替代旧代码执行器。当前驱动包括：
+
+```text
+Shipyard Neo   当前推荐
+Shipyard       旧方案，兼容保留
+CUA            Computer Use 运行时
+```
+
+Shipyard Neo 由 Bay、Ship、Gull 组成：
+
+* Bay：控制面 API
+* Ship：Python / Shell / 文件系统执行环境
+* Gull：浏览器能力
+
+部署关系：
+
+```text
+AstrBot
+    ↓ Shipyard Neo API
+Bay
+    ↓ Docker socket
+Ship / Gull sandbox containers
+```
+
+Shipyard Neo 的工作区根目录固定为 `/workspace`。在 AstrBot 的沙盒文件工具里应传相对路径，例如 `reports/result.txt`，不要传 `/workspace/reports/result.txt`。
+
+WebUI 配置入口：
+
+```text
+AI 配置 -> Agent Computer Use
+Computer Use Runtime = sandbox
+沙箱环境驱动器 = Shipyard Neo / CUA
+```
+
+如果使用本文配套 compose，Shipyard Neo 的典型配置是：
+
+```text
+Shipyard Neo API Endpoint = http://astrbot-bay:8114
+Shipyard Neo Access Token = Bay config.yaml 中的 security.api_key
+Shipyard Neo Profile = python-default
+```
+
+资源建议：
+
+* 仅 AstrBot：`1C1G` 可试用，长期建议 `2C2G+`
+* AstrBot + Shipyard Neo：至少 `2C4G` 并开启 Swap
+* 启用浏览器 / CUA：更适合资源充足的独立机器或 homelab
+
+低配 VPS 不建议把 AstrBot、浏览器沙盒和多个 IM 适配器全塞在一起。
+
+### 8.5 主动任务 / Cron
+
+AstrBot 支持主动型 Agent 能力和 Cron 任务，可用于定时摘要、提醒、巡检、消息推送等。生产使用时应限制可主动发送的会话范围，避免普通用户借工具向任意 session 发消息。
+
+---
+
+## 9. Docker 文件访问与安全
+
+AstrBot 容器只能访问容器内路径和显式挂载目录。要让它处理宿主机文件，需要挂载：
+
+```yaml
+volumes:
+    - ./data:/AstrBot/data
+    - /opt/projects:/workspace/projects
+```
+
+安全规则：
+
+* 不挂载宿主机根目录
+* 不把 secrets 目录交给 Agent
+* WebUI 不直接公网裸奔
+* 首次登录后修改默认密码
+* 只开放必要端口
+* 沙盒服务不要匿名访问
+* 使用 Shipyard Neo 时，`security.api_key` 必须是强随机字符串
+* Bay 需要 Docker socket，最好单独部署在更可信、更有资源的机器上
+
+---
+
+## 10. 排错
+
+### 10.1 WebUI 打不开
+
+确认容器运行：
+
+```bash
+docker compose logs -f astrbot
+```
+
+确认端口：
+
+```text
+6185
+```
+
+如果通过 1Panel 反代，目标应是：
+
+```text
+http://astrbot:6185
+```
+
+不要在 Docker 网络里把反代目标写成 `127.0.0.1:6185`。
+
+### 10.2 平台收不到消息
+
+检查：
+
+* 平台 token / app secret 是否正确
+* webhook 地址是否公网可达
+* websocket 模式是否连上
+* 平台事件订阅是否启用
+* AstrBot 日志里是否有适配器报错
+
+### 10.3 模型不可用
+
+检查：
+
+* Provider 是否启用
+* API Key 是否有效
+* Base URL 是否带 `/v1`
+* 模型名是否真实存在
+* 容器内是否能访问模型网关
+
+### 10.4 沙盒不可用
+
+检查：
+
+* WebUI 中 `Computer Use Runtime` 是否设为 `sandbox`
+* Shipyard Neo Endpoint 是否可访问
+* Bay API Key 是否一致
+* Docker socket 是否挂载给 Bay
+* `config.yaml` 中 network 是否和 compose 网络一致
+* 宿主机资源是否足够
+
+---
+
+## 11. 参考链接
 
 ```text
 https://github.com/AstrBotDevs/AstrBot
 https://github.com/AstrBotDevs/AstrBot/releases
 https://astrbot.app/
-https://astrbot.app/deploy/astrbot/docker.html
+https://docs.astrbot.app/
+https://docs.astrbot.app/deploy/astrbot/docker.html
+https://docs.astrbot.app/use/astrbot-agent-sandbox.html
 https://github.com/AstrBotDevs/AstrBot-desktop
 https://github.com/AstrBotDevs/builtin_commands_extension
-https://github.com/Raven95676/astrbot-launcher
 ```
