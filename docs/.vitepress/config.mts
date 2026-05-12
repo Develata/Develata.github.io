@@ -13,7 +13,7 @@ import { nav } from './configs/nav';
 import { sidebar } from './configs/sidebar';
 import { isSearchableContent } from './configs/content-modules.shared';
 import { autoInjectTitle } from './plugins/auto-inject-title';
-import { generateRssFeeds } from './rss/index';
+import { generateRssFeeds, rssDevServer } from './rss/index';
 import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
 
 function escapeHtml(text: string): string {
@@ -81,7 +81,8 @@ export default withMermaid(
         chunkSizeWarningLimit: 2000
       },
       plugins: [
-        autoInjectTitle()
+        autoInjectTitle(),
+        rssDevServer()
       ]
     },
 

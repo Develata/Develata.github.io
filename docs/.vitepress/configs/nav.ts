@@ -23,6 +23,7 @@ export const nav: DefaultTheme.Config['nav'] = [
     items: [
       { text: 'Me', link: '/about/me' },
       { text: 'Blog', link: '/about/blog/' },
+      { text: 'RSS', link: '/rss' },
     ]
   },
 ];
