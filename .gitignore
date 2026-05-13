@@ -36,10 +36,9 @@ Desktop.ini
 
 # Build
 dist
-.vitepress/dist/
-.vitepress/cache/
-.vitepress/.temp/
-docs/.vitepress/*.timestamp-*.mjs
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/.vitepress/.temp/
 cache
 
 # Environment
