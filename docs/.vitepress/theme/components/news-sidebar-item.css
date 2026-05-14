@@ -37,6 +37,7 @@
   display: flex;
   align-items: center;
   flex-grow: 1;
+  justify-content: space-between;
 }
 
 .text {
@@ -88,6 +89,16 @@
   width: 32px;
 }
 
+.caret-placeholder {
+  align-items: center;
+  color: var(--vp-c-text-3);
+  display: flex;
+  flex-shrink: 0;
+  height: 32px;
+  justify-content: center;
+  margin-right: -7px;
+  width: 32px;
+}
 .caret-icon {
   display: inline-block;
   font-size: 18px;

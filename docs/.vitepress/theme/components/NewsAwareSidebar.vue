@@ -4,7 +4,6 @@ import { inBrowser, useData } from 'vitepress';
 import { computed, ref, watch } from 'vue';
 import NewsSidebarGroup from './NewsSidebarGroup.vue';
 import { buildNewsArticleSidebar, isNewsArticlePath } from './newsSidebarTree';
-import { getSidebarGroups } from '../sidebar/support';
 import { useSidebar } from '../sidebar/useSidebar';
 
 const { page } = useData();
@@ -27,8 +26,13 @@ watch([() => props.open, navEl], () => {
 }, { immediate: true, flush: 'post' });
 
 const resolvedGroups = computed(() => {
-  if (!isNewsArticlePath(page.value.relativePath)) return sidebarGroups.value;
-  return getSidebarGroups(buildNewsArticleSidebar(sidebar.value, page.value.relativePath));
+  if (page.value.relativePath.startsWith('news/')) {
+    return isNewsArticlePath(page.value.relativePath)
+      ? buildNewsArticleSidebar(sidebar.value, page.value.relativePath)
+      : sidebar.value;
+  }
+
+  return sidebarGroups.value;
 });
 
 const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.length}`);
@@ -37,14 +41,13 @@ const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.le
 <template>
   <aside
     v-if="hasSidebar"
-    ref="navEl"
     class="VPSidebar"
     :class="{ open }"
     @click.stop
   >
     <div class="curtain" />
 
-    <nav id="VPSidebarNav" class="nav" aria-labelledby="sidebar-aria-label" tabindex="-1">
+    <nav id="VPSidebarNav" ref="navEl" class="nav" aria-labelledby="sidebar-aria-label" tabindex="-1">
       <span id="sidebar-aria-label" class="visually-hidden">Sidebar Navigation</span>
 
       <slot name="sidebar-nav-before" />

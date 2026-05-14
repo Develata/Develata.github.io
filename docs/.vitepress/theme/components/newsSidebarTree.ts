@@ -17,17 +17,35 @@ export function buildNewsArticleSidebar(items: SidebarItem[], relativePath: stri
   const ctx = resolveNewsPageContext(relativePath);
   if (!ctx) return items;
 
-  const category = items.find((item) => containsCategoryLink(item, ctx.category));
-  if (!category?.items) return items;
+  return items.map((item) => {
+    if (!containsCategoryLink(item, ctx.category)) {
+      return {
+        text: item.text,
+        link: findLatestArticleLink(item),
+        collapsed: true,
+      };
+    }
 
-  return [{
-    text: category.text,
-    collapsed: false,
-    items: category.items
-      .filter((yearNode) => yearNode.items?.length)
-      .map((yearNode) => buildYearNode(yearNode, ctx))
-      .filter(Boolean) as SidebarItem[],
-  }];
+    if (!item.items?.length) return { ...item, collapsed: false };
+
+    return {
+      text: item.text,
+      collapsed: false,
+      items: item.items
+        .filter((yearNode) => yearNode.items?.length)
+        .map((yearNode) => buildYearNode(yearNode, ctx))
+        .filter(Boolean) as SidebarItem[],
+    };
+  });
+}
+
+function findLatestArticleLink(item: SidebarItem): string | undefined {
+  if (item.link) return item.link;
+  for (const child of item.items ?? []) {
+    const link = findLatestArticleLink(child);
+    if (link) return link;
+  }
+  return undefined;
 }
 
 function resolveNewsPageContext(relativePath: string): NewsPageContext | null {
@@ -82,5 +100,6 @@ function buildMonthNode(monthNode: SidebarItem, ctx: NewsPageContext): SidebarIt
   return {
     text: monthNode.text,
     link: articles[0].link,
+    collapsed: true,
   };
 }
