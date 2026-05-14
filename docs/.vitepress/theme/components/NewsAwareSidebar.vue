@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue';
 import DefaultSidebarGroup from './DefaultSidebarGroup.vue';
 import NewsSidebarGroup from './NewsSidebarGroup.vue';
 import { buildNewsArticleSidebar, isNewsArticlePath } from './newsSidebarTree';
+import { normalizeSidebarPath } from '../sidebar/normalizePath';
 import { useSidebar } from '../sidebar/useSidebar';
 
 const { page } = useData();
@@ -38,13 +39,8 @@ const resolvedGroups = computed(() => {
 });
 
 const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.length}`);
-const activePath = computed(() => normalizePath(route.path));
+const activePath = computed(() => normalizeSidebarPath(route.path));
 const isNewsPage = computed(() => page.value.relativePath.startsWith('news/'));
-
-function normalizePath(path?: string): string {
-  if (!path) return '';
-  return path.replace(/\/index$/u, '/').replace(/\/$/u, '') || '/';
-}
 </script>
 
 <template>

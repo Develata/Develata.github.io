@@ -1,6 +1,7 @@
 import { useRoute } from 'vitepress';
 import { computed, ref, watchEffect, type ComputedRef, type Ref } from 'vue';
 import type { DefaultTheme } from 'vitepress';
+import { normalizeSidebarPath } from './normalizePath';
 
 type SidebarItem = DefaultTheme.SidebarItem;
 
@@ -57,10 +58,5 @@ function containsActiveLink(currentPath: string, items?: SidebarItem[]): boolean
 }
 
 function isSamePath(currentPath?: string, targetPath?: string): boolean {
-  return normalizePath(currentPath) === normalizePath(targetPath);
-}
-
-function normalizePath(path?: string): string {
-  if (!path) return '';
-  return path.replace(/\/index(?:\.html)?$/u, '/').replace(/\/$/u, '') || '/';
+  return normalizeSidebarPath(currentPath) === normalizeSidebarPath(targetPath);
 }

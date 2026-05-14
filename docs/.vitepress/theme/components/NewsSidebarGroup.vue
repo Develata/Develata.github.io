@@ -3,6 +3,7 @@ import { computed, provide, ref } from 'vue';
 import type { DefaultTheme } from 'vitepress';
 import NewsSidebarItem from './NewsSidebarItem.vue';
 import { newsSidebarAccordionKey, newsSidebarActiveStateKey, type AccordionController } from './newsSidebarAccordion';
+import { normalizeSidebarPath } from '../sidebar/normalizePath';
 
 const props = defineProps<{
   items: DefaultTheme.SidebarItem[];
@@ -18,7 +19,7 @@ const accordion: AccordionController = {
 };
 
 provide(newsSidebarAccordionKey, accordion);
-provide(newsSidebarActiveStateKey, computed(() => resolveActiveState(props.items, normalizePath(props.activePath))));
+provide(newsSidebarActiveStateKey, computed(() => resolveActiveState(props.items, normalizeSidebarPath(props.activePath))));
 
 function resolveDefaultActiveKey(): string | null {
   const index = props.items.findIndex((item) => item.items?.length && item.collapsed === false);
@@ -35,7 +36,7 @@ function resolveActiveState(items: DefaultTheme.SidebarItem[], activePath: strin
     let hasMatch = false;
     nodes.forEach((node, index) => {
       const key = `${prefix}${index}:${node.text ?? 'item'}`;
-      const isExactMatch = normalizePath(node.link) === activePath;
+      const isExactMatch = normalizeSidebarPath(node.link) === activePath;
       const childMatch = node.items?.length ? visit(node.items, `${key}/`) : false;
       if (isExactMatch) exactActiveKey = key;
       if (isExactMatch || childMatch) {
@@ -50,10 +51,6 @@ function resolveActiveState(items: DefaultTheme.SidebarItem[], activePath: strin
   return { activeKeys, exactActiveKey };
 }
 
-function normalizePath(path?: string): string {
-  if (!path) return '';
-  return path.replace(/\/index$/u, '/').replace(/\/$/u, '') || '/';
-}
 </script>
 
 <template>
