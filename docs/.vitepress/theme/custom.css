@@ -20,6 +20,22 @@
 }
 */
 
+/* 右侧页面目录：允许长标题完整换行，避免默认省略号截断。 */
+.VPDocAsideOutline .outline-link {
+  box-sizing: border-box;
+  display: block !important;
+  line-height: 1.45 !important;
+  overflow: visible !important;
+  padding: 6px 0 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  text-overflow: clip !important;
+}
+
+.VPDocAsideOutline .outline-link.nested {
+  padding-left: 13px !important;
+}
+
 /* 全局修复：移动端下的 Grid 布局边距问题 */
 @media (max-width: 768px) {
   /* 针对博客、书单等使用 Grid 的容器 */
