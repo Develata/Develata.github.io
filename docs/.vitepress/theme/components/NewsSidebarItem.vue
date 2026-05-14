@@ -36,6 +36,7 @@ watch(() => props.item.collapsed, (next) => {
 
 const hasChildren = computed(() => !!props.item.items?.length);
 const isLink = computed(() => !!props.item.link);
+const isExpandableTrigger = computed(() => hasChildren.value && !isLink.value && props.item.collapsed != null);
 const isActive = computed(() => activeState?.value.exactActiveKey === props.itemKey);
 const hasActive = computed(() => activeState?.value.activeKeys.has(props.itemKey) ?? false);
 const classes = computed(() => [
@@ -59,7 +60,7 @@ watch(() => accordion.activeKey.value, (next) => {
 }, { immediate: true });
 
 function onItemClick() {
-  if (hasChildren.value && !props.item.link && props.item.collapsed != null) {
+  if (isExpandableTrigger.value) {
     toggleCollapsed();
   }
 }
@@ -70,6 +71,7 @@ function onCaretClick(event: MouseEvent) {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (!isExpandableTrigger.value) return;
   if (event.key !== 'Enter' && event.key !== ' ') return;
   event.preventDefault();
   onItemClick();
@@ -102,8 +104,8 @@ function resolveDefaultChildKey(): string | null {
     <div
       v-if="item.text"
       class="item"
-      :role="hasChildren ? 'button' : undefined"
-      :tabindex="hasChildren ? 0 : undefined"
+      :role="isExpandableTrigger ? 'button' : undefined"
+      :tabindex="isExpandableTrigger ? 0 : undefined"
       @click="onItemClick"
       @keydown="onKeydown"
     >

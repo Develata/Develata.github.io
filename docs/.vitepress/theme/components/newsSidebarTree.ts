@@ -31,7 +31,6 @@ export function buildNewsArticleSidebar(items: SidebarItem[], relativePath: stri
 
     return {
       text: item.text,
-      link: getLatestLink(item),
       collapsed: false,
       items: item.items
         .filter((yearNode) => yearNode.items?.length)
@@ -84,7 +83,6 @@ function buildMonthNode(monthNode: SidebarItem, ctx: NewsPageContext): SidebarIt
   if (monthNode.text === ctx.monthKey) {
     return {
       text: monthNode.text,
-      link: getLatestLink(monthNode),
       collapsed: false,
       items: articles,
     };
