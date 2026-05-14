@@ -2,6 +2,7 @@
 import { useScrollLock } from '@vueuse/core';
 import { inBrowser, useData, useRoute } from 'vitepress';
 import { computed, ref, watch } from 'vue';
+import DefaultSidebarGroup from './DefaultSidebarGroup.vue';
 import NewsSidebarGroup from './NewsSidebarGroup.vue';
 import { buildNewsArticleSidebar, isNewsArticlePath } from './newsSidebarTree';
 import { useSidebar } from '../sidebar/useSidebar';
@@ -38,6 +39,7 @@ const resolvedGroups = computed(() => {
 
 const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.length}`);
 const activePath = computed(() => normalizePath(route.path));
+const isNewsPage = computed(() => page.value.relativePath.startsWith('news/'));
 
 function normalizePath(path?: string): string {
   if (!path) return '';
@@ -58,7 +60,17 @@ function normalizePath(path?: string): string {
       <span id="sidebar-aria-label" class="visually-hidden">Sidebar Navigation</span>
 
       <slot name="sidebar-nav-before" />
-      <NewsSidebarGroup :items="resolvedGroups" :active-path="activePath" :key="key" />
+      <NewsSidebarGroup
+        v-if="isNewsPage"
+        :items="resolvedGroups"
+        :active-path="activePath"
+        :key="key"
+      />
+      <DefaultSidebarGroup
+        v-else
+        :items="resolvedGroups"
+        :key="key"
+      />
       <slot name="sidebar-nav-after" />
     </nav>
   </aside>
