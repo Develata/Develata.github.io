@@ -75,9 +75,9 @@ function hasActiveDescendant(items: DefaultTheme.SidebarItem[] | undefined, path
         :rel="item.rel"
         :target="item.target"
       >
-        <component :is="headingTag" class="text" v-html="item.text" />
+        <component :is="headingTag" class="text">{{ item.text }}</component>
       </a>
-      <component :is="headingTag" v-else class="text" v-html="item.text" />
+      <component :is="headingTag" v-else class="text">{{ item.text }}</component>
 
       <button
         v-if="item.collapsed != null && hasChildren"
