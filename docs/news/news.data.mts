@@ -1,46 +1,21 @@
 /**
  * @file news.data.mts
- * @description 新闻数据加载器 (News Data Loader)
- * 职责：生成新闻聚合页面的数据源，扫描 news 目录下的所有文章并按日期排序。
+ * @description News 首页数据加载器。
+ * 不变量：
+ * 1. 首页始终只渲染最近 20 条；
+ * 2. 元数据统一来自共享新闻索引模块，避免重复解析；
+ * 3. 旧新闻访问入口完全交给侧边栏归档。
  */
-import { createContentLoader } from 'vitepress'
+import { defineLoader } from 'vitepress';
+import { getRecentNewsCards } from '../.vitepress/utils/news-index';
+import type { NewsCardItem } from '../.vitepress/utils/news-types';
 
-interface News {
-  title: string
-  url: string
-  date: {
-    time: number
-    string: string
-  }
-  excerpt: string | undefined
-}
+declare const data: NewsCardItem[];
+export { data };
 
-declare const data: News[]
-export { data }
-
-export default createContentLoader('news/**/*.md', {
-  excerpt: true,
-  transform(raw): News[] {
-    return raw
-      .filter(({ url }) => url !== '/news/' && !url.includes('/news/index'))
-      .map(({ url, frontmatter, excerpt }) => ({
-        title: frontmatter.title,
-        url,
-        excerpt: frontmatter.excerpt || (excerpt ? excerpt.replace(/<[^>]+>/g, '') : undefined),
-        date: formatDate(frontmatter.date)
-      }))
-      .sort((a, b) => b.date.time - a.date.time) // 按日期倒序
-  }
-})
-
-function formatDate(raw: string | number | Date) {
-  const date = new Date(raw)
-  return {
-    time: +date,
-    string: date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    })
-  }
-}
+export default defineLoader({
+  watch: 'news/**/*.md',
+  load(watchedFiles): NewsCardItem[] {
+    return getRecentNewsCards(20, watchedFiles);
+  },
+});

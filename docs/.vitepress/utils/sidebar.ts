@@ -12,7 +12,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import type { DefaultTheme } from 'vitepress';
-import type { SidebarSortMode } from '../configs/content-modules.shared';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,14 +27,10 @@ interface SidebarItem extends DefaultTheme.SidebarItem {
   date?: number; // 用于日期排序 (时间戳)
 }
 
-interface SidebarOptions {
-  sortMode?: SidebarSortMode;
-}
-
 /**
  * 递归生成侧边栏条目
  */
-export function resolveSidebarItems(dirPath: string, baseUrl: string, options: SidebarOptions = {}): SidebarItem[] {
+export function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarItem[] {
   const absolutePath = path.resolve(docsRoot, dirPath);
   if (!fs.existsSync(absolutePath)) return [];
 
@@ -53,7 +48,7 @@ export function resolveSidebarItems(dirPath: string, baseUrl: string, options: S
     if (entry.isDirectory()) {
       // 使用 posix.join 确保 URL 使用正斜杠
       const nextBaseUrl = path.posix.join(baseUrl, entry.name, '/');
-      const children = resolveSidebarItems(path.join(dirPath, entry.name), nextBaseUrl, options);
+      const children = resolveSidebarItems(path.join(dirPath, entry.name), nextBaseUrl);
 
       if (children.length === 0) continue;
 
@@ -140,7 +135,6 @@ export function resolveSidebarItems(dirPath: string, baseUrl: string, options: S
     }
   }
 
-  // 排序逻辑优化：News 模块中年份文件夹倒序排列
   const result = items.sort((a, b) => {
     // 特殊处理：Other 文件夹永远排在最后
     const isAOther = (a.name || '').toLowerCase() === 'other' || (a.text || '').toLowerCase() === 'other';
@@ -148,15 +142,6 @@ export function resolveSidebarItems(dirPath: string, baseUrl: string, options: S
 
     if (isAOther && !isBOther) return 1;
     if (!isAOther && isBOther) return -1;
-
-    // News 特殊排序：如果检测到是年份文件夹（这里做一个简单的正则判断），则倒序排列
-    if (options.sortMode === 'news') {
-      const isAYear = /^\d{4}$/.test(a.name || '');
-      const isBYear = /^\d{4}$/.test(b.name || '');
-      if (isAYear && isBYear) {
-        return (b.name || '').localeCompare(a.name || ''); // 倒序：2026 在 2025 上面
-      }
-    }
 
     const orderA = a.order ?? Number.POSITIVE_INFINITY;
     const orderB = b.order ?? Number.POSITIVE_INFINITY;
@@ -174,14 +159,6 @@ export function resolveSidebarItems(dirPath: string, baseUrl: string, options: S
 
     return (a.name ?? '').localeCompare(b.name ?? '', 'en');
   });
-
-  // 如果启用了 News 模式，且排序后的第一项是年份文件夹，则将其展开
-  if (options.sortMode === 'news' && result.length > 0) {
-    const firstItem = result[0];
-    if (/^\d{4}$/.test(firstItem.name || '')) {
-      firstItem.collapsed = false;
-    }
-  }
 
   return result.map(({ order, name, date, ...rest }) => rest);
 }

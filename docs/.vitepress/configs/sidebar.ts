@@ -5,15 +5,16 @@
  */
 import type { DefaultTheme } from 'vitepress';
 import { contentModules } from './content-modules.shared';
+import { resolveNewsSidebarItems } from '../utils/news-sidebar';
 import { resolveSidebarItems } from '../utils/sidebar';
 
 const sidebarEntries = contentModules.flatMap((module) => {
   if (!module.sidebar) return [];
 
   const dirPath = module.root.replace(/\/$/u, '');
-  const generatedItems = resolveSidebarItems(dirPath, module.baseUrl, {
-    sortMode: module.sidebar.sortMode,
-  });
+  const generatedItems = module.sidebar.sortMode === 'news'
+    ? resolveNewsSidebarItems()
+    : resolveSidebarItems(dirPath, module.baseUrl);
   const items = module.sidebar.appendItems
     ? [...generatedItems, ...module.sidebar.appendItems]
     : generatedItems;
