@@ -68,7 +68,7 @@ function buildCategoryNode(bucket: CategoryBucket): NewsArchiveNode {
 
 function createCategoryBucket(entry: NewsEntry): CategoryBucket {
   return {
-    node: { text: entry.category, collapsed: false, timestamp: entry.timestamp },
+    node: { text: entry.category, collapsed: true, timestamp: entry.timestamp },
     years: new Map<string, YearBucket>(),
   };
 }
