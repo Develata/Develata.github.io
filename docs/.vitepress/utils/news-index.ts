@@ -64,29 +64,65 @@ function readNewsEntry(filePath: string): NewsEntry {
   const relativePath = path.relative(docsRoot, filePath).replace(/\\/g, '/');
   const stem = path.basename(filePath, '.md');
   const { data, content } = matter(fs.readFileSync(filePath, 'utf-8'));
-  const timestamp = resolveTimestamp(data.date, stem);
-  const date = new Date(timestamp);
+  const calendarDate = resolveCalendarDate(data.date, stem);
+  const timestamp = Date.UTC(calendarDate.year, calendarDate.month - 1, calendarDate.day);
 
   return {
     title: resolveTitle(data.title, content, stem),
     url: `/${relativePath.replace(/\.md$/u, '')}`,
     excerpt: resolveExcerpt(data.excerpt, content),
     timestamp,
-    dateLabel: date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
-    day: date.getDate(),
-    monthLabel: date.toLocaleString('en-US', { month: 'short' }),
-    year: String(date.getFullYear()),
-    monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+    dateLabel: formatUtcDate(timestamp, 'zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+    day: calendarDate.day,
+    monthLabel: formatUtcDate(timestamp, 'en-US', { month: 'short' }),
+    year: String(calendarDate.year),
+    monthKey: `${calendarDate.year}-${String(calendarDate.month).padStart(2, '0')}`,
     category: relativePath.split('/')[1] ?? 'news',
   };
 }
 
-function resolveTimestamp(raw: unknown, stem: string): number {
-  const parsed = new Date(String(raw ?? ''));
-  if (!Number.isNaN(parsed.getTime())) return parsed.getTime();
+function resolveCalendarDate(raw: unknown, stem: string): { year: number; month: number; day: number } {
+  if (raw instanceof Date && !Number.isNaN(raw.getTime())) {
+    return {
+      year: raw.getUTCFullYear(),
+      month: raw.getUTCMonth() + 1,
+      day: raw.getUTCDate(),
+    };
+  }
+
+  const rawText = String(raw ?? '').trim();
+  const matchedDate = rawText.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/u);
+  if (matchedDate) {
+    return {
+      year: Number(matchedDate[1]),
+      month: Number(matchedDate[2]),
+      day: Number(matchedDate[3]),
+    };
+  }
+
+  const parsed = new Date(rawText);
+  if (!Number.isNaN(parsed.getTime())) {
+    return {
+      year: parsed.getUTCFullYear(),
+      month: parsed.getUTCMonth() + 1,
+      day: parsed.getUTCDate(),
+    };
+  }
+
   const fallback = stem.match(/^(\d{4})(\d{2})(\d{2})$/u);
-  if (fallback) return new Date(`${fallback[1]}-${fallback[2]}-${fallback[3]}`).getTime();
-  return 0;
+  if (fallback) {
+    return {
+      year: Number(fallback[1]),
+      month: Number(fallback[2]),
+      day: Number(fallback[3]),
+    };
+  }
+
+  return { year: 1970, month: 1, day: 1 };
+}
+
+function formatUtcDate(timestamp: number, locale: string, options: Intl.DateTimeFormatOptions): string {
+  return new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(timestamp);
 }
 
 function resolveTitle(rawTitle: unknown, content: string, stem: string): string {
