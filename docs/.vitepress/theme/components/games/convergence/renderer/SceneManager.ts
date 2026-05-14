@@ -253,6 +253,5 @@ export class SceneManager {
     if (this.vfxSystem) this.vfxSystem.dispose();
     disposeSceneGraph(this.sceneShell.scene);
     this.sceneShell.dispose();
-    console.log('SceneManager disposed.');
   }
 }

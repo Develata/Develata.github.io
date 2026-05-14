@@ -51,17 +51,21 @@ function initGame() {
 
 // 生成食物
 function spawnFood() {
-  let newFood: Point
-  while (true) {
-    newFood = {
-      x: Math.floor(Math.random() * BOARD_SIZE),
-      y: Math.floor(Math.random() * BOARD_SIZE)
+  const occupied = new Set(snake.value.map(segment => `${segment.x},${segment.y}`))
+  const emptyCells: Point[] = []
+
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      if (!occupied.has(`${x},${y}`)) emptyCells.push({ x, y })
     }
-    // 确保食物不生成在蛇身上
-    const onSnake = snake.value.some(segment => segment.x === newFood.x && segment.y === newFood.y)
-    if (!onSnake) break
   }
-  food.value = newFood
+
+  if (emptyCells.length === 0) {
+    gameOver()
+    return
+  }
+
+  food.value = emptyCells[Math.floor(Math.random() * emptyCells.length)]
 }
 
 // 游戏循环 (RAF)

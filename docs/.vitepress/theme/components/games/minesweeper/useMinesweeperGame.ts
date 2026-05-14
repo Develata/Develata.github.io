@@ -1,4 +1,4 @@
-import { computed, reactive, ref } from 'vue';
+import { computed, onUnmounted, reactive, ref } from 'vue';
 import confetti from 'canvas-confetti';
 import { checkWin, createBoard, flagAllMines, forEachNeighbor, placeMines, revealAllMines, revealRegion } from './core';
 import type { Cell, GameConfig, MinesweeperGameState } from './types';
@@ -210,6 +210,7 @@ export function useMinesweeperGame() {
   }
 
   initGame();
+  onUnmounted(stopTimer);
 
   return {
     board,

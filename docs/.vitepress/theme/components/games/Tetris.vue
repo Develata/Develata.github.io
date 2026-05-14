@@ -342,7 +342,9 @@ function handleKeydown(e: KeyboardEvent) {
 
     switch (e.key) {
         case 'ArrowUp': case 'w': case 'W': rotatePiece(); break
-        case 'ArrowDown': case 's': case 'S': movePiece(0, 1); score.value += 1; break
+        case 'ArrowDown': case 's': case 'S':
+            if (movePiece(0, 1)) score.value += 1
+            break
         case 'ArrowLeft': case 'a': case 'A': movePiece(-1, 0); break
         case 'ArrowRight': case 'd': case 'D': movePiece(1, 0); break
     }

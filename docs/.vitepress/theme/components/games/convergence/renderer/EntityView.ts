@@ -111,6 +111,8 @@ export class EntityView {
   }
   
   public dispose(): void {
+    gsap.killTweensOf(this.playerMesh.position);
+    gsap.killTweensOf(this.playerMesh.scale);
     this.scene.remove(this.playerMesh);
     this.playerMesh.geometry.dispose();
 
@@ -122,6 +124,8 @@ export class EntityView {
     }
 
     this.enemyMeshes.forEach((mesh) => {
+      gsap.killTweensOf(mesh.position);
+      gsap.killTweensOf(mesh.scale);
       this.scene.remove(mesh);
       const mat = mesh.material;
       if (Array.isArray(mat)) {

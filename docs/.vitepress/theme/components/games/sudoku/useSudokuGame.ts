@@ -192,7 +192,8 @@ export function useSudokuGame() {
     if (!confirm('AI 托管将清空当前进度，确定吗？')) return;
     gameState.value = 'solving';
     stopTimer();
-    solveAbortController = new AbortController();
+    const controller = new AbortController();
+    solveAbortController = controller;
     grid.value.forEach((cell) => {
       if (!cell.fixed) {
         cell.val = 0;
@@ -202,14 +203,20 @@ export function useSudokuGame() {
     });
 
     try {
-      if (await runVisualSolve(grid.value, solution.value, solveAbortController.signal)) {
+      if (await runVisualSolve(grid.value, solution.value, controller.signal) && solveAbortController === controller) {
         gameState.value = 'won';
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
-      gameState.value = 'playing';
-      startTimer();
+      if (solveAbortController === controller && !controller.signal.aborted) {
+        gameState.value = 'playing';
+        startTimer();
+      }
+    } finally {
+      if (solveAbortController === controller) {
+        solveAbortController = null;
+      }
     }
   }
 
