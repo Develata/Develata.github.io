@@ -29,10 +29,10 @@ function addEntry(categories: Map<string, CategoryBucket>, entry: NewsEntry): vo
   categories.set(entry.category, category);
   category.latestMonthKey ??= entry.monthKey;
 
-  const year = category.years.get(entry.year) ?? createYearBucket(entry.year, entry.timestamp);
+  const year = category.years.get(entry.year) ?? createYearBucket(entry.year, entry.url, entry.timestamp);
   category.years.set(entry.year, year);
 
-  const month = year.months.get(entry.monthKey) ?? createMonthBucket(entry.monthKey, entry.timestamp);
+  const month = year.months.get(entry.monthKey) ?? createMonthBucket(entry.monthKey, entry.url, entry.timestamp);
   year.months.set(entry.monthKey, month);
   month.node.items ??= [];
   month.node.items.push({ text: entry.title, link: entry.url, timestamp: entry.timestamp });
@@ -60,21 +60,21 @@ function buildCategoryNode(bucket: CategoryBucket): NewsArchiveNode {
 
 function createCategoryBucket(entry: NewsEntry): CategoryBucket {
   return {
-    node: { text: entry.category, collapsed: true, timestamp: entry.timestamp },
+    node: { text: entry.category, latestLink: entry.url, collapsed: true, timestamp: entry.timestamp },
     years: new Map<string, YearBucket>(),
   };
 }
 
-function createYearBucket(year: string, timestamp: number): YearBucket {
+function createYearBucket(year: string, link: string, timestamp: number): YearBucket {
   return {
-    node: { text: year, collapsed: true, timestamp },
+    node: { text: year, latestLink: link, collapsed: true, timestamp },
     months: new Map<string, MonthBucket>(),
   };
 }
 
-function createMonthBucket(monthKey: string, timestamp: number): MonthBucket {
+function createMonthBucket(monthKey: string, link: string, timestamp: number): MonthBucket {
   return {
-    node: { text: monthKey, collapsed: true, timestamp, items: [] },
+    node: { text: monthKey, latestLink: link, collapsed: true, timestamp, items: [] },
   };
 }
 
@@ -82,7 +82,8 @@ function stripArchiveMeta(node: NewsArchiveNode): DefaultTheme.SidebarItem {
   return {
     text: node.text,
     link: node.link,
+    ...(node.latestLink ? { latestLink: node.latestLink } : {}),
     collapsed: node.collapsed,
     items: node.items?.map(stripArchiveMeta),
-  };
+  } as DefaultTheme.SidebarItem;
 }

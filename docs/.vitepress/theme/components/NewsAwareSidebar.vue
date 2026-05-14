@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import { useScrollLock } from '@vueuse/core';
-import { inBrowser, useData } from 'vitepress';
+import { inBrowser, useData, useRoute } from 'vitepress';
 import { computed, ref, watch } from 'vue';
 import NewsSidebarGroup from './NewsSidebarGroup.vue';
 import { buildNewsArticleSidebar, isNewsArticlePath } from './newsSidebarTree';
 import { useSidebar } from '../sidebar/useSidebar';
 
 const { page } = useData();
+const route = useRoute();
 const { sidebar, sidebarGroups, hasSidebar } = useSidebar();
 
 const props = defineProps<{
@@ -36,6 +37,12 @@ const resolvedGroups = computed(() => {
 });
 
 const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.length}`);
+const activePath = computed(() => normalizePath(route.path));
+
+function normalizePath(path?: string): string {
+  if (!path) return '';
+  return path.replace(/\/index$/u, '/').replace(/\/$/u, '') || '/';
+}
 </script>
 
 <template>
@@ -51,7 +58,7 @@ const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.le
       <span id="sidebar-aria-label" class="visually-hidden">Sidebar Navigation</span>
 
       <slot name="sidebar-nav-before" />
-      <NewsSidebarGroup :items="resolvedGroups" :key="key" />
+      <NewsSidebarGroup :items="resolvedGroups" :active-path="activePath" :key="key" />
       <slot name="sidebar-nav-after" />
     </nav>
   </aside>

@@ -1,6 +1,7 @@
 import type { DefaultTheme } from 'vitepress';
 
 type SidebarItem = DefaultTheme.SidebarItem;
+type SidebarItemWithLatestLink = SidebarItem & { latestLink?: string };
 
 interface NewsPageContext {
   category: string;
@@ -18,10 +19,10 @@ export function buildNewsArticleSidebar(items: SidebarItem[], relativePath: stri
   if (!ctx) return items;
 
   return items.map((item) => {
-    if (!containsCategoryLink(item, ctx.category)) {
+    if (!isCurrentCategory(item, ctx.category)) {
       return {
         text: item.text,
-        link: findLatestArticleLink(item),
+        link: getLatestLink(item),
         collapsed: true,
       };
     }
@@ -30,6 +31,7 @@ export function buildNewsArticleSidebar(items: SidebarItem[], relativePath: stri
 
     return {
       text: item.text,
+      link: getLatestLink(item),
       collapsed: false,
       items: item.items
         .filter((yearNode) => yearNode.items?.length)
@@ -37,15 +39,6 @@ export function buildNewsArticleSidebar(items: SidebarItem[], relativePath: stri
         .filter(Boolean) as SidebarItem[],
     };
   });
-}
-
-function findLatestArticleLink(item: SidebarItem): string | undefined {
-  if (item.link) return item.link;
-  for (const child of item.items ?? []) {
-    const link = findLatestArticleLink(child);
-    if (link) return link;
-  }
-  return undefined;
 }
 
 function resolveNewsPageContext(relativePath: string): NewsPageContext | null {
@@ -65,10 +58,9 @@ function resolveNewsPageContext(relativePath: string): NewsPageContext | null {
   };
 }
 
-function containsCategoryLink(item: SidebarItem, category: string): boolean {
+function isCurrentCategory(item: SidebarItem, category: string): boolean {
   const prefix = `/news/${category}/`;
-  if (item.link?.startsWith(prefix)) return true;
-  return !!item.items?.some((child) => containsCategoryLink(child, category));
+  return getLatestLink(item)?.startsWith(prefix) ?? false;
 }
 
 function buildYearNode(yearNode: SidebarItem, ctx: NewsPageContext): SidebarItem | null {
@@ -92,6 +84,7 @@ function buildMonthNode(monthNode: SidebarItem, ctx: NewsPageContext): SidebarIt
   if (monthNode.text === ctx.monthKey) {
     return {
       text: monthNode.text,
+      link: getLatestLink(monthNode),
       collapsed: false,
       items: articles,
     };
@@ -99,7 +92,11 @@ function buildMonthNode(monthNode: SidebarItem, ctx: NewsPageContext): SidebarIt
 
   return {
     text: monthNode.text,
-    link: articles[0].link,
+    link: getLatestLink(monthNode) ?? articles[0].link,
     collapsed: true,
   };
+}
+
+function getLatestLink(item: SidebarItem): string | undefined {
+  return (item as SidebarItemWithLatestLink).latestLink ?? item.link;
 }

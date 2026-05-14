@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { useRoute } from 'vitepress';
 import { VPLink } from 'vitepress/theme';
 import { computed, inject, provide, ref, watch } from 'vue';
 import type { DefaultTheme } from 'vitepress';
-import { newsSidebarAccordionKey } from './newsSidebarAccordion';
+import { newsSidebarAccordionKey, newsSidebarActiveStateKey } from './newsSidebarAccordion';
 
 const props = defineProps<{
   item: DefaultTheme.SidebarItem;
@@ -11,9 +10,9 @@ const props = defineProps<{
   itemKey: string;
 }>();
 
-const route = useRoute();
 const collapsed = ref(!!props.item.collapsed);
 const parentAccordion = inject(newsSidebarAccordionKey, null);
+const activeState = inject(newsSidebarActiveStateKey, null);
 const activeTopLevelKey = ref<string | null>(null);
 const accordion = parentAccordion ?? {
   activeKey: activeTopLevelKey,
@@ -37,10 +36,8 @@ watch(() => props.item.collapsed, (next) => {
 
 const hasChildren = computed(() => !!props.item.items?.length);
 const isLink = computed(() => !!props.item.link);
-const normalizedRoutePath = computed(() => normalizePath(route.path));
-const normalizedLink = computed(() => normalizePath(props.item.link));
-const isActive = computed(() => !!normalizedLink.value && normalizedRoutePath.value === normalizedLink.value);
-const hasActive = computed(() => isActive.value || hasActiveDescendant(props.item.items, normalizedRoutePath.value));
+const isActive = computed(() => activeState?.value.exactActiveKey === props.itemKey);
+const hasActive = computed(() => activeState?.value.activeKeys.has(props.itemKey) ?? false);
 const classes = computed(() => [
   `level-${props.depth}`,
   { collapsed: collapsed.value, collapsible: props.item.collapsed != null, 'is-link': isLink.value, 'is-active': isActive.value, 'has-active': hasActive.value },
@@ -76,15 +73,6 @@ function onKeydown(event: KeyboardEvent) {
   if (event.key !== 'Enter' && event.key !== ' ') return;
   event.preventDefault();
   onItemClick();
-}
-
-function normalizePath(path?: string): string {
-  if (!path) return '';
-  return path.replace(/\/index$/u, '/').replace(/\/$/u, '') || '/';
-}
-
-function hasActiveDescendant(items: DefaultTheme.SidebarItem[] | undefined, path: string): boolean {
-  return !!items?.some((item) => normalizePath(item.link) === path || hasActiveDescendant(item.items, path));
 }
 
 function toggleCollapsed() {

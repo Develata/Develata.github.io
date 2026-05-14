@@ -24,6 +24,7 @@ export interface NewsCardItem {
 }
 
 export interface NewsArchiveNode extends DefaultTheme.SidebarItem {
+  latestLink?: string;
   timestamp: number;
   items?: NewsArchiveNode[];
 }

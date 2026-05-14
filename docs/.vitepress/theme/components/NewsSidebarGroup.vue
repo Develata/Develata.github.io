@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { provide, ref } from 'vue';
+import { computed, provide, ref } from 'vue';
 import type { DefaultTheme } from 'vitepress';
 import NewsSidebarItem from './NewsSidebarItem.vue';
-import { newsSidebarAccordionKey, type AccordionController } from './newsSidebarAccordion';
+import { newsSidebarAccordionKey, newsSidebarActiveStateKey, type AccordionController } from './newsSidebarAccordion';
 
 const props = defineProps<{
   items: DefaultTheme.SidebarItem[];
+  activePath?: string;
 }>();
 
 const activeKey = ref<string | null>(resolveDefaultActiveKey());
@@ -17,12 +18,41 @@ const accordion: AccordionController = {
 };
 
 provide(newsSidebarAccordionKey, accordion);
+provide(newsSidebarActiveStateKey, computed(() => resolveActiveState(props.items, normalizePath(props.activePath))));
 
 function resolveDefaultActiveKey(): string | null {
   const index = props.items.findIndex((item) => item.items?.length && item.collapsed === false);
   if (index < 0) return null;
   const item = props.items[index];
   return `${index}:${item.text ?? 'item'}`;
+}
+
+function resolveActiveState(items: DefaultTheme.SidebarItem[], activePath: string) {
+  const activeKeys = new Set<string>();
+  let exactActiveKey: string | null = null;
+
+  const visit = (nodes: DefaultTheme.SidebarItem[], prefix = ''): boolean => {
+    let hasMatch = false;
+    nodes.forEach((node, index) => {
+      const key = `${prefix}${index}:${node.text ?? 'item'}`;
+      const isExactMatch = normalizePath(node.link) === activePath;
+      const childMatch = node.items?.length ? visit(node.items, `${key}/`) : false;
+      if (isExactMatch) exactActiveKey = key;
+      if (isExactMatch || childMatch) {
+        activeKeys.add(key);
+        hasMatch = true;
+      }
+    });
+    return hasMatch;
+  };
+
+  visit(items);
+  return { activeKeys, exactActiveKey };
+}
+
+function normalizePath(path?: string): string {
+  if (!path) return '';
+  return path.replace(/\/index$/u, '/').replace(/\/$/u, '') || '/';
 }
 </script>
 
