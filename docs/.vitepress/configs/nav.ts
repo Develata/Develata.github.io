@@ -12,6 +12,7 @@ export const nav: DefaultTheme.Config['nav'] = [
     items: [
       { text: 'Math', link: '/knowledge/math/' },
       { text: 'Coding', link: '/knowledge/coding/' },
+      { text: 'CLI', link: '/knowledge/cli/' },
       { text: 'Sharing', link: '/knowledge/sharing/' },
     ],
   },

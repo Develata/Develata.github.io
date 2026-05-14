@@ -52,6 +52,15 @@ export const contentModules: ContentModule[] = [
     sidebar: {},
   },
   {
+    id: 'knowledge-cli',
+    root: 'knowledge/cli/',
+    baseUrl: '/knowledge/cli/',
+    search: true,
+    randomJump: true,
+    titleInject: true,
+    sidebar: {},
+  },
+  {
     id: 'knowledge-sharing',
     root: 'knowledge/sharing/',
     baseUrl: '/knowledge/sharing/',

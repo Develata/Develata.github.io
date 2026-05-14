@@ -17,9 +17,14 @@ features:
     linkText: 查看数学笔记
 
   - title:  Coding
-    details: 编程笔记。
+    details: 编程语言、代码实现与工程知识。
     link: /knowledge/coding/
     linkText: 查看编程笔记
+
+  - title:  CLI
+    details: 命令行工具、系统指令与终端工作流。
+    link: /knowledge/cli/
+    linkText: 查看 CLI 笔记
 
   - title:  Sharing
     details: 指南分享。

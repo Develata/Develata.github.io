@@ -10,6 +10,7 @@ const docsDir = path.resolve(rootDir, 'docs');
 const dirsToEmpty = [
   'knowledge/math',
   'knowledge/coding',
+  'knowledge/cli',
   'knowledge/sharing',
   'books',
   'news',
