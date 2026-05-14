@@ -8,16 +8,33 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const docsRoot = path.resolve(__dirname, '../../');
 const newsRoot = path.resolve(docsRoot, 'news');
-let cachedSignature = '';
+let cachedFilesKey = '';
 let cachedEntries: NewsEntry[] = [];
+const cachedEntryMap = new Map<string, { mtimeMs: number; entry: NewsEntry }>();
 
 export function getNewsEntries(watchedFiles?: string[]): NewsEntry[] {
   const files = resolveNewsFiles(watchedFiles);
-  const signature = files.map((file) => `${file}:${fs.statSync(file).mtimeMs}`).join('|');
-  if (signature === cachedSignature) return cachedEntries;
+  const filesKey = files.join('|');
+  let isDirty = filesKey !== cachedFilesKey;
+  pruneDeletedEntries(files);
 
-  cachedSignature = signature;
-  cachedEntries = files.map(readNewsEntry).sort(compareEntries);
+  // Reuse cached entries for unchanged files so editing one article does not
+  // trigger a full re-parse of the entire news corpus.
+  const nextEntries: NewsEntry[] = [];
+  for (const file of files) {
+    const mtimeMs = fs.statSync(file).mtimeMs;
+    const cached = cachedEntryMap.get(file);
+    if (!cached || cached.mtimeMs !== mtimeMs) {
+      cachedEntryMap.set(file, { mtimeMs, entry: readNewsEntry(file) });
+      isDirty = true;
+    }
+    nextEntries.push(cachedEntryMap.get(file)!.entry);
+  }
+
+  if (!isDirty) return cachedEntries;
+
+  cachedFilesKey = filesKey;
+  cachedEntries = nextEntries.sort(compareEntries);
   return cachedEntries;
 }
 
@@ -58,6 +75,13 @@ function collectNewsFiles(root: string): string[] {
     if (entry.isFile()) files.push(entryPath);
   }
   return files;
+}
+
+function pruneDeletedEntries(files: string[]): void {
+  const activeFiles = new Set(files);
+  for (const cachedFile of cachedEntryMap.keys()) {
+    if (!activeFiles.has(cachedFile)) cachedEntryMap.delete(cachedFile);
+  }
 }
 
 function readNewsEntry(filePath: string): NewsEntry {
