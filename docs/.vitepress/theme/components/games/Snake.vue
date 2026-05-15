@@ -19,6 +19,7 @@ type GameStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER'
 // --- 配置常量 ---
 const GRID_SIZE = 20
 const BOARD_SIZE = 20 // 20x20 网格
+const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE
 const INITIAL_SPEED = 130
 
 // --- 状态管理 ---
@@ -35,7 +36,60 @@ let animationFrameId: number | null = null
 const speed = ref(INITIAL_SPEED)
 const speedMultiplier = ref(1)
 
+let occupied = new Uint8Array(TOTAL_CELLS)
+let freeCells: number[] = []
+let freeIndex = new Int16Array(TOTAL_CELLS)
+
 // --- 核心逻辑 ---
+
+function pointToIndex(point: Point): number {
+  return point.y * BOARD_SIZE + point.x
+}
+
+function indexToPoint(index: number): Point {
+  return {
+    x: index % BOARD_SIZE,
+    y: Math.floor(index / BOARD_SIZE)
+  }
+}
+
+function rebuildOccupancy(segments: Point[]) {
+  occupied = new Uint8Array(TOTAL_CELLS)
+  freeCells = []
+  freeIndex = new Int16Array(TOTAL_CELLS)
+  freeIndex.fill(-1)
+
+  segments.forEach((segment) => {
+    occupied[pointToIndex(segment)] = 1
+  })
+
+  for (let index = 0; index < TOTAL_CELLS; index++) {
+    if (occupied[index]) continue
+    freeIndex[index] = freeCells.length
+    freeCells.push(index)
+  }
+}
+
+function reserveCell(index: number) {
+  if (occupied[index]) return
+  occupied[index] = 1
+
+  const position = freeIndex[index]
+  if (position < 0) return
+  const last = freeCells.pop()
+  if (last !== undefined && position < freeCells.length) {
+    freeCells[position] = last
+    freeIndex[last] = position
+  }
+  freeIndex[index] = -1
+}
+
+function releaseCell(index: number) {
+  if (!occupied[index]) return
+  occupied[index] = 0
+  freeIndex[index] = freeCells.length
+  freeCells.push(index)
+}
 
 // 初始化游戏
 function initGame() {
@@ -45,27 +99,20 @@ function initGame() {
   score.value = 0
   status.value = 'PLAYING'
   speed.value = INITIAL_SPEED
+  rebuildOccupancy(snake.value)
   spawnFood()
   startGameLoop()
 }
 
 // 生成食物
 function spawnFood() {
-  const occupied = new Set(snake.value.map(segment => `${segment.x},${segment.y}`))
-  const emptyCells: Point[] = []
-
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      if (!occupied.has(`${x},${y}`)) emptyCells.push({ x, y })
-    }
-  }
-
-  if (emptyCells.length === 0) {
+  if (freeCells.length === 0) {
     gameOver()
     return
   }
 
-  food.value = emptyCells[Math.floor(Math.random() * emptyCells.length)]
+  const index = freeCells[Math.floor(Math.random() * freeCells.length)]
+  food.value = indexToPoint(index)
 }
 
 // 游戏循环 (RAF)
@@ -119,16 +166,25 @@ function moveSnake() {
   if (newHead.y < 0) newHead.y = BOARD_SIZE - 1
   else if (newHead.y >= BOARD_SIZE) newHead.y = 0
 
-  // 碰撞检测 (只检测撞自己)
-  if (checkCollision(newHead)) {
+  const newHeadIndex = pointToIndex(newHead)
+  const tail = snake.value[snake.value.length - 1]
+  const tailIndex = pointToIndex(tail)
+  const willEat = newHead.x === food.value.x && newHead.y === food.value.y
+  const canMoveIntoTail = !willEat && newHeadIndex === tailIndex
+
+  if (occupied[newHeadIndex] && !canMoveIntoTail) {
     gameOver()
     return
   }
 
+  if (!willEat) {
+    releaseCell(tailIndex)
+  }
+  reserveCell(newHeadIndex)
   snake.value.unshift(newHead)
 
   // 吃食物
-  if (newHead.x === food.value.x && newHead.y === food.value.y) {
+  if (willEat) {
     score.value += 10
     // 简单的加速机制
     if (score.value % 50 === 0 && speed.value > 50) {
@@ -138,16 +194,6 @@ function moveSnake() {
   } else {
     snake.value.pop()
   }
-}
-
-// 碰撞检测
-function checkCollision(p: Point): boolean {
-  // 撞墙逻辑已在 moveSnake 中改为穿墙，此处只需检测撞自己
-  // 检测是否撞到身体 (不包含尾巴，因为尾巴马上会移走)
-  for (let i = 0; i < snake.value.length - 1; i++) {
-    if (p.x === snake.value[i].x && p.y === snake.value[i].y) return true
-  }
-  return false
 }
 
 // 游戏结束

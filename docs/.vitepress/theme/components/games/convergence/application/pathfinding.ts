@@ -1,13 +1,6 @@
 import * as THREE from 'three';
 import type { PathNode } from './types';
 
-const ORTHOGONAL_DIRS = [
-  { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 },
-  { dx: -1, dy: 0 },
-  { dx: 1, dy: 0 },
-];
-
 export function findOrthogonalPath(
   size: number,
   startX: number,
@@ -15,40 +8,35 @@ export function findOrthogonalPath(
   endX: number,
   endY: number
 ): PathNode[] {
-  const queue: Array<{ x: number; y: number }> = [{ x: startX, y: startY }];
-  const visited = new Set<string>([`${startX},${startY}`]);
-  const parent = new Map<string, string>();
-
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    if (current.x === endX && current.y === endY) {
-      const path: PathNode[] = [];
-      let key = `${endX},${endY}`;
-      while (key !== `${startX},${startY}`) {
-        const [x, y] = key.split(',').map(Number);
-        path.push({ x, y });
-        const next = parent.get(key);
-        if (!next) break;
-        key = next;
-      }
-      path.reverse();
-      return path;
-    }
-
-    for (const dir of ORTHOGONAL_DIRS) {
-      const nextX = current.x + dir.dx;
-      const nextY = current.y + dir.dy;
-      if (nextX < 0 || nextX >= size || nextY < 0 || nextY >= size) continue;
-
-      const key = `${nextX},${nextY}`;
-      if (visited.has(key)) continue;
-      visited.add(key);
-      parent.set(key, `${current.x},${current.y}`);
-      queue.push({ x: nextX, y: nextY });
-    }
+  if (
+    startX < 0 ||
+    startX >= size ||
+    startY < 0 ||
+    startY >= size ||
+    endX < 0 ||
+    endX >= size ||
+    endY < 0 ||
+    endY >= size
+  ) {
+    return [];
   }
 
-  return [];
+  const path: PathNode[] = [];
+  let x = startX;
+  let y = startY;
+  const dx = Math.sign(endX - startX);
+  const dy = Math.sign(endY - startY);
+
+  while (x !== endX) {
+    x += dx;
+    path.push({ x, y });
+  }
+  while (y !== endY) {
+    y += dy;
+    path.push({ x, y });
+  }
+
+  return path;
 }
 
 export function vectorToOrthogonalGrid(vec: THREE.Vector3): { dx: number; dy: number } {

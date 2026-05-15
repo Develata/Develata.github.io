@@ -2,6 +2,7 @@ import type { Difficulty } from './types';
 
 const SIZE = 9;
 const BOX = 3;
+const ALL_VALUES_MASK = (1 << SIZE) - 1;
 
 const CLUES_BY_DIFFICULTY: Record<Difficulty, number> = {
   Easy: 45,
@@ -10,6 +11,13 @@ const CLUES_BY_DIFFICULTY: Record<Difficulty, number> = {
 };
 
 type Grid = number[][];
+
+interface SolverState {
+  grid: Grid;
+  rowMasks: number[];
+  colMasks: number[];
+  boxMasks: number[];
+}
 
 function createEmptyGrid(): Grid {
   return Array.from({ length: SIZE }, () => Array<number>(SIZE).fill(0));
@@ -27,23 +35,8 @@ function shuffle(values: number[]): number[] {
   return values;
 }
 
-function isSafe(grid: Grid, row: number, col: number, value: number): boolean {
-  for (let i = 0; i < SIZE; i++) {
-    if (grid[row][i] === value || grid[i][col] === value) {
-      return false;
-    }
-  }
-
-  const startRow = row - (row % BOX);
-  const startCol = col - (col % BOX);
-  for (let r = 0; r < BOX; r++) {
-    for (let c = 0; c < BOX; c++) {
-      if (grid[startRow + r][startCol + c] === value) {
-        return false;
-      }
-    }
-  }
-  return true;
+function boxIndex(row: number, col: number): number {
+  return Math.floor(row / BOX) * BOX + Math.floor(col / BOX);
 }
 
 function fillBox(grid: Grid, row: number, col: number): void {
@@ -62,29 +55,90 @@ function fillDiagonal(grid: Grid): void {
   }
 }
 
-function findBestEmptyCell(grid: Grid): { row: number; col: number; candidates: number[] } | null {
-  let best: { row: number; col: number; candidates: number[] } | null = null;
+function createSolverState(grid: Grid): SolverState {
+  const state: SolverState = {
+    grid,
+    rowMasks: Array<number>(SIZE).fill(0),
+    colMasks: Array<number>(SIZE).fill(0),
+    boxMasks: Array<number>(SIZE).fill(0),
+  };
 
   for (let row = 0; row < SIZE; row++) {
     for (let col = 0; col < SIZE; col++) {
-      if (grid[row][col] !== 0) {
+      const value = grid[row][col];
+      if (value === 0) {
+        continue;
+      }
+      const mask = valueToMask(value);
+      state.rowMasks[row] |= mask;
+      state.colMasks[col] |= mask;
+      state.boxMasks[boxIndex(row, col)] |= mask;
+    }
+  }
+
+  return state;
+}
+
+function valueToMask(value: number): number {
+  return 1 << (value - 1);
+}
+
+function maskToValues(mask: number, randomized: boolean): number[] {
+  const values: number[] = [];
+  for (let value = 1; value <= SIZE; value++) {
+    if (mask & valueToMask(value)) {
+      values.push(value);
+    }
+  }
+  return randomized ? shuffle(values) : values;
+}
+
+function popCount(mask: number): number {
+  let count = 0;
+  while (mask !== 0) {
+    mask &= mask - 1;
+    count++;
+  }
+  return count;
+}
+
+function getCandidatesMask(state: SolverState, row: number, col: number): number {
+  return ALL_VALUES_MASK & ~(state.rowMasks[row] | state.colMasks[col] | state.boxMasks[boxIndex(row, col)]);
+}
+
+function placeValue(state: SolverState, row: number, col: number, value: number): void {
+  const mask = valueToMask(value);
+  state.grid[row][col] = value;
+  state.rowMasks[row] |= mask;
+  state.colMasks[col] |= mask;
+  state.boxMasks[boxIndex(row, col)] |= mask;
+}
+
+function clearValue(state: SolverState, row: number, col: number, value: number): void {
+  const mask = ~valueToMask(value);
+  state.grid[row][col] = 0;
+  state.rowMasks[row] &= mask;
+  state.colMasks[col] &= mask;
+  state.boxMasks[boxIndex(row, col)] &= mask;
+}
+
+function findBestEmptyCell(state: SolverState): { row: number; col: number; candidatesMask: number } | null {
+  let best: { row: number; col: number; candidatesMask: number; count: number } | null = null;
+
+  for (let row = 0; row < SIZE; row++) {
+    for (let col = 0; col < SIZE; col++) {
+      if (state.grid[row][col] !== 0) {
         continue;
       }
 
-      const candidates: number[] = [];
-      for (let value = 1; value <= SIZE; value++) {
-        if (isSafe(grid, row, col, value)) {
-          candidates.push(value);
-        }
+      const candidatesMask = getCandidatesMask(state, row, col);
+      const count = popCount(candidatesMask);
+      if (count === 0) {
+        return { row, col, candidatesMask };
       }
-
-      if (candidates.length === 0) {
-        return { row, col, candidates };
-      }
-
-      if (!best || candidates.length < best.candidates.length) {
-        best = { row, col, candidates };
-        if (candidates.length === 1) {
+      if (!best || count < best.count) {
+        best = { row, col, candidatesMask, count };
+        if (count === 1) {
           return best;
         }
       }
@@ -94,45 +148,52 @@ function findBestEmptyCell(grid: Grid): { row: number; col: number; candidates: 
   return best;
 }
 
-function solveInPlace(grid: Grid, randomized: boolean): boolean {
-  const next = findBestEmptyCell(grid);
+function solveState(state: SolverState, randomized: boolean): boolean {
+  const next = findBestEmptyCell(state);
   if (!next) {
     return true;
   }
-  if (next.candidates.length === 0) {
+  if (next.candidatesMask === 0) {
     return false;
   }
 
-  const candidates = randomized ? shuffle([...next.candidates]) : next.candidates;
-  for (const value of candidates) {
-    grid[next.row][next.col] = value;
-    if (solveInPlace(grid, randomized)) {
+  for (const value of maskToValues(next.candidatesMask, randomized)) {
+    placeValue(state, next.row, next.col, value);
+    if (solveState(state, randomized)) {
       return true;
     }
-    grid[next.row][next.col] = 0;
+    clearValue(state, next.row, next.col, value);
   }
   return false;
 }
 
-function countSolutions(grid: Grid, limit: number): number {
-  const next = findBestEmptyCell(grid);
+function solveInPlace(grid: Grid, randomized: boolean): boolean {
+  return solveState(createSolverState(grid), randomized);
+}
+
+function countSolutionsState(state: SolverState, limit: number): number {
+  const next = findBestEmptyCell(state);
   if (!next) {
     return 1;
   }
-  if (next.candidates.length === 0) {
+  if (next.candidatesMask === 0) {
     return 0;
   }
 
   let total = 0;
-  for (const value of next.candidates) {
-    grid[next.row][next.col] = value;
-    total += countSolutions(grid, limit);
-    grid[next.row][next.col] = 0;
+  for (const value of maskToValues(next.candidatesMask, false)) {
+    placeValue(state, next.row, next.col, value);
+    total += countSolutionsState(state, limit);
+    clearValue(state, next.row, next.col, value);
     if (total >= limit) {
       return total;
     }
   }
   return total;
+}
+
+function countSolutions(grid: Grid, limit: number): number {
+  return countSolutionsState(createSolverState(grid), limit);
 }
 
 function carvePuzzle(fullGrid: Grid, clues: number): Grid {

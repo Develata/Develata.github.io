@@ -34,16 +34,6 @@ export function forEachNeighbor(
   }
 }
 
-export function countNeighborMines(board: Cell[][], rows: number, cols: number, row: number, col: number): number {
-  let count = 0;
-  forEachNeighbor(rows, cols, row, col, (nextRow, nextCol) => {
-    if (board[nextRow][nextCol].isMine) {
-      count++;
-    }
-  });
-  return count;
-}
-
 export function placeMines(
   board: Cell[][],
   rows: number,
@@ -52,24 +42,28 @@ export function placeMines(
   excludeRow: number,
   excludeCol: number
 ) {
-  let placed = 0;
-  while (placed < totalMines) {
-    const row = Math.floor(Math.random() * rows);
-    const col = Math.floor(Math.random() * cols);
-    const protectedCell = Math.abs(row - excludeRow) <= 1 && Math.abs(col - excludeCol) <= 1;
-    if (protectedCell || board[row][col].isMine) {
-      continue;
-    }
-    board[row][col].isMine = true;
-    placed++;
-  }
-
+  const candidates: Array<[number, number]> = [];
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      if (!board[row][col].isMine) {
-        board[row][col].count = countNeighborMines(board, rows, cols, row, col);
+      if (Math.abs(row - excludeRow) <= 1 && Math.abs(col - excludeCol) <= 1) {
+        continue;
       }
+      candidates.push([row, col]);
     }
+  }
+
+  const mineCount = Math.min(totalMines, candidates.length);
+  for (let i = 0; i < mineCount; i++) {
+    const j = i + Math.floor(Math.random() * (candidates.length - i));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+
+    const [row, col] = candidates[i];
+    board[row][col].isMine = true;
+    forEachNeighbor(rows, cols, row, col, (nextRow, nextCol) => {
+      if (!board[nextRow][nextCol].isMine) {
+        board[nextRow][nextCol].count++;
+      }
+    });
   }
 }
 

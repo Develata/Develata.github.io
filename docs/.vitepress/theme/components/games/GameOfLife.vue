@@ -50,13 +50,32 @@ const lastDrawPos = ref({ x: -1, y: -1 })
 const showPresets = ref(false) // 控制下拉菜单
 
 let ctx: CanvasRenderingContext2D | null = null
-let grid: number[][] = []
+let liveCells = new Set<number>()
 let cols = 0
 let rows = 0
 let animationId: number | null = null
 let lastTime = 0
 
 // --- 核心逻辑 ---
+
+function cellKey(x: number, y: number) {
+  return y * cols + x
+}
+
+function keyX(key: number) {
+  return key % cols
+}
+
+function keyY(key: number) {
+  return Math.floor(key / cols)
+}
+
+function addLiveCell(x: number, y: number) {
+  if (x < 0 || x >= cols || y < 0 || y >= rows) return false
+  const before = liveCells.size
+  liveCells.add(cellKey(x, y))
+  return liveCells.size !== before
+}
 
 function initGrid() {
   if (!canvasRef.value || !containerRef.value) return
@@ -80,16 +99,15 @@ function initGrid() {
   cols = Math.ceil(clientWidth / RESOLUTION)
   rows = Math.ceil(height / RESOLUTION)
 
-  // 只有当网格尺寸发生巨大变化时才重置，否则保留当前状态（仅仅是resize）
-  // 这里简化为：每次 resize 都重置，防止数组越界
-  grid = new Array(cols).fill(null).map(() => new Array(rows).fill(0))
+  liveCells = new Set()
   randomize()
 }
 
 function randomize() {
+  liveCells.clear()
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
-      grid[i][j] = Math.random() > 0.85 ? 1 : 0
+      if (Math.random() > 0.85) addLiveCell(i, j)
     }
   }
   resetStats()
@@ -97,7 +115,7 @@ function randomize() {
 }
 
 function clearGrid() {
-  grid = grid.map(col => col.map(() => 0))
+  liveCells.clear()
   resetStats()
   stopGame()
   draw()
@@ -109,13 +127,7 @@ function resetStats() {
 }
 
 function countPopulation() {
-  let count = 0
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      if (grid[i][j]) count++
-    }
-  }
-  return count
+  return liveCells.size
 }
 
 // 加载预设图案
@@ -139,54 +151,41 @@ function loadPattern(key: string) {
   pattern.points.forEach(([x, y]) => {
     const targetX = x + offsetX
     const targetY = y + offsetY
-    if (targetX >= 0 && targetX < cols && targetY >= 0 && targetY < rows) {
-      grid[targetX][targetY] = 1
-    }
+    addLiveCell(targetX, targetY)
   })
 
-  population.value = pattern.points.length
+  population.value = liveCells.size
   showPresets.value = false // 关闭菜单
   draw()
 }
 
 function computeNextGen() {
-  const next = grid.map(arr => [...arr]) // 浅拷贝一维，深拷贝二维需要遍历
-  // 优化：其实不需要创建完整新数组，可以用双缓冲，但JS里创建数组开销尚可
-  // 这里使用更快的写法
-  for (let i = 0; i < cols; i++) next[i] = [...grid[i]]
+  const neighborCounts = new Map<number, number>()
 
-  let popCount = 0
-
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      const state = grid[i][j]
-
-      // 展开 countNeighbors 减少函数调用栈开销 (Inline optimization)
-      let neighbors = 0
-      for (let x = -1; x <= 1; x++) {
-        for (let y = -1; y <= 1; y++) {
-          if (x === 0 && y === 0) continue
-          const col = i + x
-          const row = j + y
-          if (col >= 0 && col < cols && row >= 0 && row < rows) {
-            neighbors += grid[col][row]
-          }
-        }
+  liveCells.forEach((key) => {
+    const x = keyX(key)
+    const y = keyY(key)
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx === 0 && dy === 0) continue
+        const nx = x + dx
+        const ny = y + dy
+        if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue
+        const neighborKey = cellKey(nx, ny)
+        neighborCounts.set(neighborKey, (neighborCounts.get(neighborKey) ?? 0) + 1)
       }
-
-      if (state === 0 && neighbors === 3) {
-        next[i][j] = 1
-      } else if (state === 1 && (neighbors < 2 || neighbors > 3)) {
-        next[i][j] = 0
-      }
-
-      if (next[i][j] === 1) popCount++
     }
-  }
+  })
 
-  grid = next
+  const next = new Set<number>()
+  neighborCounts.forEach((count, key) => {
+    if (count === 3 || (count === 2 && liveCells.has(key))) {
+      next.add(key)
+    }
+  })
+  liveCells = next
   generation.value++
-  population.value = popCount
+  population.value = liveCells.size
 }
 
 // 新增：单步执行函数
@@ -222,14 +221,11 @@ function draw() {
   // 2. 批量渲染优化 (Batch Rendering)
   // 不要在循环里 fillRect，而是先把路径画完，最后一次性 fill
   ctx.beginPath()
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      if (grid[i][j] === 1) {
-        // 为了美观，格子稍微画小一点点 (padding 1px)
-        ctx.rect(i * RESOLUTION + 1, j * RESOLUTION + 1, RESOLUTION - 2, RESOLUTION - 2)
-      }
-    }
-  }
+  liveCells.forEach((key) => {
+    const x = keyX(key)
+    const y = keyY(key)
+    ctx.rect(x * RESOLUTION + 1, y * RESOLUTION + 1, RESOLUTION - 2, RESOLUTION - 2)
+  })
   ctx.fill() // 一次性提交 GPU
 }
 
@@ -279,7 +275,7 @@ function handleDraw(e: MouseEvent | TouchEvent) {
   if (x < 0 || x >= cols || y < 0 || y >= rows) return
   if (x === lastDrawPos.value.x && y === lastDrawPos.value.y) return
 
-  grid[x][y] = 1
+  addLiveCell(x, y)
   lastDrawPos.value = { x, y }
 
   // 绘制时不重算整个逻辑，只请求重绘
