@@ -15,6 +15,7 @@ export interface NewsEntry {
 
 export interface NewsCardItem {
   title: string;
+  displayTitle: string;
   url: string;
   excerpt?: string;
   timestamp: number;

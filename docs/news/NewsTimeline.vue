@@ -37,7 +37,7 @@ defineProps<{
           <div class="timeline-content">
             <a :href="item.url" class="news-card">
               <div class="card-header">
-                <h2 class="title">{{ item.title }}</h2>
+                <h2 class="title">{{ item.displayTitle }}</h2>
                 <span v-if="index === 0" class="new-tag">LATEST</span>
               </div>
               <p class="meta">{{ item.dateLabel }}</p>

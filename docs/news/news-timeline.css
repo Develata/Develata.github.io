@@ -136,7 +136,7 @@
   background: transparent;
   border-radius: 8px;
   display: block;
-  padding: 0 0 16px;
+  padding: 0 16px 16px;
   text-decoration: none !important;
   transition: transform 0.25s ease;
 }
@@ -241,7 +241,7 @@
   }
 
   .news-card {
-    padding-bottom: 8px;
+    padding: 0 16px 16px;
   }
 }
 

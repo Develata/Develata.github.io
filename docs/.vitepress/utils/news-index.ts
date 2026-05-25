@@ -39,8 +39,9 @@ export function getNewsEntries(watchedFiles?: string[]): NewsEntry[] {
 }
 
 export function getRecentNewsCards(limit = 20, watchedFiles?: string[]): NewsCardItem[] {
-  return getNewsEntries(watchedFiles).slice(0, limit).map(({ title, url, excerpt, timestamp, dateLabel, day, monthLabel }) => ({
+  return getNewsEntries(watchedFiles).slice(0, limit).map(({ title, url, excerpt, timestamp, dateLabel, day, monthLabel, category }) => ({
     title,
+    displayTitle: formatCardTitle(category, title),
     url,
     excerpt,
     timestamp,
@@ -48,6 +49,14 @@ export function getRecentNewsCards(limit = 20, watchedFiles?: string[]): NewsCar
     day,
     monthLabel,
   }));
+}
+
+function formatCardTitle(category: string, title: string): string {
+  const normalizedCategory = category.trim();
+  const normalizedTitle = title.trim();
+  if (!normalizedCategory) return normalizedTitle;
+  if (normalizedTitle.startsWith(`${normalizedCategory} `)) return normalizedTitle;
+  return `${normalizedCategory} ${normalizedTitle}`;
 }
 
 function resolveNewsFiles(watchedFiles?: string[]): string[] {
