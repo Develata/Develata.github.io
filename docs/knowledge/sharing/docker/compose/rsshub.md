@@ -1,12 +1,12 @@
 ---
-title: RSSHub
-date: 2026-05-29
-order: 8
+title: rss-hub
 ---
 
 ## Github Repo
 
-[RSSHub Github Repo](https://github.com/DIYgod/RSSHub)
+[RSSHub Github Repo](https://github.com/open-webui/open-webui)
+
+compose更新日期: 2026-05-29
 
 官方部署文档：
 

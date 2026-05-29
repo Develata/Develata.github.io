@@ -1,12 +1,12 @@
 ---
 title: openclaw
-date: 2026-5-11
-order: 1
 ---
 
 ## Github Repo
 
 [OpenClaw Github Repo](https://github.com/openclaw/openclaw)
+
+compose更新日期: 2026-05-11
 
 ## docker-compose
 

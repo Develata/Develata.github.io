@@ -1,12 +1,12 @@
 ---
 title: easytier
-date: 2026-4-14
-order: 1
 ---
 
 ## Github Repo
 
 [EasyTier Github Repo](https://github.com/EasyTier/EasyTier)
+
+compose更新日期: 2026-04-14
 
 ## docker-compose
 

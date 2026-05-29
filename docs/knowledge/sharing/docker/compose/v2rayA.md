@@ -1,13 +1,12 @@
 ---
 title: v2rayA
-date: 2026-4-14
-order: 1
 ---
 
 ## Github Repo
 
 [v2rayA Github Repo](https://github.com/v2rayA/v2rayA)
 
+compose更新日期: 2026-04-14
 
 ## docker-compose
 ```yaml

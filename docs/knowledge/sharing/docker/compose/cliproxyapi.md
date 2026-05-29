@@ -1,12 +1,12 @@
 ---
 title: cliproxyapi
-date: 2026-05-13
-order: 7
 ---
 
 ## Github Repo
 
 [CLIProxyAPI Github Repo](https://github.com/router-for-me/CLIProxyAPI)
+
+compose更新日期: 2026-05-13
 
 官方 Docker Compose 文档：
 

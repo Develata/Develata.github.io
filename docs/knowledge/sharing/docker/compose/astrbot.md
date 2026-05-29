@@ -1,12 +1,12 @@
 ---
 title: astrbot
-date: 2026-05-12
-order: 5
 ---
 
 ## Github Repo
 
 [AstrBot Github Repo](https://github.com/AstrBotDevs/AstrBot)
+
+compose更新日期: 2026-05-12
 
 ## docker-compose
 

@@ -1,12 +1,12 @@
 ---
 title: sub2api
-date: 2026-05-13
-order: 6
 ---
 
 ## Github Repo
 
 [Sub2API Github Repo](https://github.com/Wei-Shaw/sub2api)
+
+compose更新日期: 2026-05-13
 
 ## 说明
 

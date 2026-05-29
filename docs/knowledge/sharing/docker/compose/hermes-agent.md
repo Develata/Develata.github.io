@@ -1,12 +1,12 @@
 ---
 title: hermes-agent
-date: 2026-5-11
-order: 1
 ---
 
 ## Github Repo
 
 [Hermes Agent Github Repo](https://github.com/NousResearch/hermes-agent)
+
+compose更新日期: 2026-05-11
 
 ## docker-compose
 

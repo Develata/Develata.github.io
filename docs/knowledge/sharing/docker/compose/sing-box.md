@@ -1,12 +1,12 @@
 ---
 title: sing-box
-date: 2026-4-14
-order: 1
 ---
 
 ## Github Repo
 
 [sing-box Github Repo](https://github.com/SagerNet/sing-box)
+
+compose更新日期: 2026-04-14
 
 ## 前置工作
 
