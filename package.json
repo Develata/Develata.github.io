@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
+    "sokoban:generate": "node scripts/sokoban-levelgen.mjs generate --write",
+    "sokoban:check": "node scripts/sokoban-levelgen.mjs check",
     "preview": "vitepress preview docs"
   },
   "keywords": [],
