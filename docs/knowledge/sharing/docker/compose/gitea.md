@@ -1,0 +1,183 @@
+---
+title: gitea
+---
+
+## Github Repo
+
+[Gitea Github Repo](https://github.com/go-gitea/gitea)
+
+compose更新日期: 2026-07-05
+
+官方部署文档：
+
+* https://docs.gitea.com/installation/install-with-docker
+* https://docs.gitea.com/administration/config-cheat-sheet
+* https://docs.gitea.com/usage/repo-mirror
+* https://docs.gitea.com/administration/backup-and-restore
+
+## docker-compose
+
+```yaml
+networks:
+    1panel-network:
+        external: true
+
+services:
+    gitea:
+        image: ${GITEA_IMAGE:-docker.gitea.com/gitea:1.26.4}
+        container_name: gitea
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            - USER_UID=${USER_UID:-1000}
+            - USER_GID=${USER_GID:-1000}
+            - GITEA__server__DOMAIN=${GITEA_DOMAIN:?GITEA_DOMAIN is required}
+            - GITEA__server__ROOT_URL=${GITEA_ROOT_URL:?GITEA_ROOT_URL is required}
+            - GITEA__server__HTTP_PORT=3000
+            - GITEA__server__SSH_DOMAIN=${GITEA_SSH_DOMAIN:?GITEA_SSH_DOMAIN is required}
+            - GITEA__server__SSH_PORT=${GITEA_SSH_HOST_PORT:-2222}
+            - GITEA__server__DISABLE_SSH=false
+            - GITEA__server__OFFLINE_MODE=${GITEA_OFFLINE_MODE:-false}
+            - GITEA__database__DB_TYPE=sqlite3
+            - GITEA__database__PATH=/data/gitea/gitea.db
+            - GITEA__service__DISABLE_REGISTRATION=${GITEA_DISABLE_REGISTRATION:-true}
+            - GITEA__service__REQUIRE_SIGNIN_VIEW=${GITEA_REQUIRE_SIGNIN_VIEW:-true}
+            - GITEA__service__REGISTER_EMAIL_CONFIRM=${GITEA_REGISTER_EMAIL_CONFIRM:-false}
+            - GITEA__actions__ENABLED=${GITEA_ACTIONS_ENABLED:-false}
+            - GITEA__packages__ENABLED=${GITEA_PACKAGES_ENABLED:-true}
+            - GITEA__repository__ENABLE_PUSH_CREATE_USER=${GITEA_ENABLE_PUSH_CREATE_USER:-false}
+            - GITEA__repository__ENABLE_PUSH_CREATE_ORG=${GITEA_ENABLE_PUSH_CREATE_ORG:-false}
+            - GITEA__log__LEVEL=${GITEA_LOG_LEVEL:-Info}
+            - TZ=${TIME_ZONE:-Asia/Shanghai}
+        labels:
+            createdBy: Apps
+        networks:
+            - 1panel-network
+        ports:
+            - ${HOST_IP:-127.0.0.1}:${GITEA_HTTP_HOST_PORT:-3000}:3000
+            - ${GITEA_SSH_BIND_IP:-0.0.0.0}:${GITEA_SSH_HOST_PORT:-2222}:22
+        volumes:
+            - ./data:/data
+            - /etc/timezone:/etc/timezone:ro
+            - /etc/localtime:/etc/localtime:ro
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/healthz"]
+            interval: 30s
+            timeout: 10s
+            start_period: 30s
+            retries: 5
+        logging:
+            driver: json-file
+            options:
+                max-size: "50m"
+                max-file: "3"
+```
+
+## env
+
+```env
+TIME_ZONE=Asia/Shanghai
+
+# Web 只监听本机，通过 1Panel / OpenResty / Nginx 反代访问
+HOST_IP=127.0.0.1
+GITEA_HTTP_HOST_PORT=3000
+
+# SSH 需要给外部 git client 访问，一般监听 0.0.0.0
+GITEA_SSH_BIND_IP=0.0.0.0
+GITEA_SSH_HOST_PORT=2222
+
+# 宿主机上拥有 ./data 的用户。按实际部署用户修改。
+USER_UID=1000
+USER_GID=1000
+
+# 建议固定稳定版本，不建议长期使用 latest
+GITEA_IMAGE=docker.gitea.com/gitea:1.26.4
+
+# 域名配置
+GITEA_DOMAIN=git.example.com
+GITEA_SSH_DOMAIN=git.example.com
+GITEA_ROOT_URL=https://git.example.com/
+
+# 个人自用建议关闭注册，未登录不可浏览
+GITEA_DISABLE_REGISTRATION=true
+GITEA_REQUIRE_SIGNIN_VIEW=true
+GITEA_REGISTER_EMAIL_CONFIRM=false
+
+# 当前方案 CI 仍走 GitHub Actions + GitHub self-hosted runner，所以默认不启用 Gitea Actions
+GITEA_ACTIONS_ENABLED=false
+
+# Package Registry 可保留
+GITEA_PACKAGES_ENABLED=true
+
+# 禁止直接 git push 自动创建用户/组织仓库
+GITEA_ENABLE_PUSH_CREATE_USER=false
+GITEA_ENABLE_PUSH_CREATE_ORG=false
+
+GITEA_OFFLINE_MODE=false
+GITEA_LOG_LEVEL=Info
+```
+
+`HOST_IP=127.0.0.1` 表示 Gitea Web 只监听本机端口，建议通过 1Panel / OpenResty / Nginx 反代访问，不要直接把 `3000` 暴露到公网。
+
+SSH 端口需要给外部 Git 客户端访问，所以这里默认：
+
+```env
+GITEA_SSH_BIND_IP=0.0.0.0
+GITEA_SSH_HOST_PORT=2222
+```
+
+如果服务器防火墙或云安全组没有放行 `2222`，网页能访问但 SSH clone / push 会失败。
+
+## 备份脚本示例
+
+建议另存为：
+
+```text
+/opt/gitea/backup-gitea.sh
+```
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR="/opt/gitea"
+BACKUP_DIR="$APP_DIR/backups"
+STAMP="$(date +%F-%H%M%S)"
+STOPPED=0
+
+restart_gitea() {
+    if [ "$STOPPED" -eq 1 ]; then
+        docker compose start gitea >/dev/null
+    fi
+}
+
+trap restart_gitea EXIT
+
+cd "$APP_DIR"
+mkdir -p "$BACKUP_DIR"
+
+docker compose stop gitea
+STOPPED=1
+
+tar -czf "$BACKUP_DIR/gitea-data-$STAMP.tar.gz" data
+
+docker compose start gitea
+STOPPED=0
+
+find "$BACKUP_DIR" -type f -name 'gitea-data-*.tar.gz' -mtime +14 -delete
+```
+
+赋权：
+
+```bash
+chmod +x /opt/gitea/backup-gitea.sh
+```
+
+crontab 示例：
+
+```text
+30 3 * * * /opt/gitea/backup-gitea.sh >> /opt/gitea/backups/backup.log 2>&1
+```
+
+这个脚本只做本机备份。重要仓库还应同步到另一台 VPS、本地电脑或对象存储。
