@@ -112,23 +112,37 @@ services:
 ## env
 
 ```env
+# 容器时区。这里直接用 TZ，不再额外引入 TIME_ZONE。
 TZ=Asia/Shanghai
 
+# Web 面板监听地址。HOST_IP=127.0.0.1 表示只暴露给本机反代，不直接公网开放 4321。
 HOST_IP=127.0.0.1
 GITEA_MIRROR_HOST_PORT=4321
 GITEA_MIRROR_IMAGE=ghcr.io/raylabshq/gitea-mirror:v3.20.4
 
+# gitea-mirror 自身访问地址。
+# 独立域名部署时 BASE_URL=/，三个 Auth URL 都填外部 origin。
+# 子路径部署时，例如 https://git.example.com/mirror：BASE_URL=/mirror，Auth URL 仍只填 https://git.example.com。
 BASE_URL=/
 BETTER_AUTH_URL=https://gitea-mirror.example.com
 PUBLIC_BETTER_AUTH_URL=https://gitea-mirror.example.com
 BETTER_AUTH_TRUSTED_ORIGINS=https://gitea-mirror.example.com
-BETTER_AUTH_SECRET=请替换为32字符以上随机字符串
-ENCRYPTION_SECRET=请替换为48字符左右随机字符串
 
+# 登录会话密钥与 token 加密密钥。
+# BETTER_AUTH_SECRET 必填，建议 openssl rand -base64 32。
+# ENCRYPTION_SECRET 建议固定填写，避免重建后无法解密已保存 token；可用 openssl rand -base64 48。
+BETTER_AUTH_SECRET=replace-with-random-32chars
+ENCRYPTION_SECRET=replace-with-random-48chars
+
+# GitHub 源端配置。
+# GITHUB_TOKEN 建议用 fine-grained token：个人仓库 All repositories，Contents Read-only，Metadata Read-only。
 GITHUB_USERNAME=your-github-username
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+GITHUB_TOKEN=github_pat_xxxxxxxxxxxxxxxxxxxx
 GITHUB_TYPE=personal
 GH_API_URL=https://api.github.com
+
+# GitHub 仓库选择策略。
+# 个人代码保险库场景一般包含 public/private/archived，跳过 forks/collaborator/starred/org。
 PUBLIC_REPOSITORIES=true
 PRIVATE_REPOSITORIES=true
 INCLUDE_ARCHIVED=true
@@ -140,9 +154,13 @@ PRESERVE_ORG_STRUCTURE=false
 ONLY_MIRROR_ORGS=false
 MIRROR_STRATEGY=single-org
 
-GITEA_URL=https://git.example.com
+# Gitea 目标端配置。
+# GITEA_URL 是容器内 API 地址，优先走 Docker 内网，例如 http://gitea:3000，不要走 Cloudflare 域名。
+# GITEA_EXTERNAL_URL 是浏览器展示用外部地址。
+# GITEA_TOKEN 建议使用专门 bot 用户 token：repository 读写、organization 读写、user 可读。
+GITEA_URL=http://gitea:3000
 GITEA_EXTERNAL_URL=https://git.example.com
-GITEA_TOKEN=xxxxxxxxxxxxxxxxxxxx
+GITEA_TOKEN=gitea-token-xxxxxxxxxxxxxxxxxxxx
 GITEA_USERNAME=github-mirror-bot
 GITEA_ORGANIZATION=github-mirrors
 GITEA_ORG_VISIBILITY=private
@@ -154,6 +172,7 @@ GITEA_ADD_TOPICS=true
 GITEA_FORK_STRATEGY=skip
 GITEA_SKIP_TLS_VERIFY=false
 
+# GitHub metadata 复制。初始建议全部关闭，只做代码 refs 镜像；稳定后再按需开启。
 MIRROR_RELEASES=false
 RELEASE_LIMIT=10
 MIRROR_WIKI=false
@@ -165,6 +184,7 @@ MIRROR_MILESTONES=false
 MIRROR_ISSUE_CONCURRENCY=1
 MIRROR_PULL_REQUEST_CONCURRENCY=1
 
+# 自动发现与同步。SCHEDULE_INTERVAL=86400 表示约每天一次；首次导入多仓库时可把 batch size 降低。
 SCHEDULE_ENABLED=true
 SCHEDULE_INTERVAL=86400
 SCHEDULE_CONCURRENT=false
@@ -175,6 +195,7 @@ SCHEDULE_ONLY_MIRROR_UPDATED=false
 SCHEDULE_SKIP_RECENTLY_MIRRORED=true
 SCHEDULE_TIMEZONE=Asia/Shanghai
 
+# 清理策略。默认只保守保留，不自动删除 Gitea 仓库。
 CLEANUP_ENABLED=false
 CLEANUP_DELETE_FROM_GITEA=false
 CLEANUP_DELETE_IF_NOT_IN_GITHUB=false
