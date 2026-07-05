@@ -32,13 +32,14 @@ services:
         environment:
             - USER_UID=${USER_UID:-1000}
             - USER_GID=${USER_GID:-1000}
+            - TZ=${TZ:-Asia/Shanghai}
             - GITEA__server__DOMAIN=${GITEA_DOMAIN:?GITEA_DOMAIN is required}
             - GITEA__server__ROOT_URL=${GITEA_ROOT_URL:?GITEA_ROOT_URL is required}
             - GITEA__server__HTTP_PORT=3000
             - GITEA__server__SSH_DOMAIN=${GITEA_SSH_DOMAIN:?GITEA_SSH_DOMAIN is required}
-            - GITEA__server__SSH_PORT=${GITEA_SSH_HOST_PORT:-2222}
+            - GITEA__server__SSH_PORT=${GITEA_SSH_PORT:-2222}
             - GITEA__server__DISABLE_SSH=false
-            - GITEA__server__OFFLINE_MODE=${GITEA_OFFLINE_MODE:-false}
+            - GITEA__server__OFFLINE_MODE=${GITEA_OFFLINE_MODE:-true}
             - GITEA__database__DB_TYPE=sqlite3
             - GITEA__database__PATH=/data/gitea/gitea.db
             - GITEA__service__DISABLE_REGISTRATION=${GITEA_DISABLE_REGISTRATION:-true}
@@ -49,7 +50,6 @@ services:
             - GITEA__repository__ENABLE_PUSH_CREATE_USER=${GITEA_ENABLE_PUSH_CREATE_USER:-false}
             - GITEA__repository__ENABLE_PUSH_CREATE_ORG=${GITEA_ENABLE_PUSH_CREATE_ORG:-false}
             - GITEA__log__LEVEL=${GITEA_LOG_LEVEL:-Info}
-            - TZ=${TIME_ZONE:-Asia/Shanghai}
         labels:
             createdBy: Apps
         networks:
@@ -77,15 +77,19 @@ services:
 ## env
 
 ```env
+TZ=Asia/Shanghai
 TIME_ZONE=Asia/Shanghai
 
 # Web 只监听本机，通过 1Panel / OpenResty / Nginx 反代访问
 HOST_IP=127.0.0.1
 GITEA_HTTP_HOST_PORT=3000
 
-# SSH 需要给外部 git client 访问，一般监听 0.0.0.0
+# SSH 需要给外部 git client 访问，一般监听 0.0.0.0。
+# HOST_PORT 是宿主机实际监听端口；SSH_PORT 是 Gitea 页面生成 clone URL 时展示的外部端口。
+# 普通端口映射场景二者应保持一致。
 GITEA_SSH_BIND_IP=0.0.0.0
 GITEA_SSH_HOST_PORT=2222
+GITEA_SSH_PORT=2222
 
 # 宿主机上拥有 ./data 的用户。按实际部署用户修改。
 USER_UID=1000
@@ -114,20 +118,31 @@ GITEA_PACKAGES_ENABLED=true
 GITEA_ENABLE_PUSH_CREATE_USER=false
 GITEA_ENABLE_PUSH_CREATE_ORG=false
 
-GITEA_OFFLINE_MODE=false
+# 个人私有实例建议 true，减少外部头像/CDN 等请求；需要外部资源体验时再改 false
+GITEA_OFFLINE_MODE=true
 GITEA_LOG_LEVEL=Info
 ```
 
 `HOST_IP=127.0.0.1` 表示 Gitea Web 只监听本机端口，建议通过 1Panel / OpenResty / Nginx 反代访问，不要直接把 `3000` 暴露到公网。
+
+这份 `.env` 使用的是便于人读的变量名，例如 `GITEA_DISABLE_REGISTRATION`、`GITEA_SSH_PORT`。这些变量不是 Gitea 原生读取的名字；真正生效的是上方 `docker-compose.yml` 里映射出的 `GITEA__service__...`、`GITEA__server__...` 等环境变量。因此不要只复制 `.env` 而删掉 compose 里的 `GITEA__...` 映射。
 
 SSH 端口需要给外部 Git 客户端访问，所以这里默认：
 
 ```env
 GITEA_SSH_BIND_IP=0.0.0.0
 GITEA_SSH_HOST_PORT=2222
+GITEA_SSH_PORT=2222
 ```
 
-如果服务器防火墙或云安全组没有放行 `2222`，网页能访问但 SSH clone / push 会失败。
+`GITEA_SSH_HOST_PORT` 控制宿主机端口映射；`GITEA_SSH_PORT` 控制 Gitea 页面生成的 SSH clone URL 里展示的外部端口。普通 Docker 端口映射下二者应该相同。如果改成 `22223`，两项都要改：
+
+```env
+GITEA_SSH_HOST_PORT=22223
+GITEA_SSH_PORT=22223
+```
+
+如果服务器防火墙或云安全组没有放行该端口，网页能访问但 SSH clone / push 会失败。
 
 ## 备份脚本示例
 
