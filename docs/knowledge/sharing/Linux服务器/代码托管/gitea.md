@@ -262,6 +262,8 @@ GitHub -> Gitea
 
 注意：Gitea 官方文档明确提醒，pull mirror 只能在创建仓库时设置；仓库已经创建后，不能再直接转换成 pull mirror。
 
+如果需要批量 mirror GitHub 个人账号下的大量仓库，可以使用 [Gitea Mirror](/knowledge/sharing/Linux服务器/代码托管/gitea-mirror) 作为 Gitea 官方 pull mirror 的 Web 管理器和 scheduler。
+
 ### GitHub Token 权限
 
 如果只 mirror public repo，可以不用 token。
