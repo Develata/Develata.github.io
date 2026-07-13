@@ -1,6 +1,6 @@
 ---
 title: CodeGraph
-date: 2026-05-25
+date: 2026-07-14
 order: 7
 ---
 
@@ -46,9 +46,9 @@ CodeGraph 是一个面向 AI 编码代理的本地代码知识图谱工具。它
 
 ---
 
-## 3. 安装与初始化
+## 3. 安装、连接 Agent 与初始化
 
-### 3.1 一键安装（推荐）
+### 3.1 安装 CLI
 
 macOS / Linux：
 
@@ -62,29 +62,44 @@ Windows PowerShell：
 irm https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.ps1 | iex
 ```
 
-如果你已有 Node.js，也可以用 npm：
+如果已有 Node.js，也可以安装全局 npm 包：
 
 ```bash
-npx @colbymchenry/codegraph
 npm i -g @colbymchenry/codegraph
 ```
 
-交互式安装器会自动检测并配置 Claude Code、Cursor、Codex CLI、OpenCode、Hermes Agent。它通常会写入 MCP server 配置和对应的 agent 指令文件。
+这一步只把 `codegraph` CLI 放到 `PATH`，**不会连接 Agent，也不会为项目建立索引**。独立安装脚本不会刷新当前 shell；完成后请打开一个新终端，再进行下一步。
 
-### 3.2 初始化项目索引
+### 3.2 连接常用 Agent（不可省略）
+
+在新终端运行：
+
+```bash
+codegraph install
+```
+
+安装器会检测并配置 Claude Code、Cursor、Codex CLI、OpenCode、Hermes Agent、Gemini CLI、Antigravity IDE 与 Kiro，把 CodeGraph MCP server 接入所选 Agent。**安装 CLI 本身不等于接入 MCP；真正完成连接的是 `codegraph install`。**
+
+这个命令只负责 Agent wiring，不会索引任何代码。完成后重启对应 Agent，使新的 MCP 配置生效。
+
+如果已有 Node.js，也可以用下面的快捷方式下载并直接运行安装器：
+
+```bash
+npx @colbymchenry/codegraph
+```
+
+### 3.3 初始化项目索引
 
 在项目根目录执行：
 
 ```bash
 cd /path/to/your/project
-codegraph init -i
+codegraph init
 ```
 
-这会创建 `.codegraph/` 并建立初始索引。之后 MCP server 会通过文件监听做增量同步；如果你刚改完代码但查询结果没更新，等几秒或手动执行：
+`codegraph init` 会创建项目本地的 `.codegraph/`，并在同一步构建完整代码图。全局的 `codegraph install` 通常只需执行一次；每个项目分别执行一次 `codegraph init`。
 
-```bash
-codegraph sync
-```
+### 3.4 检查与同步
 
 检查状态：
 
@@ -92,21 +107,27 @@ codegraph sync
 codegraph status
 ```
 
-### 3.3 卸载
-
-从已配置的 agent 中移除 CodeGraph：
+初始化后默认启用自动同步，文件变更会被持续写入图中。若刚修改的符号暂时查不到，先等待文件监听完成；必要时再手动触发增量同步：
 
 ```bash
-codegraph uninstall
+codegraph sync
 ```
 
-只移除当前项目的 `.codegraph/` 初始化信息：
+### 3.5 卸载
+
+只移除 Agent wiring、保留 CLI：
+
+```bash
+codegraph uninstall --keep-cli
+```
+
+若连 CLI 也要卸载，运行 `codegraph uninstall`。只移除当前项目的 `.codegraph/` 初始化信息：
 
 ```bash
 codegraph uninit
 ```
 
-> 注意：`uninstall` 主要反向移除 agent 配置；项目内索引通常需要用 `codegraph uninit` 或手动删除 `.codegraph/` 处理。
+> 注意：卸载 Agent wiring 或 CLI 不会自动删除项目索引；项目内索引需另行执行 `codegraph uninit`。
 
 ---
 
@@ -230,9 +251,8 @@ codegraph_status -> codegraph_files -> CLI: codegraph sync
 | --- | --- |
 | `codegraph` | 运行交互式安装器 |
 | `codegraph install` | 显式运行安装器 |
-| `codegraph uninstall` | 从 agent 配置中移除 CodeGraph |
-| `codegraph init [path]` | 初始化项目 |
-| `codegraph init -i` | 初始化并立即索引 |
+| `codegraph uninstall [--keep-cli]` | 移除 Agent wiring；默认连 CLI 一并移除，`--keep-cli` 保留 CLI |
+| `codegraph init [path]` | 初始化项目并在同一步构建完整代码图 |
 | `codegraph uninit [path]` | 移除项目初始化 |
 | `codegraph index [path]` | 全量索引；可配 `--force` |
 | `codegraph sync [path]` | 增量同步 |
@@ -417,7 +437,7 @@ CodeGraph 的收益很大程度取决于 prompt 是否让 agent 直接使用结�
 在项目根执行：
 
 ```bash
-codegraph init -i
+codegraph init
 ```
 
 ### 12.3 新增符号查不到
@@ -467,7 +487,7 @@ npx @colbymchenry/codegraph
 安装时选择全局配置常用 agent，然后每个项目单独执行：
 
 ```bash
-codegraph init -i
+codegraph init
 ```
 
 这样 MCP 配置只做一次，索引仍保持项目本地。
@@ -477,7 +497,7 @@ codegraph init -i
 不建议把 `.codegraph/` 入库。更稳妥的方式是：
 
 * 在项目 `AGENTS.md` / `CLAUDE.md` 中写明：若存在 `.codegraph/`，结构性问题优先使用 CodeGraph。
-* 在 onboarding 文档里加一条：`codegraph init -i`。
+* 在 onboarding 文档里加一条：`codegraph init`。
 * 对大型仓库，统一 `.gitignore`，避免每个人索引无关目录。
 
 ### 13.3 本仓库这类 VitePress + Vue 项目

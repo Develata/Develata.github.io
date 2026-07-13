@@ -36,6 +36,117 @@
   padding-left: 13px !important;
 }
 
+@media (min-width: 1280px) {
+  /* doc-top slot 位于 VitePress 内容容器之外；复刻正文列的宽度与居中规则。 */
+  .VPDoc.has-aside > .doc-date {
+    width: min(688px, calc(100% - 320px));
+    margin-left: max(32px, (100% - 944px) / 2);
+  }
+}
+
+/* 首页 CTA：复用站点的克制蓝灰层级，而不是默认主题的独立胶囊语言。 */
+.home-page .VPHomeHero .tagline {
+  color: var(--vp-c-text-1);
+  font-weight: 550;
+  letter-spacing: -0.015em;
+}
+
+.home-page .VPHomeHero .actions {
+  gap: 12px;
+  padding-top: 28px;
+}
+
+.home-page .VPHomeHero .VPButton {
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.home-page .VPHomeHero .VPButton.brand {
+  border-color: var(--vp-c-brand-1);
+  background-color: var(--vp-c-brand-1);
+  color: var(--vp-c-white);
+}
+
+.home-page .VPHomeHero .VPButton.alt {
+  border-color: var(--vp-c-divider);
+  background-color: rgba(142, 150, 170, 0.08);
+  color: var(--vp-c-text-1);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  backdrop-filter: blur(12px) saturate(130%);
+}
+
+.dark .home-page .VPHomeHero .VPButton.brand {
+  color: var(--vp-c-bg);
+}
+
+.dark .home-page .VPHomeHero .VPButton.alt {
+  background-color: rgba(142, 150, 170, 0.12);
+}
+
+@media (hover: hover) {
+  .home-page .VPHomeHero .VPButton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(36, 48, 78, 0.12);
+  }
+
+  .home-page .VPHomeHero .VPButton.brand:hover {
+    border-color: var(--vp-c-brand-2);
+    background-color: var(--vp-c-brand-2);
+  }
+
+  .home-page .VPHomeHero .VPButton.alt:hover {
+    border-color: var(--vp-c-brand-1);
+    color: var(--vp-c-brand-1);
+  }
+}
+
+.home-page .VPHomeHero .VPButton:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 5px rgba(36, 48, 78, 0.1);
+}
+
+.home-page .VPHomeHero .VPButton:focus-visible {
+  outline: 3px solid var(--vp-c-brand-soft);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .home-page .VPHomeHero .actions {
+    gap: 10px;
+    padding-top: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .VPHomeHero .VPButton {
+    transition: none;
+  }
+
+  .home-page .VPHomeHero .VPButton:hover,
+  .home-page .VPHomeHero .VPButton:active {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .home-page .VPHomeHero .VPButton.alt {
+    background-color: var(--vp-c-bg-soft);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 /* 全局修复：移动端下的 Grid 布局边距问题 */
 @media (max-width: 768px) {
   /* 针对博客、书单等使用 Grid 的容器 */

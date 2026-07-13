@@ -8,6 +8,7 @@ import VPLocalNav from 'vitepress/dist/client/theme-default/components/VPLocalNa
 import VPNav from 'vitepress/dist/client/theme-default/components/VPNav.vue';
 import VPSkipLink from 'vitepress/dist/client/theme-default/components/VPSkipLink.vue';
 import { useData } from 'vitepress';
+import DocDate from './components/DocDate.vue';
 import NewsAwareSidebar from './components/NewsAwareSidebar.vue';
 import { useCloseSidebarOnEscape, useSidebar } from './sidebar/useSidebar';
 
@@ -19,6 +20,9 @@ useCloseSidebarOnEscape(isSidebarOpen, closeSidebar);
 const { frontmatter } = useData();
 const slots = useSlots();
 const heroImageSlotExists = computed(() => !!slots['home-hero-image']);
+const showDocumentDate = computed(() => (
+  route.path.startsWith('/knowledge/') && Boolean(frontmatter.value.date)
+));
 provide('hero-image-slot-exists', heroImageSlotExists);
 </script>
 
@@ -56,7 +60,10 @@ provide('hero-image-slot-exists', heroImageSlotExists);
       <template #doc-footer-before><slot name="doc-footer-before" /></template>
       <template #doc-before><slot name="doc-before" /></template>
       <template #doc-after><slot name="doc-after" /></template>
-      <template #doc-top><slot name="doc-top" /></template>
+      <template #doc-top>
+        <DocDate v-if="showDocumentDate" :value="frontmatter.date" />
+        <slot name="doc-top" />
+      </template>
       <template #doc-bottom><slot name="doc-bottom" /></template>
       <template #aside-top><slot name="aside-top" /></template>
       <template #aside-bottom><slot name="aside-bottom" /></template>
