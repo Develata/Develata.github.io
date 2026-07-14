@@ -17,12 +17,10 @@ interface Walker {
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
-const ENTRY_DURATION = 1600
+const ENTRY_DURATION = 3200
 const FRAME_INTERVAL = 1000 / 24
 const TRAIL_LENGTH = 60
 const WALKER_LIFETIME = 7000
-// Non-uniform codomain bins keep the level-set entrance from reading as a scanline grid.
-const LEVEL_STOPS = [0, 0.17, 0.36, 0.58, 0.79, 1]
 
 let root: HTMLElement | null = null
 let title: HTMLElement | null = null
@@ -42,24 +40,10 @@ let active = false
 let mounted = false
 let walker: Walker | null = null
 let validPoints: Point[] = []
-let levelColors: string[] = []
 let pathColor = '#8bd8d2'
 let resizeObserver: ResizeObserver | null = null
 let themeObserver: MutationObserver | null = null
 let motionQuery: MediaQueryList | null = null
-
-function clamp(value: number, min = 0, max = 1) {
-  return Math.min(max, Math.max(min, value))
-}
-
-function easeOutCubic(value: number) {
-  return 1 - Math.pow(1 - clamp(value), 3)
-}
-
-function smoothstep(edge0: number, edge1: number, value: number) {
-  const t = clamp((value - edge0) / (edge1 - edge0))
-  return t * t * (3 - 2 * t)
-}
 
 function normalSample() {
   const u = Math.max(Math.random(), Number.EPSILON)
@@ -70,9 +54,6 @@ function normalSample() {
 function readPalette() {
   if (!root) return
   const style = getComputedStyle(root)
-  levelColors = [1, 2, 3, 4, 5].map((index) => (
-    style.getPropertyValue(`--hero-level-${index}`).trim()
-  ))
   pathColor = style.getPropertyValue('--hero-path').trim() || '#8bd8d2'
 }
 
@@ -208,31 +189,6 @@ function clipToGlyphs() {
   context.globalCompositeOperation = 'source-over'
 }
 
-function drawLevelSets(progress: number) {
-  if (!context || !maskCanvas) return
-  clearCanvas()
-
-  const p = clamp(progress)
-  const fade = 1 - smoothstep(0.76, 1, p)
-  context.save()
-
-  const bandCount = LEVEL_STOPS.length - 1
-  for (let index = 0; index < bandCount; index++) {
-    const lower = LEVEL_STOPS[bandCount - index - 1]
-    const upper = LEVEL_STOPS[bandCount - index]
-    const y = ((lower + upper) / 2) * height
-    const local = easeOutCubic(p * bandCount - index)
-    if (local <= 0) continue
-
-    context.globalAlpha = fade * (local < 1 ? 0.58 : 0.22)
-    context.fillStyle = levelColors[index] || '#24536a'
-    context.fillRect(0, y - 0.65, width * local, 1.3)
-  }
-
-  clipToGlyphs()
-  context.restore()
-}
-
 function drawItoPath() {
   if (!context || !maskCanvas || !walker || walker.trail.length < 2) {
     clearCanvas()
@@ -271,9 +227,7 @@ function frame(now: number) {
   if (!active) return
   const elapsed = now - startedAt
 
-  if (elapsed < ENTRY_DURATION) {
-    drawLevelSets(elapsed / ENTRY_DURATION)
-  } else if (now - lastPathFrame >= FRAME_INTERVAL) {
+  if (elapsed >= ENTRY_DURATION && now - lastPathFrame >= FRAME_INTERVAL) {
     advanceWalker(now)
     drawItoPath()
     lastPathFrame = now
@@ -297,7 +251,7 @@ function startTimeline() {
   active = true
   canvas.hidden = false
   root?.classList.remove('is-math-ready')
-  drawLevelSets(0)
+  clearCanvas()
   void root?.offsetWidth
   root?.classList.add('is-math-ready')
   startedAt = performance.now()

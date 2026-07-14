@@ -5,10 +5,10 @@ import HomeHeroMathCanvas from './HomeHeroMathCanvas.vue'
 <template>
   <div class="home-hero-info">
     <h1 class="home-hero-title" aria-label="Welcome to Develata's Space">
-      <span class="home-hero-title__welcome" data-hero-glyph>Welcome to</span>
+      <span class="home-hero-title__welcome" data-hero-glyph data-hero-text="Welcome to">Welcome to</span>
       <span class="home-hero-title__brand">
-        <span class="home-hero-title__name" data-hero-glyph>Develata's</span>
-        <span class="home-hero-title__space" data-hero-glyph>Space</span>
+        <span class="home-hero-title__name" data-hero-glyph data-hero-text="Develata's">Develata's</span>
+        <span class="home-hero-title__space" data-hero-glyph data-hero-text="Space">Space</span>
       </span>
     </h1>
     <HomeHeroMathCanvas />
@@ -71,8 +71,31 @@ import HomeHeroMathCanvas from './HomeHeroMathCanvas.vue'
   letter-spacing: -0.048em;
 }
 
+.home-hero-info [data-hero-text] {
+  position: relative;
+}
+
+.home-hero-info [data-hero-text]::before,
+.home-hero-info [data-hero-text]::after {
+  position: absolute;
+  inset: 0;
+  content: attr(data-hero-text);
+  opacity: 0;
+  pointer-events: none;
+}
+
 .home-hero-info.is-math-ready [data-hero-glyph] {
-  animation: home-hero-ink-settle 1.6s cubic-bezier(0.22, 0.72, 0.24, 1) both;
+  animation: home-hero-ink-settle 3.2s cubic-bezier(0.22, 0.72, 0.24, 1) both;
+}
+
+.home-hero-info.is-math-ready [data-hero-text]::before {
+  color: var(--hero-level-5);
+  animation: home-hero-levels-accumulate 3.2s linear both;
+}
+
+.home-hero-info.is-math-ready [data-hero-text]::after {
+  color: var(--hero-path);
+  animation: home-hero-level-active 3.2s linear both;
 }
 
 :global(.dark .home-hero-info) {
@@ -87,15 +110,94 @@ import HomeHeroMathCanvas from './HomeHeroMathCanvas.vue'
 
 @keyframes home-hero-ink-settle {
   0% {
-    opacity: 0.55;
+    opacity: 0.72;
   }
 
-  48% {
-    opacity: 0.86;
+  30% {
+    opacity: 1;
   }
 
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes home-hero-levels-accumulate {
+  0% {
+    clip-path: inset(100% 0 0);
+    opacity: 0;
+  }
+
+  4%, 16% {
+    clip-path: inset(100% 0 0);
+    opacity: 0.16;
+  }
+
+  20%, 36% {
+    clip-path: inset(79% 0 0);
+    opacity: 0.16;
+  }
+
+  40%, 56% {
+    clip-path: inset(58% 0 0);
+    opacity: 0.16;
+  }
+
+  60%, 76% {
+    clip-path: inset(36% 0 0);
+    opacity: 0.16;
+  }
+
+  80%, 92% {
+    clip-path: inset(17% 0 0);
+    opacity: 0.16;
+  }
+
+  96% {
+    clip-path: inset(0);
+    opacity: 0.16;
+  }
+
+  100% {
+    clip-path: inset(0);
+    opacity: 0;
+  }
+}
+
+@keyframes home-hero-level-active {
+  0% {
+    clip-path: inset(79% 0 0);
+    opacity: 0;
+  }
+
+  4%, 16% {
+    clip-path: inset(79% 0 0);
+    opacity: 0.36;
+  }
+
+  20%, 36% {
+    clip-path: inset(58% 0 21%);
+    opacity: 0.36;
+  }
+
+  40%, 56% {
+    clip-path: inset(36% 0 42%);
+    opacity: 0.36;
+  }
+
+  60%, 76% {
+    clip-path: inset(17% 0 64%);
+    opacity: 0.36;
+  }
+
+  80%, 92% {
+    clip-path: inset(0 0 83%);
+    opacity: 0.36;
+  }
+
+  100% {
+    clip-path: inset(0 0 83%);
+    opacity: 0;
   }
 }
 
@@ -115,6 +217,12 @@ import HomeHeroMathCanvas from './HomeHeroMathCanvas.vue'
 @media (prefers-reduced-motion: reduce) {
   .home-hero-info.is-math-ready [data-hero-glyph] {
     animation: none;
+  }
+
+  .home-hero-info.is-math-ready [data-hero-text]::before,
+  .home-hero-info.is-math-ready [data-hero-text]::after {
+    animation: none;
+    opacity: 0;
   }
 }
 </style>
