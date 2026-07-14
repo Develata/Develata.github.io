@@ -21,7 +21,7 @@
 
 .home-hero-title {
   display: flex;
-  gap: 0.18em;
+  gap: 0.2em;
   align-items: baseline;
   margin: 0;
   color: var(--vp-c-text-1);
@@ -37,8 +37,8 @@
 
 .home-hero-title__space {
   color: #3568c7;
-  font-weight: 780;
-  letter-spacing: -0.055em;
+  font-weight: 740;
+  letter-spacing: -0.048em;
 }
 
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {

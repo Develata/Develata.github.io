@@ -101,7 +101,6 @@
     inset 0 -1px 0 rgba(76, 99, 145, 0.08),
     0 5px 18px rgba(36, 56, 94, 0.07);
   transition:
-    background-color 180ms ease,
     border-color 180ms ease,
     box-shadow 180ms ease,
     color 180ms ease,
@@ -112,18 +111,20 @@
   position: absolute;
   top: 1px;
   right: 10px;
+  bottom: 1px;
   left: 10px;
-  height: 48%;
   border-top: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: inherit;
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.04) 52%,
     transparent
   );
   content: '';
   opacity: 0.62;
   pointer-events: none;
+  transition: opacity 180ms ease;
 }
 
 .home-page .VPHomeHero .VPButton::after {
@@ -177,6 +178,7 @@
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.075),
+    rgba(255, 255, 255, 0.018) 52%,
     transparent
   );
   opacity: 0.86;
@@ -211,24 +213,15 @@
     transform: translateY(-1px);
   }
 
+  .home-page .VPHomeHero .VPButton:hover::before {
+    opacity: 0.88;
+  }
+
   .home-page .VPHomeHero .VPButton:hover::after {
     transform: translateX(520%) skewX(-18deg);
   }
 
-  .home-page .VPHomeHero .VPButton.brand:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(126, 158, 255, 0.27),
-      rgba(82, 117, 220, 0.15)
-    );
-  }
-
   .home-page .VPHomeHero .VPButton.alt:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.54),
-      rgba(245, 248, 255, 0.28)
-    );
     color: var(--vp-c-brand-1);
   }
 
@@ -239,12 +232,8 @@
       0 7px 20px rgba(0, 0, 0, 0.16);
   }
 
-  .dark .home-page .VPHomeHero .VPButton.alt:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.11),
-      rgba(255, 255, 255, 0.055)
-    );
+  .dark .home-page .VPHomeHero .VPButton:hover::before {
+    opacity: 1;
   }
 }
 
@@ -265,7 +254,7 @@
   .home-page .VPHomeHero::before {
     top: 108px;
     left: -32px;
-    width: 360px;
+    width: min(360px, calc(100vw + 32px));
     height: 220px;
   }
 
@@ -275,8 +264,31 @@
   }
 }
 
+@media (max-width: 360px) {
+  .home-page .VPNavBar .content {
+    min-width: 0;
+  }
+
+  .home-page .VPNavBarHamburger {
+    flex-shrink: 0;
+  }
+
+  .home-page .VPHomeHero .actions {
+    gap: 8px;
+  }
+
+  .home-page .VPHomeHero .action {
+    padding: 0;
+  }
+
+  .home-page .VPHomeHero .VPButton {
+    padding-inline: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-page .VPHomeHero .VPButton,
+  .home-page .VPHomeHero .VPButton::before,
   .home-page .VPHomeHero .VPButton::after {
     transition: none;
   }
