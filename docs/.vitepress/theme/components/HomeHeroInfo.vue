@@ -1,16 +1,12 @@
 <template>
   <div class="home-hero-info">
-    <h1 class="home-hero-title" aria-label="Develata's Space">
-      <span class="home-hero-title__name">Develata's</span>
-      <span class="home-hero-title__space">Space</span>
+    <h1 class="home-hero-title" aria-label="Welcome to Develata's Space">
+      <span class="home-hero-title__welcome">Welcome to</span>
+      <span class="home-hero-title__brand">
+        <span class="home-hero-title__name">Develata's</span>
+        <span class="home-hero-title__space">Space</span>
+      </span>
     </h1>
-
-    <p class="home-hero-tagline">
-      <span>Mathematics <span class="home-hero-tagline__dot" aria-hidden="true">·</span>&nbsp;</span>
-      <span>Code <span class="home-hero-tagline__dot" aria-hidden="true">·</span>&nbsp;</span>
-      <span>Books <span class="home-hero-tagline__dot" aria-hidden="true">·</span>&nbsp;</span>
-      <span>A little play</span>
-    </p>
   </div>
 </template>
 
@@ -29,6 +25,16 @@
   line-height: 1;
   letter-spacing: -0.045em;
   white-space: nowrap;
+}
+
+.home-hero-title__welcome {
+  font-weight: 600;
+}
+
+.home-hero-title__brand {
+  display: inline-flex;
+  gap: 0.2em;
+  align-items: baseline;
 }
 
 .home-hero-title__name {
@@ -58,25 +64,6 @@
     background-clip: text;
     animation: home-hero-specular 2.4s cubic-bezier(0.22, 0.72, 0.24, 1) 280ms both;
   }
-}
-
-.home-hero-tagline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.22rem;
-  align-items: baseline;
-  margin: 18px 0 0;
-  color: var(--vp-c-text-2);
-  font-size: clamp(0.98rem, 1.5vw, 1.18rem);
-  font-weight: 430;
-  line-height: 1.4;
-  letter-spacing: -0.012em;
-}
-
-.home-hero-tagline__dot {
-  margin-left: 0.48rem;
-  color: color-mix(in srgb, var(--vp-c-brand-1) 44%, var(--vp-c-text-3));
-  font-weight: 650;
 }
 
 :global(.dark .home-hero-title__space) {
@@ -109,14 +96,14 @@
 
 @media (max-width: 640px) {
   .home-hero-title {
-    gap: 0.14em;
+    flex-direction: column;
+    gap: 0.08em;
+    align-items: flex-start;
     font-size: clamp(2.35rem, 10.2vw, 2.75rem);
   }
 
-  .home-hero-tagline {
-    max-width: 20rem;
-    margin-top: 14px;
-    font-size: 0.98rem;
+  .home-hero-title__brand {
+    gap: 0.14em;
   }
 }
 
