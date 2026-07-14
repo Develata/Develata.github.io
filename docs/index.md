@@ -3,7 +3,7 @@ layout: home
 pageClass: home-page
 hero:
   name: "Develata's Space"
-  tagline: "Mathematics, code, books, and a little play."
+  tagline: "Mathematics · Code · Books · A little play"
   actions:
     - theme: brand
       text: "Enter somewhere"
