@@ -240,7 +240,7 @@ onUnmounted(() => { clearRuntime(); document.removeEventListener('visibilitychan
       <p class="feedback" :class="{ 'is-error': phase === 'aborted' }">{{ feedback }}</p>
       <p class="sr-only" role="status" aria-atomic="true">{{ liveMessage }}</p>
 
-      <div v-if="summary" class="metric-grid" aria-live="polite">
+      <div v-if="summary" class="metric-grid">
         <div class="metric"><span>目标命中率</span><strong>{{ (summary.accuracy * 100).toFixed(1) }}%</strong></div>
         <div class="metric"><span>命中目标</span><strong>{{ summary.hits }} / {{ roundCount * targetCount }}</strong></div>
         <div class="metric"><span>误选</span><strong>{{ summary.falseSelections }}</strong></div>

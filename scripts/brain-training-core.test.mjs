@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { registerHooks } from 'node:module';
 
 const loader = await import('./brain-training-ts-loader.mjs');
@@ -13,6 +14,22 @@ const mot = await import(`${root}/exercises/multiple-object-tracking/core.ts`);
 const rotation = await import(`${root}/exercises/mental-rotation/core.ts`);
 const change = await import(`${root}/exercises/change-localization/core.ts`);
 const statistics = await import(`${root}/statistics.ts`);
+
+const exerciseComponents = [
+  'schulte/SchulteTraining.vue',
+  'flanker/FlankerTraining.vue',
+  'n-back/NBackTraining.vue',
+  'task-switching/TaskSwitchingTraining.vue',
+  'multiple-object-tracking/MultipleObjectTracking.vue',
+  'mental-rotation/MentalRotationTraining.vue',
+  'change-localization/ChangeLocalizationTraining.vue',
+];
+
+for (const component of exerciseComponents) {
+  const source = await readFile(new URL(`../docs/.vitepress/theme/components/games/brain-training/exercises/${component}`, import.meta.url), 'utf8');
+  assert.equal((source.match(/role="status"/g) ?? []).length, 1, `${component} must have one stable status region`);
+  assert.equal((source.match(/aria-live=/g) ?? []).length, 0, `${component} must not add a competing live region`);
+}
 
 for (const size of [3, 4, 5, 6]) {
   for (const mode of ['ascending', 'descending', 'alternating']) {
@@ -124,4 +141,4 @@ for (const args of [[10, 10, 0, 10], [0, 10, 10, 10], [5, 10, 5, 10]]) {
   assert.ok(Number.isFinite(statistics.dPrime(...args)));
 }
 
-console.log('PASS: existing cores; 200 MOT simulations; 500 rotation blocks; 900 change-localization blocks; statistics edge cases');
+console.log('PASS: live-region invariants; existing cores; 200 MOT simulations; 500 rotation blocks; 900 change-localization blocks; statistics edge cases');

@@ -211,7 +211,7 @@ onUnmounted(() => { clearRuntime(); document.removeEventListener('visibilitychan
       <p class="feedback" :class="{ 'is-correct': feedback === '正确', 'is-error': feedback.startsWith('变化位于') }">{{ feedback }}</p>
       <p class="sr-only" role="status" aria-atomic="true">{{ liveMessage }}</p>
 
-      <div v-if="summary" class="metric-grid" aria-live="polite">
+      <div v-if="summary" class="metric-grid">
         <div class="metric"><span>定位准确率</span><strong>{{ (summary.accuracy * 100).toFixed(1) }}%</strong></div>
         <div class="metric"><span>错误定位</span><strong>{{ summary.errors }}</strong></div>
         <div class="metric"><span>正确反应中位数</span><strong>{{ summary.medianMs === null ? '—' : `${Math.round(summary.medianMs)} ms` }}</strong></div>

@@ -156,7 +156,7 @@ onUnmounted(() => { clearTimers(); presentation.cancel(); document.removeEventLi
       <p class="feedback" :class="{ 'is-correct': feedback === '正确', 'is-error': feedback === '规则或按键错误' || feedback === '超时' }">{{ feedback }}</p>
       <p class="sr-only" role="status" aria-atomic="true">{{ liveMessage }}</p>
 
-      <div v-if="summary" class="metric-grid" aria-live="polite">
+      <div v-if="summary" class="metric-grid">
         <div class="metric"><span>准确率</span><strong>{{ (summary.accuracy * 100).toFixed(1) }}%</strong></div>
         <div class="metric"><span>重复试次</span><strong>{{ summary.repeatMs === null ? '—' : `${Math.round(summary.repeatMs)} ms` }}</strong></div>
         <div class="metric"><span>切换试次</span><strong>{{ summary.switchMs === null ? '—' : `${Math.round(summary.switchMs)} ms` }}</strong></div>

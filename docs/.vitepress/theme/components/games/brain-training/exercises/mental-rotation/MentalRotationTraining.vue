@@ -198,7 +198,7 @@ onUnmounted(() => { clearRuntime(); document.removeEventListener('visibilitychan
       <p class="feedback" :class="{ 'is-correct': feedback === '正确', 'is-error': feedback && feedback !== '正确' && phase === 'feedback' }">{{ feedback }}</p>
       <p class="sr-only" role="status" aria-atomic="true">{{ liveMessage }}</p>
 
-      <div v-if="summary" class="metric-grid" aria-live="polite">
+      <div v-if="summary" class="metric-grid">
         <div class="metric"><span>准确率</span><strong>{{ (summary.accuracy * 100).toFixed(1) }}%</strong></div>
         <div class="metric"><span>旋转相同</span><strong>{{ (summary.sameAccuracy * 100).toFixed(1) }}%</strong></div>
         <div class="metric"><span>镜像不同</span><strong>{{ (summary.mirrorAccuracy * 100).toFixed(1) }}%</strong></div>

@@ -227,7 +227,7 @@ onUnmounted(() => {
       <p class="task-instructions schulte-note">先求准确，再求速度。中心注视只能由眼动仪验证，因此这里不声称训练或测量“周边视野”。</p>
       <p v-if="phase === 'aborted'" class="feedback is-error">页面失去可见性，本轮已作废；请重新开始。</p>
 
-      <div v-if="summary" class="metric-grid" aria-live="polite">
+      <div v-if="summary" class="metric-grid">
         <div class="metric"><span>完成时间</span><strong>{{ (summary.durationMs / 1000).toFixed(2) }} s</strong></div>
         <div class="metric"><span>错误点击</span><strong>{{ summary.errors }}</strong></div>
         <div class="metric"><span>中位间隔</span><strong>{{ Math.round(summary.medianIntervalMs) }} ms</strong></div>

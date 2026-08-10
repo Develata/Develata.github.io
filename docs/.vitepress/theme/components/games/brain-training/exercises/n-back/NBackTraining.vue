@@ -168,7 +168,7 @@ onUnmounted(() => { clearTimers(); presentation.cancel(); document.removeEventLi
       <p class="feedback" :class="{ 'is-correct': feedback === '正确', 'is-error': ['超时', '漏报匹配', '误报匹配'].includes(feedback) }">{{ feedback }}</p>
       <p class="sr-only" role="status" aria-atomic="true">{{ liveMessage }}</p>
 
-      <div v-if="summary" class="metric-grid" aria-live="polite">
+      <div v-if="summary" class="metric-grid">
         <div class="metric"><span>准确率</span><strong>{{ (summary.accuracy * 100).toFixed(1) }}%</strong></div>
         <div class="metric"><span>d′</span><strong>{{ summary.dPrime === null ? '—' : summary.dPrime.toFixed(2) }}</strong></div>
         <div class="metric"><span>正确反应中位数</span><strong>{{ summary.medianMs === null ? '—' : `${Math.round(summary.medianMs)} ms` }}</strong></div>
