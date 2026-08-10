@@ -251,7 +251,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <canvas ref="canvasRef" class="math-bg"></canvas>
+  <canvas ref="canvasRef" class="math-bg" aria-hidden="true"></canvas>
 </template>
 
 <style scoped>

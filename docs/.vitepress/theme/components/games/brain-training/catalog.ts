@@ -1,0 +1,53 @@
+/** Metadata only: importing the catalog never imports exercise implementations. */
+import type { TrainingCatalogItem } from './contracts';
+
+export const TRAINING_CATALOG: readonly TrainingCatalogItem[] = [
+  {
+    id: 'schulte',
+    title: '数字顺序搜索',
+    enTitle: 'Schulte Grid',
+    description: '在随机网格中按指定顺序寻找数字；提供正序、逆序与双端交替三种规则。',
+    construct: '顺序视觉搜索 · 快速选择',
+    route: '/games/brain-training/schulte',
+    symbol: '1→N',
+    accent: '#0f766e',
+    darkAccent: '#5eead4',
+    duration: '1–3 min',
+  },
+  {
+    id: 'flanker',
+    title: '箭头冲突',
+    enTitle: 'Flanker Task',
+    description: '只判断中央箭头方向，同时忽略两侧一致或冲突的干扰箭头。',
+    construct: '目标选择 · 干扰控制',
+    route: '/games/brain-training/flanker',
+    symbol: '→',
+    accent: '#2563eb',
+    darkAccent: '#93c5fd',
+    duration: '2–4 min',
+  },
+  {
+    id: 'n-back',
+    title: '位置更新',
+    enTitle: 'Spatial N-back',
+    description: '判断当前亮起的位置是否与前第 n 个刺激相同。',
+    construct: '持续更新 · 时间顺序匹配',
+    route: '/games/brain-training/n-back',
+    symbol: 'n−',
+    accent: '#7c3aed',
+    darkAccent: '#c4b5fd',
+    duration: '3–5 min',
+  },
+  {
+    id: 'task-switching',
+    title: '规则切换',
+    enTitle: 'Task Switching',
+    description: '根据线索在奇偶与大小两套判断规则之间切换。',
+    construct: '规则保持 · 任务集切换',
+    route: '/games/brain-training/task-switching',
+    symbol: '⇄',
+    accent: '#b45309',
+    darkAccent: '#fdba74',
+    duration: '3–5 min',
+  },
+] as const;

@@ -265,11 +265,12 @@
 }
 
 @media (max-width: 360px) {
-  .home-page .VPNavBar .content {
+  /* Long site titles must yield space without shrinking the 48px menu target. */
+  .VPNavBar .content {
     min-width: 0;
   }
 
-  .home-page .VPNavBarHamburger {
+  .VPNavBarHamburger {
     flex-shrink: 0;
   }
 

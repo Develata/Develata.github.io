@@ -5,6 +5,7 @@
  * 1. 在 Vite 构建/转换阶段，读取 Markdown 文件的 Frontmatter title。
  * 2. 如果文件内容中没有 H1 标题，自动在开头插入 H1 标题。
  * 3. 如果已有 H1，强制替换为一致的标题。
+ * 4. 允许自带语义标题的交互页以 `injectTitle: false` 显式退出。
  */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,12 +28,12 @@ export function autoInjectTitle(): Plugin {
         const { data, content } = matter(code);
         const relativePath = path.relative(docsRoot, filePath);
 
-        if (!shouldInjectTitle(relativePath) || !data.title) return;
+        if (!shouldInjectTitle(relativePath) || !data.title || data.injectTitle === false) return;
 
         // Simplify: Only check first 5 non-empty lines for H1
         const lines = content.split('\n');
         let h1LineIndex = -1;
-        let h1Content = '';
+
 
         // Check first 5 lines (or fewer if file is short)
         const checkLimit = Math.min(lines.length, 5);
@@ -42,7 +43,6 @@ export function autoInjectTitle(): Plugin {
           const match = h1Regex.exec(lines[i]);
           if (match) {
             h1LineIndex = i;
-            h1Content = match[1];
             break;
           }
         }

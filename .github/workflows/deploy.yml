@@ -28,6 +28,8 @@ jobs:
         uses: actions/configure-pages@v6
       - name: Install dependencies
         run: npm ci
+      - name: Check brain-training invariants
+        run: npm run brain-training:test
       - name: Build with VitePress
         run: npm run build
       - name: Package Pages artifact

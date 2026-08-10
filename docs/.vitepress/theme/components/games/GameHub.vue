@@ -35,6 +35,16 @@ const games: Game[] = [
     color: '#8b5cf6' // 紫色
   },
   {
+    id: 'braintraining',
+    title: '认知任务实验室',
+    enTitle: 'Cognitive Lab',
+    desc: '舒尔特、Flanker、n-back 与规则切换：只报告任务表现，不制造脑力神话。',
+    icon: '∴',
+    link: '/games/brain-training/',
+    tag: 'Cognitive',
+    color: '#0f766e'
+  },
+  {
     id: 'tictactoe',
     title: '井字棋',
     enTitle: 'Tic Tac Toe',
