@@ -1,7 +1,7 @@
 ---
 title: CodeGraph
 date: 2026-07-14
-order: 7
+order: 6
 ---
 
 # CodeGraph 使用指南
