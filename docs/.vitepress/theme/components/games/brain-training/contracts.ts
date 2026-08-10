@@ -1,5 +1,12 @@
 /** Shared public contracts for the cognitive-task modules. */
-export type TrainingId = 'schulte' | 'flanker' | 'n-back' | 'task-switching';
+export type TrainingId =
+  | 'schulte'
+  | 'flanker'
+  | 'n-back'
+  | 'task-switching'
+  | 'multiple-object-tracking'
+  | 'mental-rotation'
+  | 'change-localization';
 export type InputMode = 'none' | 'keyboard' | 'pointer' | 'mixed';
 
 export interface TrainingResult {

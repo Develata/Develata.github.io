@@ -1,7 +1,7 @@
 ---
 layout: page
 title: 认知任务实验室
-description: 四个经典认知实验范式的游戏化练习：舒尔特数字搜索、Flanker、空间 n-back 与规则切换。
+description: 七个证据边界明确的认知任务：视觉搜索、干扰控制、工作记忆、规则切换、动态追踪、心理旋转与变化定位。
 sidebar: false
 injectTitle: false
 ---
