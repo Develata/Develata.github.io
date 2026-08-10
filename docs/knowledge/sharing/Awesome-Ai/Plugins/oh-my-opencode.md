@@ -1,7 +1,7 @@
 ---
 title: Oh My OpenCode
 date: 2026-04-13
-order: 5
+order: 6
 ---
 
 # Oh My OpenCode (OMO) 使用指南

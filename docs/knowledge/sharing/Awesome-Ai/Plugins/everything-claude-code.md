@@ -1,7 +1,7 @@
 ---
 title: everything-claude-code
 date: 2026-04-13
-order: 1
+order: 6
 ---
 
 # everything-claude-code 使用指南

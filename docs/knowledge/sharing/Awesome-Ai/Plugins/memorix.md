@@ -1,5 +1,5 @@
 ---
-title: CodeGraph
+title: Memorix
 date: 2026-08-08
 order: 6
 ---
