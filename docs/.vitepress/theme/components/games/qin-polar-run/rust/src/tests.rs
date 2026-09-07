@@ -215,3 +215,29 @@ fn actual_obstacle_windows_accept_jump_and_duck_and_count_hits() {
         assert_eq!(c.hits, expected, "kind={kind}, action={action}");
     }
 }
+
+#[test]
+fn lane_easing_is_symmetric_bounded_and_matches_collision() {
+    for action in [LEFT, RIGHT] {
+        let sign = if action == LEFT { -1.0 } else { 1.0 };
+        let mut p = Player::default();
+        let mut positions = [0.0; 5];
+        for (index, position) in positions.iter_mut().enumerate().skip(1) {
+            p.tick(LANE_SECONDS / 4.0, if index == 1 { action } else { 0 });
+            *position = p.x * sign;
+            assert!((0.0..=1.0).contains(position));
+            if index == 2 {
+                assert!(hits(1, 0, &p) && hits(1, sign as i8, &p));
+            }
+        }
+        assert!(positions.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!(positions[1] < 0.25 && positions[3] > 0.75);
+        assert!((positions[1] + positions[3] - 1.0).abs() < 1e-6);
+        assert!((positions[2] - 0.5).abs() < 1e-6);
+        assert_eq!(positions[4], 1.0);
+        assert_eq!(p.lane_cooldown, 0.0);
+        assert!(!hits(1, 0, &p));
+        p.tick(LANE_SECONDS, if action == LEFT { RIGHT } else { LEFT });
+        assert_eq!(p.x, 0.0);
+    }
+}

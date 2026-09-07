@@ -1,6 +1,11 @@
 /* Every selector is game-scoped;
 no global layout/theme overrides. */
 .northern-run {
+  --nr-safe-top:env(safe-area-inset-top,0px);
+  --nr-safe-right:env(safe-area-inset-right,0px);
+  --nr-safe-bottom:env(safe-area-inset-bottom,0px);
+  --nr-safe-left:env(safe-area-inset-left,0px);
+  --nr-hud-gap:24px;
   position:relative;
   isolation:isolate;
   width:100%;
@@ -40,7 +45,10 @@ no global layout/theme overrides. */
 .northern-run .nr-intro {
   position:absolute;
   inset:0;
-  padding:clamp(24px,5vw,72px);
+  padding:max(clamp(24px,5vw,72px),calc(var(--nr-safe-top) + 24px))
+    max(clamp(24px,5vw,72px),calc(var(--nr-safe-right) + 24px))
+    max(clamp(24px,5vw,72px),calc(var(--nr-safe-bottom) + 24px))
+    max(clamp(24px,5vw,72px),calc(var(--nr-safe-left) + 24px));
   pointer-events:none;
 }
 .northern-run .nr-intro a,.northern-run .nr-intro button {
@@ -78,8 +86,8 @@ no global layout/theme overrides. */
 }
 .northern-run .nr-start {
   position:absolute;
-  bottom:max(40px,env(safe-area-inset-bottom));
-  left:clamp(24px,5vw,72px);
+  bottom:max(40px,calc(var(--nr-safe-bottom) + 20px));
+  left:max(clamp(24px,5vw,72px),calc(var(--nr-safe-left) + 24px));
 }
 .northern-run .nr-primary {
   background:#e6c789;
@@ -110,8 +118,8 @@ no global layout/theme overrides. */
 }
 .northern-run .nr-seal {
   position:absolute;
-  top:72px;
-  right:60px;
+  top:max(72px,calc(var(--nr-safe-top) + 24px));
+  right:max(60px,calc(var(--nr-safe-right) + 24px));
   border:1px solid #f6e3b199;
   padding:12px 9px;
   font-family:serif;
@@ -121,8 +129,8 @@ no global layout/theme overrides. */
 }
 .northern-run .nr-score {
   position:absolute;
-  top:max(24px,env(safe-area-inset-top));
-  left:max(24px,env(safe-area-inset-left));
+  top:calc(var(--nr-safe-top) + var(--nr-hud-gap));
+  left:calc(var(--nr-safe-left) + var(--nr-hud-gap));
   background:#18303dce;
   border-left:2px solid #e4c58a;
   padding:10px 15px;
@@ -144,8 +152,8 @@ no global layout/theme overrides. */
 }
 .northern-run .nr-pause {
   position:absolute;
-  top:24px;
-  right:max(24px,env(safe-area-inset-right));
+  top:calc(var(--nr-safe-top) + var(--nr-hud-gap));
+  right:calc(var(--nr-safe-right) + var(--nr-hud-gap));
   border:1px solid #d4e2e866;
   background:#19313d99;
   color:#f6f2df;
@@ -163,7 +171,8 @@ no global layout/theme overrides. */
   gap:18px;
   background:#142b38c9;
   text-align:center;
-  padding:20px;
+  padding:calc(var(--nr-safe-top) + 20px) calc(var(--nr-safe-right) + 20px)
+    calc(var(--nr-safe-bottom) + 20px) calc(var(--nr-safe-left) + 20px);
 }
 .northern-run .nr-overlay h2 {
   font-family:serif;
@@ -204,8 +213,8 @@ no global layout/theme overrides. */
 }
 .northern-run .nr-feedback {
   position:absolute;
-  top:100px;
-  left:25px;
+  top:calc(var(--nr-safe-top) + var(--nr-hud-gap) + 76px);
+  left:calc(var(--nr-safe-left) + var(--nr-hud-gap));
   font-size:13px;
   color:#fff4cc;
   padding:6px 12px;
@@ -215,9 +224,9 @@ no global layout/theme overrides. */
 }
 .northern-run .nr-onboarding {
   position:absolute;
-  bottom:22px;
-  left:0;
-  right:0;
+  bottom:calc(var(--nr-safe-bottom) + 22px);
+  left:var(--nr-safe-left);
+  right:var(--nr-safe-right);
   text-align:center;
   font-size:12px;
   letter-spacing:.03em;
@@ -233,6 +242,9 @@ no global layout/theme overrides. */
   }
 }
 @media (max-width:600px) {
+  .northern-run {
+    --nr-hud-gap:16px;
+  }
   .northern-run .nr-title {
     margin-top:38px;
   }
@@ -240,14 +252,14 @@ no global layout/theme overrides. */
     font-size:52px;
   }
   .northern-run .nr-seal {
-    right:25px;
-    top:35px;
+    right:max(25px,calc(var(--nr-safe-right) + 24px));
+    top:max(35px,calc(var(--nr-safe-top) + 24px));
     font-size:13px;
     padding:7px;
   }
   .northern-run .nr-start {
-    bottom:max(35px,env(safe-area-inset-bottom));
-    right:24px;
+    bottom:max(35px,calc(var(--nr-safe-bottom) + 20px));
+    right:calc(var(--nr-safe-right) + 24px);
   }
   .northern-run .nr-primary {
     width:100%;
@@ -255,21 +267,14 @@ no global layout/theme overrides. */
   .northern-run .nr-overlay .nr-primary {
     width:220px;
   }
-  .northern-run .nr-score {
-    left:16px;
-    top:16px;
-  }
-  .northern-run .nr-pause {
-    right:16px;
-    top:16px;
-  }
 }
 @media (max-height:520px) and (orientation:landscape) {
   .northern-run {
     min-height:240px;
   }
   .northern-run .nr-intro {
-    padding:18px 32px;
+    padding:calc(var(--nr-safe-top) + 18px) calc(var(--nr-safe-right) + 32px)
+      calc(var(--nr-safe-bottom) + 18px) calc(var(--nr-safe-left) + 32px);
   }
   .northern-run .nr-title {
     margin-top:13px;
@@ -282,8 +287,8 @@ no global layout/theme overrides. */
     font-size:12px;
   }
   .northern-run .nr-start {
-    left:32px;
-    bottom:20px;
+    left:calc(var(--nr-safe-left) + 32px);
+    bottom:calc(var(--nr-safe-bottom) + 20px);
   }
   .northern-run .nr-controls {
     margin-top:9px;
@@ -294,8 +299,8 @@ no global layout/theme overrides. */
     padding:8px 18px;
   }
   .northern-run .nr-seal {
-    top:28px;
-    right:30px;
+    top:calc(var(--nr-safe-top) + 28px);
+    right:calc(var(--nr-safe-right) + 30px);
   }
   .northern-run .nr-overlay {
     gap:6px;
