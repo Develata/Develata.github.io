@@ -25,6 +25,16 @@ interface Game {
 // 👇 修改：应用类型定义
 const games: Game[] = [
   {
+    id: 'qin-polar-run',
+    title: '秦始皇骑北极熊',
+    enTitle: 'Qin Shi Huang & The Polar Bear',
+    desc: '在冰封秦境中骑着北极熊一路狂奔。躲避障碍，收集秦半两，获得更高分数。',
+    icon: '🐻‍❄️',
+    link: '/games/qin-polar-run',
+    tag: '3D Runner',
+    color: '#7b9cae'
+  },
+  {
     id: 'mathlab',
     title: '数学实验室',
     enTitle: 'Math Lab',

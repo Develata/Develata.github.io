@@ -10,7 +10,9 @@
     "brain-training:test": "node scripts/brain-training-core.test.mjs",
     "sokoban:generate": "node scripts/sokoban-levelgen.mjs generate --write",
     "sokoban:check": "node scripts/sokoban-levelgen.mjs check",
-    "preview": "vitepress preview docs"
+    "preview": "vitepress preview docs",
+    "game:qin-polar-run:wasm": "node docs/.vitepress/theme/components/games/qin-polar-run/build-wasm.mjs",
+    "game:qin-polar-run:test": "node --experimental-vm-modules --test docs/.vitepress/theme/components/games/qin-polar-run/loadWasm.test.mjs"
   },
   "keywords": [],
   "author": "",

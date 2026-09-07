@@ -1,0 +1,320 @@
+/* Every selector is game-scoped;
+no global layout/theme overrides. */
+.northern-run {
+  position:relative;
+  isolation:isolate;
+  width:100%;
+  height:100dvh;
+  min-height:280px;
+  overflow:hidden;
+  background:#acc5cf;
+  color:#f8f5e9;
+  font-family:var(--vp-font-family-base);
+  outline:none;
+}
+.northern-run.is-running {
+  touch-action:none;
+}
+.northern-run .nr-canvas,.northern-run .nr-canvas canvas {
+  display:block;
+  width:100%;
+  height:100%;
+}
+.northern-run .nr-vignette {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(90deg,rgba(15,36,45,.20),transparent 60%),linear-gradient(0deg,rgba(13,33,42,.42),transparent 24%);
+}
+.northern-run button,.northern-run a {
+  -webkit-tap-highlight-color:transparent;
+}
+.northern-run button {
+  cursor:pointer;
+  font:inherit;
+}
+.northern-run button:focus-visible,.northern-run a:focus-visible {
+  outline:3px solid #fff3c2;
+  outline-offset:5px;
+}
+.northern-run .nr-intro {
+  position:absolute;
+  inset:0;
+  padding:clamp(24px,5vw,72px);
+  pointer-events:none;
+}
+.northern-run .nr-intro a,.northern-run .nr-intro button {
+  pointer-events:auto;
+}
+.northern-run .nr-back {
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.19em;
+  color:#1c3540;
+  text-decoration:none;
+}
+.northern-run .nr-title {
+  margin-top:clamp(28px,7vh,85px);
+  text-shadow:0 2px 16px #41617455;
+}
+.northern-run .nr-eyebrow {
+  font-size:11px;
+  letter-spacing:.38em;
+  font-weight:600;
+  margin:0 0 13px;
+}
+.northern-run h1 {
+  font-family:'Noto Serif SC','Songti SC','SimSun',serif;
+  font-size:clamp(44px,6.8vw,94px);
+  line-height:1.2;
+  letter-spacing:.09em;
+  margin:0;
+  font-weight:700;
+}
+.northern-run .nr-premise {
+  margin:18px 0 0;
+  font-size:14px;
+  letter-spacing:.32em;
+}
+.northern-run .nr-start {
+  position:absolute;
+  bottom:max(40px,env(safe-area-inset-bottom));
+  left:clamp(24px,5vw,72px);
+}
+.northern-run .nr-primary {
+  background:#e6c789;
+  color:#1b3039;
+  min-width:196px;
+  min-height:52px;
+  padding:13px 23px;
+  font-weight:650;
+  letter-spacing:.12em;
+  border:1px solid #f4dbab;
+  border-radius:3px;
+  display:inline-flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:28px;
+}
+.northern-run .nr-primary:hover {
+  background:#f0d69f;
+}
+.northern-run .nr-controls {
+  font-size:11px;
+  margin:18px 0 0;
+  color:#e2edf0;
+  letter-spacing:.035em;
+}
+.northern-run .nr-touch {
+  display:none;
+}
+.northern-run .nr-seal {
+  position:absolute;
+  top:72px;
+  right:60px;
+  border:1px solid #f6e3b199;
+  padding:12px 9px;
+  font-family:serif;
+  color:#fff0c8;
+  font-size:17px;
+  line-height:1.4;
+}
+.northern-run .nr-score {
+  position:absolute;
+  top:max(24px,env(safe-area-inset-top));
+  left:max(24px,env(safe-area-inset-left));
+  background:#18303dce;
+  border-left:2px solid #e4c58a;
+  padding:10px 15px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.northern-run .nr-score span,.northern-run .nr-final-score span {
+  font-size:9px;
+  letter-spacing:.22em;
+  color:#d8caa6;
+}
+.northern-run .nr-score strong {
+  font-size:23px;
+  line-height:1.1;
+  font-variant-numeric:tabular-nums;
+  font-weight:500;
+  letter-spacing:.03em;
+}
+.northern-run .nr-pause {
+  position:absolute;
+  top:24px;
+  right:max(24px,env(safe-area-inset-right));
+  border:1px solid #d4e2e866;
+  background:#19313d99;
+  color:#f6f2df;
+  border-radius:50%;
+  width:44px;
+  height:44px;
+}
+.northern-run .nr-overlay {
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  background:#142b38c9;
+  text-align:center;
+  padding:20px;
+}
+.northern-run .nr-overlay h2 {
+  font-family:serif;
+  font-size:36px;
+  letter-spacing:.13em;
+  margin:0 0 6px;
+  line-height:1.3;
+}
+.northern-run .nr-overlay p {
+  max-width:340px;
+  margin:0;
+  font-size:14px;
+}
+.northern-run .nr-overlay .nr-eyebrow {
+  font-size:10px;
+}
+.northern-run .nr-overlay a,.northern-run .nr-secondary {
+  color:#d4e0e4;
+  font-size:12px;
+  background:none;
+  border:0;
+  text-decoration:none;
+  padding:8px 16px;
+  min-height:36px;
+}
+.northern-run .nr-final-score {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin:5px 0 12px;
+}
+.northern-run .nr-final-score strong {
+  font-size:49px;
+  font-weight:400;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.07em;
+  line-height:1.1;
+}
+.northern-run .nr-feedback {
+  position:absolute;
+  top:100px;
+  left:25px;
+  font-size:13px;
+  color:#fff4cc;
+  padding:6px 12px;
+  background:#283c48c7;
+  border-radius:3px;
+  pointer-events:none;
+}
+.northern-run .nr-onboarding {
+  position:absolute;
+  bottom:22px;
+  left:0;
+  right:0;
+  text-align:center;
+  font-size:12px;
+  letter-spacing:.03em;
+  pointer-events:none;
+  text-shadow:0 1px 6px #123;
+}
+@media (pointer:coarse) {
+  .northern-run .nr-touch {
+    display:inline;
+  }
+  .northern-run .nr-keyboard {
+    display:none;
+  }
+}
+@media (max-width:600px) {
+  .northern-run .nr-title {
+    margin-top:38px;
+  }
+  .northern-run h1 {
+    font-size:52px;
+  }
+  .northern-run .nr-seal {
+    right:25px;
+    top:35px;
+    font-size:13px;
+    padding:7px;
+  }
+  .northern-run .nr-start {
+    bottom:max(35px,env(safe-area-inset-bottom));
+    right:24px;
+  }
+  .northern-run .nr-primary {
+    width:100%;
+  }
+  .northern-run .nr-overlay .nr-primary {
+    width:220px;
+  }
+  .northern-run .nr-score {
+    left:16px;
+    top:16px;
+  }
+  .northern-run .nr-pause {
+    right:16px;
+    top:16px;
+  }
+}
+@media (max-height:520px) and (orientation:landscape) {
+  .northern-run {
+    min-height:240px;
+  }
+  .northern-run .nr-intro {
+    padding:18px 32px;
+  }
+  .northern-run .nr-title {
+    margin-top:13px;
+  }
+  .northern-run h1 {
+    font-size:42px;
+  }
+  .northern-run .nr-premise {
+    margin-top:8px;
+    font-size:12px;
+  }
+  .northern-run .nr-start {
+    left:32px;
+    bottom:20px;
+  }
+  .northern-run .nr-controls {
+    margin-top:9px;
+    font-size:10px;
+  }
+  .northern-run .nr-primary {
+    min-height:44px;
+    padding:8px 18px;
+  }
+  .northern-run .nr-seal {
+    top:28px;
+    right:30px;
+  }
+  .northern-run .nr-overlay {
+    gap:6px;
+  }
+  .northern-run .nr-overlay h2 {
+    font-size:25px;
+  }
+  .northern-run .nr-final-score {
+    margin:0;
+    gap:2px;
+  }
+  .northern-run .nr-final-score strong {
+    font-size:30px;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .northern-run * {
+    scroll-behavior:auto;
+    transition:none;
+    animation:none;
+  }
+}

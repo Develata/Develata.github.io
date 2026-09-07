@@ -54,3 +54,7 @@ repomix-output.xml
 .trae/
 .opencode/
 .codex/
+
+# Northern Run: generated locally or restored/built by Pages CI
+docs/.vitepress/theme/components/games/qin-polar-run/rust/target/
+docs/public/game-assets/qin-polar-run/wasm/
