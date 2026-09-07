@@ -4,9 +4,11 @@ const KEYS: Record<string, number> = {
   ArrowLeft: ACTION.left, KeyA: ACTION.left, ArrowRight: ACTION.right, KeyD: ACTION.right,
   ArrowUp: ACTION.jump, KeyW: ACTION.jump, Space: ACTION.jump,
   ArrowDown: ACTION.duck, KeyS: ACTION.duck,
+  ShiftLeft: ACTION.boost, ShiftRight: ACTION.boost, KeyE: ACTION.boost,
 }
 export class InputController {
   private mask = 0
+  private lastTap: { x: number; y: number; at: number } | null = null
   private pointer: { id: number; x: number; y: number; at: number } | null = null
   constructor(private surface: HTMLElement, private active: () => boolean, private pause: () => void) {
     surface.addEventListener('keydown', this.key)
@@ -35,13 +37,26 @@ export class InputController {
     const x = e.clientX - p.x, y = e.clientY - p.y
     const ax = Math.abs(x), ay = Math.abs(y)
     const minimum = Math.max(22, Math.min(44, this.surface.clientWidth * 0.055))
-    if (e.timeStamp - p.at > 650 || Math.max(ax, ay) < minimum) return
+    const duration = e.timeStamp - p.at
+    if (duration <= 240 && Math.max(ax, ay) <= 10) {
+      const last = this.lastTap
+      if (last && e.timeStamp - last.at >= 40 && e.timeStamp - last.at <= 320
+        && Math.hypot(e.clientX - last.x, e.clientY - last.y) <= 32) {
+        this.mask |= ACTION.boost; this.lastTap = null
+      } else this.lastTap = { x: e.clientX, y: e.clientY, at: e.timeStamp }
+      return
+    }
+    this.lastTap = null
+    if (duration > 650 || Math.max(ax, ay) < minimum) return
     if (ax > ay * 1.3) this.mask |= x < 0 ? ACTION.left : ACTION.right
     else if (ay > ax * 1.3) this.mask |= y < 0 ? ACTION.jump : ACTION.duck
   }
-  private cancel = () => { this.pointer = null }
+  private cancel = (event: PointerEvent) => {
+    this.pointer = null
+    if (event.type === 'pointercancel') this.lastTap = null
+  }
   read(): number { const actions = this.mask; this.mask = 0; return actions }
-  clear() { this.mask = 0; this.pointer = null }
+  clear() { this.mask = 0; this.pointer = null; this.lastTap = null }
   dispose() {
     this.clear()
     this.surface.removeEventListener('keydown', this.key)

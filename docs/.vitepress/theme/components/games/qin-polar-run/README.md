@@ -1,125 +1,89 @@
-# 北境狂奔 / NORTHERN RUN
+# 北境狂奔 / Northern Run
 
-秦始皇骑北极熊：独立、单局、三道浏览器跑酷。没有账号、后端、存档、个人最佳或长期成长。
-路由：/games/qin-polar-run；从 Game Lab 卡片进入。
+秦始皇骑北极熊的独立三道跑酷。Phase 2 保留原有 Vue/Three.js/Rust 边界，新增持续加速、三种秦境、金币蓄力冲刺与可静音循环音乐。没有账号、存档、历史最佳或跨游戏引擎。
 
-## 本地运行
+## 本地构建
 
-在仓库根目录执行（Windows 或 WSL；Node 与 Rust 使用同一环境）：
+Rust 1.97.0 与 wasm32-unknown-unknown 由 rust/rust-toolchain.toml 固定。安装一次 wasm-bindgen-cli 0.2.126，与 Cargo.lock 匹配。
 
-~~~sh
-npm ci
-rustup toolchain install 1.97.0 --profile minimal --target wasm32-unknown-unknown
-cargo +1.97.0 install wasm-bindgen-cli --version 0.2.126 --locked
-npm run game:qin-polar-run:wasm
-npm run dev
-~~~
+- npm run game:qin-polar-run:wasm：仅测试并编译本游戏 Rust，生成 wasm-bindgen web 包。
+- npm run game:qin-polar-run:test：Node 内置加载器、ABI 版本、键盘/手势、音频生命周期测试。
+- npm run dev：开发预览。Rust 修改后需重新运行 WASM 命令。
+- npm run build，然后 npm run preview：完整生产验证。全站较大，本地必要时仅为构建进程设置 NODE_OPTIONS=--max-old-space-size=4096。
 
-确保 cargo 和 wasm-bindgen 在 PATH 中。WASM 命令仅构建本游戏，先运行 cargo test --locked，
-再构建 release 并生成浏览器 ES module。修改 Rust 后重新运行该命令；只修改 Vue/TS/CSS 时无需重编 Rust。
-加载生命周期回归：npm run game:qin-polar-run:test（Node 内置测试，无新增依赖）。
-生产验证：npm run build，然后 npm run preview。全站内容增长后，若本机默认 Node 堆不足，
-可仅在构建进程设置 NODE_OPTIONS=--max-old-space-size=4096；不改变网站运行成本。
+生成包位于 docs/public/game-assets/qin-polar-run/wasm/，与 rust/target/ 一起忽略。发布 profile 使用 opt-level=s、LTO、单 codegen unit、panic=abort、strip；没有 wasm-pack/wasm-opt 或额外引擎依赖。
 
-## 所有权与生命周期
+## 所有权与模块
 
-- rust/src/player.rs：三车道、确定性 smoothstep 换道、解析跳跃、定时俯身、碰撞判定。
-- rust/src/runner.rs：权威阶段、120 Hz 步进、时间/距离、积分、两次受撞、路段回收。
-- rust/src/track.rs：独立 xorshift32、人工障碍库、难度选取、可达性校验。
-- rust/src/lib.rs：薄 wasm-bindgen 外壳。Rust 测试不依赖浏览器。
-- input/InputController.ts：将焦点内键盘和主指针滑动转换为四个语义 bit。
-- render/：Three.js 只投影 Rust 帧；没有第二套生成、碰撞或积分规则。
-- GameEntry.vue：客户端加载、DOM 状态、唯一 RAF、暂停/重开、资源释放。
-
-游戏采用 VitePress 原生 layout: false 获得完整视口；不修改全局主题。使用 injectTitle:false 关闭自动注入的
-Markdown 标题，游戏自己提供可访问的标题。createGameComponent 懒注册组件，挂载后才导入渲染器和
-生成的 WASM JS。绝对 URL 避免 Vite 5 对 public 模块添加开发转换参数；只有 JS 下载失败才更新查询参数，
-图形初始化重试和路由返回复用同一 WASM 模块。loadWasm.ts 同时合并并发初始化请求。
-
-开始前直接显示 3D 场景。运行中仅 SCORE 常驻，加一个暂停按钮；短时操作提示和受撞/拾取反馈自动消退。
-方向键/WASD、Space、四向滑动均可使用。Escape 暂停/继续；滑动拒绝短距离、超时、近对角线及取消事件。
-只有运行中的游戏区域使用 touch-action:none；按钮和站外键盘行为不被接管。
-横竖屏的 HUD、按钮、提示和面板都保留 safe-area-inset；窄屏仅调整 HUD 的额外边距。
-
-隐藏页面、窗口失焦或焦点离开游戏时暂停；重新显示后由用户继续，不自动冲进障碍。
-暂停/结束/开始静态画面没有常驻 RAF。重开复用同一个 core、renderer 和池。
-卸载会取消 RAF、移除输入/可见性/失焦/上下文监听，断开 ResizeObserver，释放 core，销毁实例缓冲、
-共享几何体和材质，dispose renderer 并移除画布。异步加载返回前离开页面时不创建实例。
-WebGL 丢失和 WASM 加载失败都有可重试的中文提示。
-
-## 模拟、可解性与碰撞
-
-固定 8 个 48m 路段，每段两排（偏移 12m / 36m），跨段排间距同为 24m。
-路段使用相对玩家的有界坐标；玩家 Z 固定。段尾离开后把同一槽放到最前方。
-每排最多两个障碍，因而逻辑上最多 32 个障碍、16 枚秦半两；状态不随游玩时间增长。
-首约十秒保留适应时间，之后引入换道、低墙、门梁，再提高组合密度。
-前进速度从 12m/s 增长并封顶 22m/s，首撞减速一秒、免疫两秒，第二次有效撞击结束。
-积分 = 整数距离 + 50 × 拾取数；运行时单调、重开清零、不存储。
-
-校验器的保证是**存在一条可达安全路线**，并非任何按键序列都安全。
-它用三位 mask 传播能够站立通过的空车道，只接受类型 0..3；最坏速度为 22m/s。
-排间可用时间 = (24 - 2×1.15)/22 - 0.32 ≈ 0.666s；跨两道需要 2×0.16 = 0.32s。
-因此上一排的任一安全车道都能在下一排窗口前到达空车道。生成器保存跨段 mask；校验失败退回空排。
-跳跃/俯身是额外选择，证明不将它们当成免费通路。0.9s 跳跃和 0.8s 俯身短于去掉碰撞窗口后的
-0.986s 排间隔，正常完成一个动作不会强迫下一排处于该动作。
-
-碰撞检查整个 ±1.15m 纵向窗口。换道期间按连续横向位置检查可能重叠的两条车道，避免瞬移穿障碍。
-冰岩必须换道；低墙要求跳跃净高至少 0.95；门梁要求处于地面俯身状态。
-换道使用 0.16s 的 smoothstep 缓入缓出，Rust 权威 x 同时供碰撞和 Three.js 使用，避免视觉滞后。
-实际窗口的跳跃/俯身通过、受撞、免疫和长时间安全路线均有 Rust 测试。
-
-## ABI v1 与构建产物
-
-每渲染帧一个 advance(dt, actionMask, Float32Array) 调用；最多执行 12 次固定步进，dt 截断至 0.1s，
-无效/负数时间步被忽略。小时间步期间的输入在 Rust 暂存，避免高刷新率丢按键。
-缓冲固定 144 个 f32（576 字节）：
-
-| 范围 | 内容 |
+| 模块 | 唯一职责 |
 | --- | --- |
-| 0..12 | ABI 版本、阶段、时间、48m 内滚动偏移、分数、x、y、俯身、免疫、跌撞、速度、事件 bit、内部撞击数 |
-| 13..15 | 保留 |
-| 16 + 16×slot | 段 z，随后每排各 5 项：三道障碍类型、引导金币车道、已收集标记；其余保留 |
+| rust/src/difficulty.rs | 纯速度曲线、普通到达速度上界、40 秒场景编号 |
+| rust/src/player.rs | 0.16s smoothstep 换道、解析跳跃、俯身、逻辑碰撞 |
+| rust/src/track.rs | 有界路段、确定性 xorshift32、障碍库、动态间距与可达性 |
+| rust/src/boost.rs | 10 枚金币充能、手动启动、计时与结束保护 |
+| rust/src/runner.rs | 权威状态、120Hz 固定步进、积分、碰撞、回收、紧凑帧 |
+| input/InputController.ts | 浏览器事件映射为动作位；不决定游戏规则 |
+| render/ | Three.js 投影帧、三个预生成环境、相机与有限特效池 |
+| audio/GameAudio.ts | 单个延迟创建的 HTMLAudioElement |
+| GameEntry.vue | Vue UI、唯一 RAF、暂停/重开/卸载 |
 
-这是小规模复制 ABI，不是零复制：wasm-bindgen 为 mutable slice 分配临时区并复制进出，JS 复用同一帧数组。
-每帧约 1.1KiB 双向复制，没有 JSON、对象树或逐对象 getter。配置偏移由 config.ts 与 Rust 注释共同定义，
-加载检查 ABI 版本。参考：[wasm-bindgen 数值切片](https://rustwasm.github.io/docs/wasm-bindgen/reference/types/number-slices.html)。
+Game Lab AGENTS.md 明确独立纵向模块。共享的只有 Vue/VitePress/Three.js、懒注册、卡片元数据和部署；不导入其他游戏实现。
 
-源代码在本模块的 rust/ 中；Cargo.lock 与工具链文件入库。
-生成产物在 docs/public/game-assets/qin-polar-run/wasm/，target/ 与生成包都被忽略。
-固定 Rust 1.97.0、wasm-bindgen crate/CLI 0.2.126。直接使用 cargo + wasm-bindgen --target web，
-不再加入 wasm-pack。release 使用 opt-level=s、LTO、单 codegen unit、panic=abort、strip。
-没有额外 wasm-opt 下载步骤；发布 WASM 仅约 22KB，具体测量见 QA.md。
+## 持续加速与可解性
 
-## Pages CI：热内容复用冷代码
+普通速度在 0/30/90/180/360s 分别约为 12/15/19.5/24.5/31；之后每秒增加 0.015。没有几分钟就碰到的玩法速度上限。ABSOLUTE_SPEED_GUARD=120 只防止异常长会话的数值问题，约 105 分钟才达到；界面不显示速度。冲刺后的实际速度也受这条数值保护约束。所有预测调用同一个 base_speed_at。
 
-唯一发布路径仍是 .github/workflows/deploy.yml，权限、环境、并发、打包、deploy-pages 语义均保留。
+保留八个 48m 路段、每段两处 24m 间隔的候选排。生成器累计距上一排**实际危险障碍**的距离，空排不重置累计值。若间距不足，则插入空排；金币和景物仍可出现。
 
-缓存路径为上述生成包目录；key 为 northern-run-wasm-v1 + runner.os + hashFiles：
-Cargo.toml、Cargo.lock、rust-toolchain.toml、rust/src/**、本模块 build-wasm.mjs。
-工具版本和构建选项都固定在这些输入中；修改 ABI/构建策略时可以提升命名空间。
+最低运动速度是 12×0.65=7.8m/s，所以 d 米前的候选排最迟在 elapsed+d/7.8 到达。用该时刻的单调速度函数作为普通到达速度上界 v；不会把普通障碍全按冲刺倍数拉疏。
 
-- 精确命中：不安装 Rust/wasm-bindgen，不运行 Cargo 测试或编译；运行轻量 Node 加载回归、验证输出文件存在，再构建完整 VitePress 站点。
-- 缺失或驱逐：安装固定工具，测试核心、生成 release WASM，再构建站点并保存输出缓存。
-- news/** 不在游戏缓存键里，所以普通新闻更新正常复用 WASM。偶发缓存驱逐允许从源码重建。
+安全决策时间取 max(0.32s 反应 + 两次固定步量化换道, 0.9s 跳跃, 0.8s 俯身)+0.1s，目前为 1s。危险排至少相距 2×1.15m 碰撞窗口 + v×1s。三位 mask 校验器使用**累计真实间距和速度上界**传播站立可通过的车道；非法/不可达模式退为空排。它保证存在安全路线，不保证追逐每一枚恢复排金币都安全。
 
-没有第二套重复编译的 Rust workflow，没有 Release 二进制仓库，没有改造 News/RSS。
-CI 中安装版本需与 rust-toolchain.toml 和 build-wasm.mjs 一同维护。
+玩家 Z 固定，路段相对坐标有界。横向渲染和碰撞共用 Rust 的权威 x；同一窗口内检查过渡时重叠的车道。每排最多两个障碍，逻辑上至多 32 个障碍、16 枚金币。
 
-## 渲染成本与隔离
+## 冲刺与积分
 
-道路、三类障碍、秦半两用 8 个固定容量 InstancedMesh；城墙、塔、旗和守卫也实例化。
-角色由共享几何体组合，无 GLB/图片/字体/CDN/音频下载依赖。
-一个半球光、一个方向光、雾、简单接触阴影；无动态阴影、后处理或粒子系统。
-竖屏 DPR 上限 1.25，其余 1.5。遵循 reduced-motion，去掉装饰晃动/冲击，保留必要跑动。
+- 每枚秦半两仍加 50 SCORE，并在非冲刺时为蓄力加 1，10 枚充满。无金币数字或百分比 HUD。
+- Shift/E 或游戏区域双击手动启动：清空蓄力，持续 3.5s，速度约为当前基础速度的 1.45 倍。
+- 冲刺中碰撞不扣受撞次数，而是删除该障碍并发出 smash 事件；每排的破坏车道 mask 供观察。
+- 冲刺吸币横向范围为 1.15 个车道单位，普通拾取为 0.45；仅作用于玩家附近的纵向拾取窗，不能从最左吸最右。冲刺中金币加分但不蓄下次冲刺。
+- 冲刺结束后保护 1s，让玩家重新读路；重叠障碍在保护期内解决，不会在保护结束后重复扣伤。
+- 冲刺不治疗。首撞仍减速 1s、免疫 2s；第二次有效普通碰撞结束。
+- 积分为整数距离 + 50×金币数，单调增加，重开清零。
 
-热循环复用帧数组、Object3D 与 Vector3；不新建模型/材质、数组或渲染矩阵对象。
-诊断读取才复制帧数组，正常渲染不调用诊断。场景池容量固定，QA 中实际节点数保持 111。
+## 三种场景与速度表现
 
-Game Lab 的 AGENTS.md 明确每个游戏是独立纵向模块。该游戏不导入其他游戏实现；共享的只有 Vue、
-VitePress、Three.js 依赖、懒加载注册、卡片元数据和部署设施。没有跨游戏核心、Rust workspace 或通用引擎。
+Rust 每 40s 固定输出：冰封秦直道 → 风雪长城关隘 → 冰封陵寝遗迹 → 循环。不改变三条逻辑车道，不增加场景/关卡 HUD。
 
-## 验证与限制
+三组有限 InstancedMesh 初始化时准备并共享 Palette。直道以路标、旗和开阔雪地为主；长城有连续高墙、关门与烽火台；陵寝有封土、金铜巨门与路外兵马俑阵列。切换前后约 1.8s 使用雾幕，不黑屏，不下载新资源；雾的最近视距随权威速度保留至少约两秒前方空间。
 
-实际命令、视口、生命周期和失败路径结果见 [QA.md](./QA.md)。
-首玩 1–3 分钟是难度目标，尚未做新玩家样本统计。桌面 Chrome 的触摸模拟不等于真实 Android GPU 测试。
-Actions 缓存的实际命中以对应 GitHub Actions 运行记录为准；缓存驱逐时会正常重建。
+跑动步频累积积分，避免速度变化令正弦相位跳变；高速度轻微前倾、FOV 最多多 6°，冲刺额外约 2°。12–28 条近景雪线和一个六碎片池形成有限反馈。prefers-reduced-motion 关闭非必要晃动、雪线、碎片和额外 FOV。
+
+## ABI v2（仍为 144 个 f32 / 576 字节）
+
+每个浏览器帧一个 advance(dt, actionMask, Float32Array)，最多 12 个 120Hz 子步；dt 截至 0.1s，小 dt 输入暂存在 Rust。没有 JSON 或逐物体 getter。wasm-bindgen mutable slice 会复制进出，约 1.1KiB/帧；未声称零复制。
+
+| 位置 | 含义 |
+| --- | --- |
+| 0 | ABI_VERSION=2，加载后核对 |
+| 1..12 | 阶段、时间、48m 滚动偏移、分数、x、y、俯身、保护余量、跌撞、实际速度、事件、受撞数 |
+| 13/14/15 | 蓄力 0..10 / 冲刺剩余秒 / 场景编号 0..2 |
+| 16+16×slot | z；两排各 [三道类型、金币车道、已拾取]；两排破坏 mask；余项保留 |
+
+动作位：left=1/right=2/jump=4/duck=8/boost=16。事件位：coin=1/hit=2/over=4/boost=8/smash=16/biome=32。生成 JS 与 WASM 请求带 abi=2，避免静默复用旧 ABI；同页图形恢复和路由返回仍复用成功初始化的模块。
+
+## 音频与浏览器生命周期
+
+曲目为 skrjablin 的 Chilly Oriental Feeling With Laser Shots C64 Style，已从 OpenGameArt 官方页面确认 CC0 选项。原件与加工记录见 [AUDIO-LICENSES.md](./AUDIO-LICENSES.md)。发布文件 92,386 bytes，22.98s、单声道、22050Hz、32kbps，6500Hz 低通和微小循环交叉淡化。没有使用 Funkytown 或画离弦。
+
+音乐在点击开始后才创建和加载，音量 0.4；暂停/失焦/隐藏会暂停音乐，继续时恢复，结束时停止归零，重开复用并重播，卸载清理 src 与音频引用。静音只在当前页面会话保留，冲刺不改变播放速度。音频失败不会阻止玩法。
+
+页面仍用 layout:false / injectTitle:false 与 createGameComponent 懒注册。准备、暂停、结束没有游戏 RAF；重开复用核心、画布和渲染池。所有输入/生命周期/图形监听、ResizeObserver、材质/几何体/实例缓冲/WASM 实例在卸载时释放。安全区覆盖新旧 HUD 控件。
+
+## 成本、CI 和验证
+
+道路/金币/障碍和三种环境使用固定实例池，只有一个场景激活；一个半球光加一个方向光，假接触阴影，无纹理、后处理或动态阴影。竖屏 DPR ≤1.25，其余 ≤1.5。热路径复用 Float32Array、向量和变换对象。
+
+Pages 发布路径与权限不变。缓存仍是 docs/public/game-assets/qin-polar-run/wasm/，键基于 Cargo.toml/lock、工具链、rust/src/** 和构建脚本。Rust 改动自然失效；新闻或音频改动不会进入键。命中跳过 Rust 安装/测试/编译；缺失或驱逐时从源码重建。音频是一次加工后提交的静态文件，不放 Rust 缓存，不在 CI 运行 FFmpeg。
+
+实际测试、视口、资源统计与限制见 [QA.md](./QA.md)。浏览器触摸模拟与加速安全路线验证不是实际手机 GPU 或新玩家体验统计。

@@ -5,6 +5,7 @@ import { Palette } from './Palette'
 import { CharacterView } from './CharacterView'
 import { TrackView } from './TrackView'
 import { EnvironmentView } from './EnvironmentView'
+import { EffectsView } from './EffectsView'
 export class RunnerScene {
   private renderer!: T.WebGLRenderer
   private scene = new T.Scene()
@@ -13,6 +14,7 @@ export class RunnerScene {
   private character!: CharacterView
   private track!: TrackView
   private environment!: EnvironmentView
+  private effects!: EffectsView
   private observer!: ResizeObserver
   private target = new T.Vector3()
   private look = new T.Vector3()
@@ -33,6 +35,7 @@ export class RunnerScene {
       this.environment = new EnvironmentView(this.scene, this.palette)
       this.track = new TrackView(this.scene, this.palette)
       this.character = new CharacterView(this.scene, this.palette)
+      this.effects = new EffectsView(this.scene, this.palette)
       this.observer = new ResizeObserver(this.resize); this.observer.observe(container)
       this.resize()
     } catch (error) {
@@ -55,8 +58,18 @@ export class RunnerScene {
   draw(frame: Float32Array, dt: number) {
     if (this.disposed) return
     this.lastFrame = frame
-    this.track.update(frame); this.environment.update(frame[F.travel]); this.character.update(frame, this.reduced.matches)
+    this.track.update(frame); this.character.update(frame, this.reduced.matches, dt)
+    this.effects.update(frame, this.reduced.matches)
+    const veil = this.environment.update(frame)
+    const fog = this.scene.fog as T.Fog
+    fog.color.copy(this.environment.sky); this.renderer.setClearColor(this.environment.sky)
+    fog.near = 40 * (1 - veil)
+    const horizon = Math.max(180, frame[F.speed] * 3 + 25)
+    fog.far = T.MathUtils.lerp(horizon, Math.max(55, frame[F.speed] * 2 + 12), veil)
     const portrait = this.camera.aspect < 0.85, ready = frame[F.phase] === 0
+    const speedFov = this.reduced.matches ? 0 : Math.min(6, Math.max(0, Math.log2(frame[F.speed] / 12) * 2.4))
+    const fov = (portrait ? 64 : 52) + speedFov + (!this.reduced.matches && frame[F.boost] > 0 ? 2 : 0)
+    if (Math.abs(this.camera.fov - fov) > 0.01) { this.camera.fov = fov; this.camera.updateProjectionMatrix() }
     // Rear-upper chase composition. Portrait backs off to preserve all three lanes.
     this.target.set(ready ? 7 : frame[F.x] * 0.16, portrait ? 9.4 : 7.5, portrait ? 17.5 : 12.5)
     this.look.set(0, 0.8, ready ? -5 : -16)
@@ -70,14 +83,14 @@ export class RunnerScene {
     let objects = 0; this.scene.traverse(() => objects++)
     return { objects, geometries: this.renderer.info.memory.geometries,
       textures: this.renderer.info.memory.textures, drawCalls: this.renderer.info.render.calls,
-      triangles: this.renderer.info.render.triangles, dpr: this.renderer.getPixelRatio() }
+      triangles: this.renderer.info.render.triangles, biome: this.lastFrame?.[F.biome], speed: this.lastFrame?.[F.speed], dpr: this.renderer.getPixelRatio() }
   }
   dispose() {
     if (this.disposed) return
     this.disposed = true; this.observer?.disconnect()
     this.renderer?.domElement.removeEventListener('webglcontextlost', this.lost)
     this.scene.traverse(object => { if (object instanceof T.InstancedMesh) object.dispose() })
-    this.character?.dispose(); this.environment?.dispose(); this.palette.dispose()
+    this.character?.dispose(); this.environment?.dispose(); this.effects?.dispose(); this.palette.dispose()
     this.renderer?.dispose(); this.renderer?.forceContextLoss(); this.renderer?.domElement.remove()
     this.scene.clear(); this.lastFrame = null
   }

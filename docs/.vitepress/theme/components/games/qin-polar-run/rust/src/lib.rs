@@ -1,4 +1,8 @@
 //! Northern Run: independent pure core with a coarse, copied numeric WASM ABI.
+mod boost;
+mod difficulty;
+#[cfg(test)]
+mod phase2_tests;
 mod player;
 mod runner;
 #[cfg(test)]

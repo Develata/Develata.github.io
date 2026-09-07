@@ -1,3 +1,4 @@
+use crate::difficulty::*;
 use crate::player::*;
 use crate::runner::*;
 use crate::track::*;
@@ -123,13 +124,13 @@ fn rng_and_input_replay_are_deterministic() {
 }
 #[test]
 fn validator_rejects_impossible_and_too_fast_transitions() {
-    assert_eq!(reachable(7, [1, 2, 3], 24.0, 0.0), 0);
-    assert_eq!(reachable(1, [1, 1, 0], 4.0, 0.0), 0);
-    assert_eq!(reachable(0, [0, 0, 0], 24.0, 0.0), 0);
-    assert_eq!(reachable(7, [4, 0, 0], 24.0, 0.0), 0);
-    assert_eq!(reachable(1, [1, 1, 0], 24.0, 0.0), 4);
-    assert_eq!(reachable(1, [1, 1, 0], 24.0, 0.8), 0);
-    assert!(action_spacing_valid());
+    assert_eq!(reachable(7, [1, 2, 3], 24.0, 22.0, 0.0), 0);
+    assert_eq!(reachable(1, [1, 1, 0], 4.0, 22.0, 0.0), 0);
+    assert_eq!(reachable(0, [0, 0, 0], 24.0, 22.0, 0.0), 0);
+    assert_eq!(reachable(7, [4, 0, 0], 24.0, 22.0, 0.0), 0);
+    assert_eq!(reachable(1, [1, 1, 0], 24.0, 22.0, 0.0), 4);
+    assert_eq!(reachable(1, [1, 1, 0], 24.0, 22.0, 0.8), 0);
+    assert!(decision_headway() >= JUMP_SECONDS.max(DUCK_SECONDS));
 }
 #[test]
 fn million_generated_rows_have_a_safe_cross_boundary_path() {
@@ -139,7 +140,7 @@ fn million_generated_rows_have_a_safe_cross_boundary_path() {
         for index in 0..1_000 {
             let c = generator.chunk(100.0, index as f32);
             for (r, row) in c.rows.iter().enumerate() {
-                mask = reachable(mask, *row, 24.0, 0.0);
+                mask = reachable(mask, *row, 24.0, 22.0, 0.0);
                 assert_ne!(mask, 0, "seed={seed}, chunk={index}");
                 assert_eq!(row[(c.coin_lanes[r] + 1) as usize], 0);
             }
@@ -193,7 +194,7 @@ fn long_autopilot_run_uses_real_kinematics_and_bounded_slots() {
                     .iter()
                     .all(|c| c.z >= -LENGTH - 6.0 && c.z < LENGTH * CHUNKS as f32)
             );
-            assert!(c.speed <= MAX_SPEED);
+            assert!(c.speed <= ABSOLUTE_SPEED_GUARD);
         }
     }
 }

@@ -1,6 +1,6 @@
 /** Eight Rust slots feed fixed instance pools; no track generation or collision here. */
 import * as T from 'three'
-import { CHUNKS, CHUNK_STRIDE, HEADER, ROW_OFFSETS, LANE_WIDTH } from '../config'
+import { FIELD as F, CHUNKS, CHUNK_STRIDE, HEADER, ROW_OFFSETS, LANE_WIDTH } from '../config'
 import { Palette } from './Palette'
 type Batch = { mesh: T.InstancedMesh; count: number }
 export class TrackView {
@@ -56,10 +56,11 @@ export class TrackView {
     }
   }
   update(frame: Float32Array) {
+    const horizon = Math.min(360, Math.max(170, frame[F.speed] * 2.5 + 20))
     for (const batch of this.batches) batch.count = 0
     for (let i = 0; i < CHUNKS; i++) {
       const b = HEADER + i * CHUNK_STRIDE, z = frame[b]
-      if (z < 170) {
+      if (z < horizon) {
         this.put(this.ice, 0, -0.25, -z - 24, 10, 0.45, 48)
         this.put(this.snow, 0, -0.03, -z - 24, 9.6, 0.10, 48)
         for (let side = -1; side <= 1; side += 2) {
@@ -69,12 +70,15 @@ export class TrackView {
       }
       for (let r = 0; r < 2; r++) {
         const row = b + 1 + r * 5, rowZ = z + ROW_OFFSETS[r]
-        if (rowZ > -6 && rowZ < 170) {
+        if (rowZ > -6 && rowZ < horizon) {
           for (let lane = 0; lane < 3; lane++) this.obstacle(frame[row + lane], (lane - 1) * LANE_WIDTH, -rowZ)
         }
         const coinZ = rowZ - 5
-        if (!frame[row + 4] && coinZ > -5 && coinZ < 165) {
-          this.put(this.coins, frame[row + 3] * LANE_WIDTH, 1.18, -coinZ, 1, 1, 1, frame[2] * 1.4)
+        if (!frame[row + 4] && coinZ > -5 && coinZ < horizon - 5) {
+          const attract = frame[F.boost] > 0 && Math.abs(frame[row + 3] - frame[F.x]) < 1.15
+            ? Math.max(0, 1 - Math.abs(coinZ) / 6) : 0
+          const x = (frame[row + 3] + (frame[F.x] - frame[row + 3]) * attract) * LANE_WIDTH
+          this.put(this.coins, x, 1.18, -coinZ, 1, 1, 1, frame[F.time] * 1.4)
         }
       }
     }

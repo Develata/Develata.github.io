@@ -7,6 +7,7 @@ export class CharacterView {
   private bear = new T.Group()
   private rider = new T.Group()
   private legs: T.Group[] = []
+  private stride = 0
   private shadow: T.Mesh
   private shadowMaterial = new T.MeshBasicMaterial({ color: 0x1c3a46, transparent: true, opacity: 0.24, depthWrite: false })
   private shadowGeometry = new T.CircleGeometry(1, 24)
@@ -59,9 +60,12 @@ export class CharacterView {
     this.shadow.rotation.x = -Math.PI / 2; this.shadow.scale.set(1.1, 1.9, 1)
     this.shadow.position.y = 0.025; scene.add(this.shadow)
   }
-  update(frame: Float32Array, reduced: boolean) {
+  update(frame: Float32Array, reduced: boolean, dt = 0) {
     const time = frame[F.time], running = frame[F.phase] === 1
-    const pace = time * (7 + frame[F.speed] * 0.2)
+    if (time === 0) this.stride = 0
+    if (running) this.stride = (this.stride + dt * Math.min(22, 7 + frame[F.speed] * 0.2)) % (Math.PI * 2)
+    const pace = this.stride
+    const lean = Math.min(0.12, Math.max(0, frame[F.speed] - 12) * 0.003) + (frame[F.boost] > 0 ? 0.07 : 0)
     const crouch = frame[F.duck]
     const bob = running && !reduced ? Math.sin(pace * 2) * 0.07 : 0
     this.root.position.set(frame[F.x] * LANE_WIDTH, frame[F.y], 0)
@@ -69,9 +73,9 @@ export class CharacterView {
     this.bear.position.y = bob - crouch * 0.35
     this.bear.scale.y = 1 - crouch * 0.2
     this.rider.position.y = bob - crouch * 1.25
-    this.rider.rotation.x = -crouch * 0.5 + (reduced ? 0 : Math.sin(pace) * 0.012)
+    this.rider.rotation.x = -crouch * 0.5 - lean + (reduced ? 0 : Math.sin(pace) * 0.012)
     this.root.rotation.z = reduced ? 0 : Math.sin(time * 36) * frame[F.stumble] * 0.05
-    this.root.visible = frame[F.immunity] === 0 || Math.floor(time * 12) % 3 !== 0
+    this.root.visible = reduced || frame[F.boost] > 0 || frame[F.immunity] === 0 || Math.floor(time * 12) % 3 !== 0
     for (let i = 0; i < this.legs.length; i++) {
       this.legs[i].rotation.x = running ? Math.sin(pace + (i === 0 || i === 3 ? 0 : Math.PI)) * 0.42 : 0
     }

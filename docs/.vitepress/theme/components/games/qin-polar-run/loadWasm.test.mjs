@@ -6,11 +6,12 @@ import { test } from 'node:test'
 import { createContext, SourceTextModule, SyntheticModule } from 'node:vm'
 const source = stripTypeScriptTypes(readFileSync(new URL('./loadWasm.ts', import.meta.url), 'utf8'))
 async function harness({ failImport = false, failInit = false } = {}) {
-  const urls = [], counts = { init: 0 }
+  const urls = [], counts = { init: 0 }, wasmUrls = []
   const context = createContext({ URL, location: { href: 'https://example.test/games/qin-polar-run' } })
   const packageModule = new SyntheticModule(['default', 'Runner'], function () {
     this.setExport('Runner', class Runner {})
-    this.setExport('default', async () => {
+    this.setExport('default', async options => {
+      wasmUrls.push(options.module_or_path)
       counts.init++
       if (failInit && counts.init === 1) throw new Error('WASM unavailable')
     })
@@ -25,9 +26,14 @@ async function harness({ failImport = false, failInit = false } = {}) {
     },
   })
   const host = new SyntheticModule(['withBase'], function () { this.setExport('withBase', path => path) }, { context })
-  await loader.link(specifier => { assert.equal(specifier, 'vitepress'); return host })
+  const config = new SourceTextModule(stripTypeScriptTypes(readFileSync(new URL('./config.ts', import.meta.url), 'utf8')), { context })
+  await config.link(() => {}); await config.evaluate()
+  await loader.link(specifier => {
+    if (specifier === './config') return config
+    assert.equal(specifier, 'vitepress'); return host
+  })
   await loader.evaluate()
-  return { load: loader.namespace.loadWasm, urls, counts }
+  return { load: loader.namespace.loadWasm, urls, counts, wasmUrls }
 }
 test('graphics retries and route returns reuse one initialized module', async () => {
   const h = await harness(), first = await h.load()
@@ -52,4 +58,10 @@ test('failed WASM initialization retries without importing another JS module', a
   await assert.rejects(h.load(), /WASM unavailable/)
   await h.load(); await h.load()
   assert.equal(h.urls.length, 1); assert.equal(h.counts.init, 2)
+})
+
+test('ABI version is explicit on both browser asset requests', async () => {
+  const h = await harness(); await h.load()
+  assert.equal(new URL(h.urls[0]).searchParams.get('abi'), '2')
+  assert.match(h.wasmUrls[0], /\?abi=2$/)
 })

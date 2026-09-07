@@ -17,6 +17,8 @@ export class Palette {
   readonly robe = this.material(0x18242a)
   readonly skin = this.material(0xc9ac8c)
   readonly black = this.material(0x141c23)
+  readonly terracotta = this.material(0x7d7061)
+  readonly earth = this.material(0x556064)
   readonly red = this.material(0x793b34)
   constructor() {
     // A round banliang silhouette with a real square hole, no texture download.
@@ -38,6 +40,6 @@ export class Palette {
   dispose() {
     for (const geometry of [this.box, this.rock, this.rounded, this.cone, this.cylinder, this.coin]) geometry.dispose()
     for (const material of [this.snow, this.fur, this.ice, this.dark, this.stone, this.bronze,
-      this.gold, this.robe, this.skin, this.black, this.red]) material.dispose()
+      this.gold, this.terracotta, this.earth, this.robe, this.skin, this.black, this.red]) material.dispose()
   }
 }
