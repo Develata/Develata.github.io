@@ -23,7 +23,7 @@ jobs:
       # Warm site / hot news changes reuse it without setting up Rust.
       - name: Restore Northern Run WASM
         id: northern-wasm
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: docs/public/game-assets/qin-polar-run/wasm
           key: northern-run-wasm-v1-${{ runner.os }}-${{ hashFiles('docs/.vitepress/theme/components/games/qin-polar-run/rust/Cargo.toml', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/Cargo.lock', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/rust-toolchain.toml', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/src/**', 'docs/.vitepress/theme/components/games/qin-polar-run/build-wasm.mjs') }}
