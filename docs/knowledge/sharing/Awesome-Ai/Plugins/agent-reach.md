@@ -60,7 +60,7 @@ curl / Jina Reader
 
 ## 2. 为什么已经有 OpenCLI 还要 Agent Reach
 
-[OpenCLI](./opencli) 已经可以：
+[OpenCLI](/knowledge/sharing/Awesome-Ai/Plugins/opencli) 已经可以：
 
 - 读登录态网站
 - 操作浏览器
@@ -1089,4 +1089,4 @@ System / existing
 - [Installation Guide](https://github.com/Panniantong/Agent-Reach/blob/main/docs/install.md)
 - [Agent Reach Skill](https://github.com/Panniantong/Agent-Reach/blob/main/agent_reach/skill/SKILL.md)
 - [Social Backends](https://github.com/Panniantong/Agent-Reach/blob/main/agent_reach/skill/references/social.md)
-- [OpenCLI](./opencli)
+- [OpenCLI](/knowledge/sharing/Awesome-Ai/Plugins/opencli)
