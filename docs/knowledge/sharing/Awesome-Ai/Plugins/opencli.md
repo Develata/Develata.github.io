@@ -500,7 +500,7 @@ opencli <adapter> --help
 
 ## 10. 与 Agent Reach 的关系
 
-OpenCLI 与 [Agent Reach](./agent-reach) 不是替代关系。
+OpenCLI 与 [Agent Reach](/knowledge/sharing/Awesome-Ai/Plugins/agent-reach) 不是替代关系。
 
 更合理的职责划分：
 
@@ -711,4 +711,4 @@ opencli doctor
 - [Browser Bridge](https://github.com/jackwener/OpenCLI/blob/main/docs/guide/browser-bridge.md)
 - [Browser Extension Privacy Policy](https://github.com/jackwener/OpenCLI/blob/main/PRIVACY.md)
 - [Adapters](https://github.com/jackwener/OpenCLI/blob/main/docs/adapters/index.md)
-- [Agent Reach](./agent-reach)
+- [Agent Reach](/knowledge/sharing/Awesome-Ai/Plugins/agent-reach)
