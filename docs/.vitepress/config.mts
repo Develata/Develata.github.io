@@ -8,11 +8,11 @@
  */
 import { defineConfig } from 'vitepress';
 import markdownItMathjax3 from 'markdown-it-mathjax3';
-import { withMermaid } from 'vitepress-plugin-mermaid';
 import { nav } from './configs/nav';
 import { sidebar } from './configs/sidebar';
 import { isSearchableContent } from './configs/content-modules.shared';
 import { autoInjectTitle } from './plugins/auto-inject-title';
+import { mermaidFence } from './plugins/mermaid-fence';
 import { generateRssFeeds, rssDevServer } from './rss/index';
 import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
 
@@ -61,102 +61,103 @@ function parseFrontmatter(src: string): SearchFrontmatter {
   return { aliases, keywords, searchDisabled, title };
 }
 
-export default withMermaid(
-  defineConfig({
-    lang: 'zh-CN',
-    title: "Develata's Space",
-    description: 'Math & Code',
-    base: '/',
-    cleanUrls: true,
-    buildEnd: generateRssFeeds,
-    head: [
-      ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-    ],
+export default defineConfig({
+  lang: 'zh-CN',
+  title: "Develata's Space",
+  description: 'Math & Code',
+  base: '/',
+  cleanUrls: true,
+  // 页面 hash map 抽成共享 chunk；否则每个 HTML 内联一份，dist 体积随页数平方增长。
+  metaChunk: true,
+  buildEnd: generateRssFeeds,
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+  ],
 
-    // --------------------------------------------------
-    // Vite 插件配置
-    // --------------------------------------------------
-    vite: {
-      build: {
-        chunkSizeWarningLimit: 2000
-      },
-      plugins: [
-        autoInjectTitle(),
-        rssDevServer()
-      ]
+  // --------------------------------------------------
+  // Vite 插件配置
+  // --------------------------------------------------
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 2000
     },
+    plugins: [
+      autoInjectTitle(),
+      rssDevServer()
+    ]
+  },
 
-    markdown: {
-      lineNumbers: true,
-      languageAlias: {
-        env: 'dotenv',
-      },
-      config: (md) => {
-        md.use(markdownItMathjax3);
-      },
+  markdown: {
+    lineNumbers: true,
+    languageAlias: {
+      env: 'dotenv',
     },
+    config: (md) => {
+      md.use(markdownItMathjax3);
+      md.use(mermaidFence);
+    },
+  },
 
-    themeConfig: {
-      nav,
-      sidebar,
+  themeConfig: {
+    nav,
+    sidebar,
 
-      search: {
-        provider: 'local',
-        options: {
-          miniSearch: {
-            options: {
-              tokenize: tokenizeMixedText,
-            },
-            searchOptions: {
-              tokenize: tokenizeSearchQuery,
-            },
+    search: {
+      provider: 'local',
+      options: {
+        miniSearch: {
+          options: {
+            tokenize: tokenizeMixedText,
           },
-          /**
-           * 本地搜索只索引指定栏目中的 Markdown 文本内容。
-           * 不变量：
-           * 1. frontmatter 显式 `search: false` 的页面必须完全排除；
-           * 2. `news/` 与未来新增的未列入白名单目录默认不进入索引；
-           * 3. 页面标题与正文文本仍保留，但代码块不参与索引；
-           * 4. `_render` 必须返回 HTML，交给 VitePress 的 section 抽取逻辑继续处理。
-           */
-          _render(src, env, md) {
-            const frontmatter = parseFrontmatter(src);
-            if (frontmatter.searchDisabled || !isSearchableContent(env.relativePath)) {
-              return '';
-            }
-            const keywordHints = frontmatter.keywords
-              .filter((value) => value.trim())
-              .flatMap((value) => [
-                `<h2>${escapeHtml(value)}<a href="#">#</a></h2>`,
-                `<p>${escapeHtml(value)}</p>`,
-                `<p>${escapeHtml(value)}</p>`,
-              ])
-              .join('');
-            const aliasHints = frontmatter.aliases
-              .filter((value) => value.trim())
-              .map((value) => `<p>${escapeHtml(value)}</p>`)
-              .join('');
-            const pathHint = env.relativePath.trim()
-              ? `<p>${escapeHtml(env.relativePath.replace(/\/+/g, ' ').replace(/[-_./]/g, ' '))}</p>`
-              : '';
-            const titlePrefix = typeof frontmatter.title === 'string'
-              ? `<h1>${escapeHtml(frontmatter.title)}<a href="#">#</a></h1><p>${escapeHtml(frontmatter.title)}</p>`
-              : '';
-            return `${keywordHints}${titlePrefix}${aliasHints}${pathHint}${md.render(src, env)}`
-              .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
-              .replace(/<div class="language-[\s\S]*?<\/div>/g, ' ');
+          searchOptions: {
+            tokenize: tokenizeSearchQuery,
           },
         },
-      },
-
-      socialLinks: [
-        { icon: 'github', link: 'https://github.com/Develata' },
-      ],
-
-      outline: {
-        level: [1, 4],
-        label: '目录',
+        /**
+         * 本地搜索只索引指定栏目中的 Markdown 文本内容。
+         * 不变量：
+         * 1. frontmatter 显式 `search: false` 的页面必须完全排除；
+         * 2. `news/` 与未来新增的未列入白名单目录默认不进入索引；
+         * 3. 页面标题与正文文本仍保留，但代码块不参与索引；
+         * 4. `_render` 必须返回 HTML，交给 VitePress 的 section 抽取逻辑继续处理。
+         */
+        _render(src, env, md) {
+          const frontmatter = parseFrontmatter(src);
+          if (frontmatter.searchDisabled || !isSearchableContent(env.relativePath)) {
+            return '';
+          }
+          const keywordHints = frontmatter.keywords
+            .filter((value) => value.trim())
+            .flatMap((value) => [
+              `<h2>${escapeHtml(value)}<a href="#">#</a></h2>`,
+              `<p>${escapeHtml(value)}</p>`,
+              `<p>${escapeHtml(value)}</p>`,
+            ])
+            .join('');
+          const aliasHints = frontmatter.aliases
+            .filter((value) => value.trim())
+            .map((value) => `<p>${escapeHtml(value)}</p>`)
+            .join('');
+          const pathHint = env.relativePath.trim()
+            ? `<p>${escapeHtml(env.relativePath.replace(/\/+/g, ' ').replace(/[-_./]/g, ' '))}</p>`
+            : '';
+          const titlePrefix = typeof frontmatter.title === 'string'
+            ? `<h1>${escapeHtml(frontmatter.title)}<a href="#">#</a></h1><p>${escapeHtml(frontmatter.title)}</p>`
+            : '';
+          return `${keywordHints}${titlePrefix}${aliasHints}${pathHint}${md.render(src, env)}`
+            .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
+            .replace(/<div class="language-[\s\S]*?<\/div>/g, ' ');
+        },
       },
     },
-  }),
-);
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/Develata' },
+    ],
+
+    outline: {
+      level: [1, 4],
+      label: '目录',
+    },
+  },
+});

@@ -5,13 +5,19 @@
   1. 使用 Canvas 实现数学符号粒子运动效果。
   2. 实现基于凸包算法 (Convex Hull) 的边界绘制。
   3. 提供响应式和深色模式适配的视觉体验。
+  不变量：
+  - 粒子坐标与边界都使用 CSS 像素；canvas 物理像素 = CSS 像素 × dpr，由 ctx.scale 统一换算。
+  - prefers-reduced-motion 时只绘制静态一帧；页面隐藏时停止 rAF，可见时恢复。
 -->
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let ctx: CanvasRenderingContext2D | null = null
-let animationFrameId: number
+let animationFrameId = 0
+let viewWidth = 0
+let viewHeight = 0
+let motionQuery: MediaQueryList | null = null
 
 // --- ⚙️ 数学参数配置 ---
 const CONNECT_DIST = 160     // 连通阈值
@@ -87,8 +93,8 @@ function getConvexHull(pts: Point[]) {
 
 function draw() {
   if (!ctx || !canvasRef.value) return
-  const width = canvasRef.value.width
-  const height = canvasRef.value.height
+  const width = viewWidth
+  const height = viewHeight
 
   ctx.clearRect(0, 0, width, height)
 
@@ -210,19 +216,44 @@ function draw() {
     }
   }
 
-  animationFrameId = requestAnimationFrame(draw)
+  if (shouldAnimate()) {
+    animationFrameId = requestAnimationFrame(draw)
+  }
+}
+
+function shouldAnimate() {
+  return !document.hidden && !motionQuery?.matches
+}
+
+function stopLoop() {
+  cancelAnimationFrame(animationFrameId)
+  animationFrameId = 0
+}
+
+// 重新开始：静态模式下也会画一帧，保证背景可见。
+function restart() {
+  stopLoop()
+  draw()
+}
+
+function onVisibilityChange() {
+  if (document.hidden) stopLoop()
+  else restart()
 }
 
 function handleResize() {
   if (!canvasRef.value) return
   const dpr = window.devicePixelRatio || 1
-  canvasRef.value.width = window.innerWidth * dpr
-  canvasRef.value.height = window.innerHeight * dpr
+  viewWidth = window.innerWidth
+  viewHeight = window.innerHeight
+  // 重设 canvas 尺寸会清空上下文变换，因此每次都重新 scale。
+  canvasRef.value.width = viewWidth * dpr
+  canvasRef.value.height = viewHeight * dpr
   if (ctx) ctx.scale(dpr, dpr)
-  canvasRef.value.style.width = `${window.innerWidth}px`
-  canvasRef.value.style.height = `${window.innerHeight}px`
+  canvasRef.value.style.width = `${viewWidth}px`
+  canvasRef.value.style.height = `${viewHeight}px`
 
-  initPoints(window.innerWidth, window.innerHeight)
+  initPoints(viewWidth, viewHeight)
 }
 
 // 防抖处理 resize
@@ -231,22 +262,28 @@ const onResize = () => {
   if (resizeTimeout) clearTimeout(resizeTimeout)
   resizeTimeout = setTimeout(() => {
     handleResize()
+    restart()
   }, 200)
 }
 
 onMounted(() => {
   if (canvasRef.value) {
     ctx = canvasRef.value.getContext('2d')
+    motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     handleResize()
-    draw()
+    restart()
     window.addEventListener('resize', onResize)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    motionQuery.addEventListener('change', restart)
   }
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  motionQuery?.removeEventListener('change', restart)
   if (resizeTimeout) clearTimeout(resizeTimeout)
-  cancelAnimationFrame(animationFrameId)
+  stopLoop()
 })
 </script>
 

@@ -15,6 +15,7 @@ import HomeHeroInfo from './components/HomeHeroInfo.vue'
 import RandomJump from './components/RandomJump.vue' // 引入随机跳转组件
 import FolderTree from './components/FolderTree.vue'// 引入文件夹树组件
 import ParticlesBg from './components/Background.vue' // 引入背景组件
+import MermaidDiagram from './components/MermaidDiagram.vue'
 import { registerBrainTrainingComponents } from './components/games/brain-training/register'
 
 // 使用封装好的函数加载组件
@@ -52,6 +53,7 @@ export default {
   enhanceApp({ app }: any) {
     app.component('RandomJump', RandomJump)// 注册随机跳转组件
     app.component('FolderTree', FolderTree)// 注册文件夹树组件
+    app.component('MermaidDiagram', MermaidDiagram)// mermaid 运行时在组件内按需导入
     registerBrainTrainingComponents(app)
     app.component('GameHub', GameHub)// 注册游戏中心组件
     app.component('MathHub', MathHub)// 注册数学实验中心组件

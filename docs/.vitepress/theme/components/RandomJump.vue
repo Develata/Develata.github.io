@@ -2,9 +2,8 @@
   @file RandomJump.vue
   @description 随机跳转组件 (Random Jump)
   职责：
-  1. 扫描项目中所有文档生成链接池。
+  1. 使用构建时生成的链接池 (randomJump.data.ts)。
   2. 提供按钮或通过 URL Hash (#randomjump) 触发随机跳转。
-  3. 过滤非内容页面，确保跳转至有效文章。
 -->
 <script setup lang="ts">
 /// <reference types="vite/client" />
@@ -35,34 +34,10 @@ hero:
 */
 import { useRouter, withBase } from 'vitepress'
 import { onMounted, onUnmounted } from 'vue'
-import { isRandomJumpContent, normalizeContentPath } from '../../configs/content-modules.shared'
+// 链接池在构建时由内容模块注册表生成，客户端只拿到 URL 列表。
+import { data as urls } from './randomJump.data'
 
 const router = useRouter()
-
-// 1. 扫描 docs 目录下所有的 .md 文件
-// 修改：使用数组语法，在扫描阶段直接排除 .vitepress, public 和 node_modules
-const modules = import.meta.glob([
-  '../../../**/*.md',
-  '!../../../.vitepress/**',
-  '!../../../public/**',
-  '!../../../node_modules/**'
-])
-
-// 2. 生成 URL 列表
-const urls: string[] = []
-
-for (const path in modules) {
-  const relativePath = normalizeContentPath(path.replace(/^(\.\.\/)+/, ''))
-  if (!isRandomJumpContent(relativePath)) continue
-
-  const url = `/${relativePath}`
-    // 移除扩展名
-    .replace(/\.md$/, '')
-    // 处理 index 文件
-    .replace(/\/index$/, '/')
-
-  urls.push(url)
-}
 
 function jumpRandom() {
   // 获取当前路径，并标准化（移除 .html 和末尾斜杠，防止匹配失败）
