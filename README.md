@@ -59,8 +59,8 @@
 git clone -b template [https://github.com/Develata/develata.github.io.git](https://github.com/Develata/develata.github.io.git) my-blog
 
 cd my-blog
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ### 方式二：克隆完整内容 (查看源码)
@@ -71,8 +71,8 @@ npm run dev
 git clone [https://github.com/Develata/develata.github.io.git](https://github.com/Develata/develata.github.io.git)
 
 cd develata.github.io
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ## 🛠️ 技术栈

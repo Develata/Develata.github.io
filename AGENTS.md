@@ -4,27 +4,29 @@
 
 ## 1. Build, Preview, and Verification
 
+Package management and script invocation use **Bun** (`bun install`, `bun run <script>`; lockfile `bun.lock`). The runtime stays **Node**: VitePress and the `node --test` suites run on Node, so do not switch to `bun --bun`.
+
 This site has no dedicated unit-test suite. Verification means checking the VitePress build, and for UI-heavy changes, previewing the rendered page.
 
 - **Development server**
   ```bash
-  npm run dev
+  bun run dev
   ```
   Starts VitePress for local preview.
 
 - **Build check**
   ```bash
-  npm run build
+  bun run build
   ```
   Run this after changing VitePress config, build-time utilities, RSS generation, theme components, Vue games, or TypeScript modules.
 
 - **Production preview**
   ```bash
-  npm run preview
+  bun run preview
   ```
   Use after a successful build when rendered output or routing needs inspection.
 
-- **Do not use `npm test` as verification.**
+- **Do not use `bun run test` as verification.**
   The current `test` script is a placeholder that exits with an error.
 
 ## 2. Current Architecture
@@ -140,5 +142,5 @@ This site has no dedicated unit-test suite. Verification means checking the Vite
    - Do not modify generated/build artifacts unless the task explicitly requires it.
 
 4. **Verify**
-   - Run `npm run build` for config, RSS, search, theme, Vue component, or TypeScript changes.
-   - Use `npm run dev` or `npm run preview` when visual layout, interaction, routing, or browser-only behavior matters.
+   - Run `bun run build` for config, RSS, search, theme, Vue component, or TypeScript changes.
+   - Use `bun run dev` or `bun run preview` when visual layout, interaction, routing, or browser-only behavior matters.

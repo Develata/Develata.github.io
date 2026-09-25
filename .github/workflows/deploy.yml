@@ -27,35 +27,43 @@ jobs:
         with:
           path: docs/public/game-assets/qin-polar-run/wasm
           key: northern-run-wasm-v1-${{ runner.os }}-${{ hashFiles('docs/.vitepress/theme/components/games/qin-polar-run/rust/Cargo.toml', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/Cargo.lock', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/rust-toolchain.toml', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/src/**', 'docs/.vitepress/theme/components/games/qin-polar-run/build-wasm.mjs') }}
+      - name: Install cargo-binstall on cache miss
+        if: steps.northern-wasm.outputs.cache-hit != 'true'
+        uses: cargo-bins/cargo-binstall@v1.23.0
       - name: Prepare pinned Rust and wasm-bindgen on cache miss
         if: steps.northern-wasm.outputs.cache-hit != 'true'
         working-directory: docs/.vitepress/theme/components/games/qin-polar-run/rust
         run: |
           rustup toolchain install 1.97.0 --profile minimal --target wasm32-unknown-unknown
           rustup show active-toolchain
-          cargo install wasm-bindgen-cli --version 0.2.126 --locked
+          # Prebuilt release binary; binstall falls back to `cargo install` if none matches.
+          cargo binstall wasm-bindgen-cli@0.2.126 --locked --no-confirm
+      # Node stays the runtime (VitePress, node --test); Bun only installs and runs scripts.
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: npm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
       - name: Check brain-training invariants
-        run: npm run brain-training:test
+        run: bun run brain-training:test
       - name: Check Northern Run loader lifecycle
-        run: npm run game:qin-polar-run:test
+        run: bun run game:qin-polar-run:test
       - name: Test and build Northern Run on cache miss
         if: steps.northern-wasm.outputs.cache-hit != 'true'
-        run: npm run game:qin-polar-run:wasm
+        run: bun run game:qin-polar-run:wasm
       - name: Verify deployable Northern Run assets
         run: |
           test -s docs/public/game-assets/qin-polar-run/wasm/qin_polar_run.js
           test -s docs/public/game-assets/qin-polar-run/wasm/qin_polar_run_bg.wasm
       - name: Build with VitePress
-        run: npm run build
+        run: bun run build
       - name: Package Pages artifact
         run: |
           tar \

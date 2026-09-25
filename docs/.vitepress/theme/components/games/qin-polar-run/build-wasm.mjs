@@ -14,7 +14,7 @@ function run(command, args) {
 }
 const version = spawnSync('wasm-bindgen', ['--version'], { encoding: 'utf8' })
 if (version.stdout?.trim() !== 'wasm-bindgen ' + bindgenVersion) {
-  throw new Error('Install pinned tooling: cargo install wasm-bindgen-cli --version ' + bindgenVersion + ' --locked')
+  throw new Error('Install pinned tooling: cargo binstall wasm-bindgen-cli@' + bindgenVersion + ' --locked')
 }
 run('cargo', ['test', '--locked'])
 run('cargo', ['build', '--locked', '--target', 'wasm32-unknown-unknown', '--release', '--target-dir', join(rust, 'target')])
