@@ -31,7 +31,8 @@ export function autoInjectTitle(): Plugin {
         if (!shouldInjectTitle(relativePath) || !data.title || data.injectTitle === false) return;
 
         // Simplify: Only check first 5 non-empty lines for H1
-        const lines = content.split('\n');
+        // CRLF 工作区（Windows autocrlf）下行尾带 \r，会让下面的 H1 正则失配而重复注入标题。
+        const lines = content.split(/\r?\n/);
         let h1LineIndex = -1;
 
 

@@ -127,8 +127,22 @@ onUnmounted(() => {
   transform: translateY(-1px);
 }
 
+.random-btn:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
 .icon {
   font-size: 16px;
+}
+
+/* 触控设备：命中区域不小于 44×44 */
+@media (pointer: coarse) {
+  .random-btn {
+    min-width: 44px;
+    height: 44px;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 768px) {

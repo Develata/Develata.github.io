@@ -378,10 +378,10 @@ onUnmounted(() => {
 
         <div class="buttons">
           <button class="action-btn" @click="undo" :disabled="history.length === 0 || gameState !== 'playing'"
-            title="Undo">
+            title="Undo" aria-label="Undo">
             ↩️
           </button>
-          <button class="action-btn restart" @click="initGame(true)" title="Restart">
+          <button class="action-btn restart" @click="initGame(true)" title="Restart" aria-label="Restart">
             🔄
           </button>
         </div>
@@ -490,9 +490,10 @@ onUnmounted(() => {
   background: var(--vp-c-bg-alt);
   border: 1px solid var(--vp-c-divider);
   color: var(--vp-c-text-1);
-  width: 40px;
-  height: 36px;
-  border-radius: 6px;
+  /* 44×44：触控目标下限 */
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   font-size: 1.2rem;
   cursor: pointer;
   display: flex;

@@ -87,6 +87,17 @@ export default defineConfig({
     ]
   },
 
+  // markdown-it-mathjax3 输出 <mjx-*> 自定义元素。若不声明，含公式又含组件（如 <Badge>）的
+  // 标题会被当作动态模板编译，mjx-container 被当成未解析组件，导致 SSR 与客户端 hydration 不一致。
+  // MathML 标签（math/mi/mo…）Vue 3.4+ 已原生识别，无需列出。
+  vue: {
+    template: {
+      compilerOptions: {
+        isCustomElement: (tag) => tag.startsWith('mjx-'),
+      },
+    },
+  },
+
   markdown: {
     lineNumbers: true,
     languageAlias: {

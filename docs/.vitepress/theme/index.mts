@@ -9,6 +9,7 @@
 import { h } from 'vue' // Vue 的核心函数
 import DefaultTheme from 'vitepress/theme' // 引入默认主题
 import './custom.css' // 引入自定义样式
+import './page-markdown.css' // layout: page 的 Markdown 正文排版
 import Layout from './Layout.vue'
 import { createGameComponent } from './asyncGameComponent'
 import HomeHeroInfo from './components/HomeHeroInfo.vue'
