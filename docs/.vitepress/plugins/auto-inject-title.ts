@@ -16,6 +16,26 @@ import { shouldInjectTitle } from '../configs/content-modules.shared';
 const pluginDir = path.dirname(fileURLToPath(import.meta.url));
 const docsRoot = path.resolve(pluginDir, '../..');
 
+/**
+ * 在正文（不含 frontmatter）中注入或替换 H1。
+ * 规则：前 5 行内若有 H1 则替换为 `# ${title}`，否则在开头插入。
+ * Markdown 块数不变或恰好 +1（插入的 H1 自成一块）；双语配对依赖两侧走同一规则。
+ */
+export function injectTitle(content: string, title: string): string {
+  // CRLF 工作区（Windows autocrlf）下行尾带 \r，会让 H1 正则失配而重复注入标题。
+  const lines = content.split(/\r?\n/);
+  const h1Regex = /^\s*#\s+(.*)$/;
+  const checkLimit = Math.min(lines.length, 5);
+
+  for (let i = 0; i < checkLimit; i++) {
+    if (h1Regex.test(lines[i])) {
+      lines[i] = `# ${title}`;
+      return lines.join('\n');
+    }
+  }
+  return `# ${title}\n\n${content}`;
+}
+
 export function autoInjectTitle(): Plugin {
   return {
     name: 'auto-inject-title',
@@ -30,33 +50,7 @@ export function autoInjectTitle(): Plugin {
 
         if (!shouldInjectTitle(relativePath) || !data.title || data.injectTitle === false) return;
 
-        // Simplify: Only check first 5 non-empty lines for H1
-        // CRLF 工作区（Windows autocrlf）下行尾带 \r，会让下面的 H1 正则失配而重复注入标题。
-        const lines = content.split(/\r?\n/);
-        let h1LineIndex = -1;
-
-
-        // Check first 5 lines (or fewer if file is short)
-        const checkLimit = Math.min(lines.length, 5);
-        const h1Regex = /^\s*#\s+(.*)$/;
-
-        for (let i = 0; i < checkLimit; i++) {
-          const match = h1Regex.exec(lines[i]);
-          if (match) {
-            h1LineIndex = i;
-            break;
-          }
-        }
-
-        if (h1LineIndex !== -1) {
-           // Found H1 within first 5 lines, replace it
-           lines[h1LineIndex] = `# ${data.title}`;
-           const newContent = lines.join('\n');
-           return matter.stringify(newContent, data);
-        } else {
-           // No H1 found in first 5 lines, inject at top
-           return matter.stringify(`# ${data.title}\n\n${content}`, data);
-        }
+        return matter.stringify(injectTitle(content, data.title), data);
       } catch (e) {
         return;
       }

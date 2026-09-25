@@ -1,6 +1,9 @@
 ---
 title: "The Elements: Book I - Foundations"
 order: 1
+lang: en
+translation: "第一卷 - 基础"
+hideInSidebar: true
 ---
 
 > **Source / 来源**: [Project Gutenberg](https://www.gutenberg.org/ebooks/21076)

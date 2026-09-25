@@ -1,6 +1,9 @@
 ---
 title: "Ethics: Part I - Definitions & Axioms"
 order: 1
+lang: en
+translation: "第一部分 - 定义与公理"
+hideInSidebar: true
 ---
 
 > **Source / 来源**: [Project Gutenberg](https://www.gutenberg.org/files/3800/3800-h/3800-h.htm)

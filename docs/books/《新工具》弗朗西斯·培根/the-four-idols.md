@@ -1,6 +1,9 @@
 ---
 title: "Novum Organum: The Four Idols"
 order: 1
+lang: en
+translation: "四种假象"
+hideInSidebar: true
 ---
 
 > **Source / 来源**: [Wikisource](https://en.wikisource.org/wiki/Novum_Organum/Book_I_(Spedding))
@@ -37,6 +40,7 @@ $$
 P_{erception} \neq T_{ruth} \\
 P_{erception} = f(T_{ruth} + \text{Human Nature})
 $$
+*(Perception ≠ Truth; Perception = f(Truth + Human Nature))*
 
 ### II. Idols of the Cave (*Idola Specus*)
 

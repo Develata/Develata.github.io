@@ -62,6 +62,7 @@ This site has no dedicated unit-test suite. Verification means checking the Vite
 - Use frontmatter intentionally. `search: false` excludes a page from local search.
 - When adding content under a new top-level section, update `content-modules.shared.ts` and sidebar/nav configuration if the section should be indexed or navigable.
 - Preserve LaTeX syntax and Mermaid fences; avoid transformations that may break MathJax or Mermaid rendering.
+- Bilingual pages (currently `books/`): the Chinese page sets `translation: "<English file stem>"`; the English page sets `lang: en`, `translation: "<Chinese file stem>"`, `hideInSidebar: true`. `plugins/bilingual-pairs.ts` pairs top-level Markdown blocks one-to-one and **fails the build** on a count mismatch, so keep paragraphs, lists, formulas and captions structurally parallel in both files.
 
 ### Comments and Invariants
 

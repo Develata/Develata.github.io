@@ -13,6 +13,8 @@ import { sidebar } from './configs/sidebar';
 import { isSearchableContent } from './configs/content-modules.shared';
 import { autoInjectTitle } from './plugins/auto-inject-title';
 import { mermaidFence } from './plugins/mermaid-fence';
+import { bilingualPairs } from './plugins/bilingual-pairs';
+import { bilingualModeHeadScript } from './theme/bilingualMode';
 import { generateRssFeeds, rssDevServer } from './rss/index';
 import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
 
@@ -72,6 +74,8 @@ export default defineConfig({
   buildEnd: generateRssFeeds,
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    // 双语「对照」偏好须在首帧前生效，否则会先闪一下单语版式。
+    ['script', {}, bilingualModeHeadScript],
   ],
 
   // --------------------------------------------------
@@ -106,6 +110,7 @@ export default defineConfig({
     config: (md) => {
       md.use(markdownItMathjax3);
       md.use(mermaidFence);
+      md.use(bilingualPairs);
     },
   },
 
@@ -155,7 +160,8 @@ export default defineConfig({
           const titlePrefix = typeof frontmatter.title === 'string'
             ? `<h1>${escapeHtml(frontmatter.title)}<a href="#">#</a></h1><p>${escapeHtml(frontmatter.title)}</p>`
             : '';
-          return `${keywordHints}${titlePrefix}${aliasHints}${pathHint}${md.render(src, env)}`
+          // bilingualSkip：搜索索引不做双语配对，英文只由英文页面自己被索引。
+          return `${keywordHints}${titlePrefix}${aliasHints}${pathHint}${md.render(src, { ...env, bilingualSkip: true })}`
             .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
             .replace(/<div class="language-[\s\S]*?<\/div>/g, ' ');
         },

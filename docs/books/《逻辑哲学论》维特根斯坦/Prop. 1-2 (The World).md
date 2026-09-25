@@ -1,6 +1,9 @@
 ---
 title: "Tractatus: Prop. 1-2 (The World)"
 order: 1
+lang: en
+translation: "命题 1-2 (世界)"
+hideInSidebar: true
 ---
 
 > **Source / 来源**: [Project Gutenberg](https://www.gutenberg.org/ebooks/5740)
