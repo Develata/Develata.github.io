@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: "24"
+          node-version-file: .node-version
 
       - name: Clean up personal content
         run: node scripts/cleanup-for-template.mjs

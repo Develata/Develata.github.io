@@ -4,7 +4,9 @@
 
 ## 本地构建
 
-Rust 1.97.0 与 wasm32-unknown-unknown 由 rust/rust-toolchain.toml 固定。安装一次 wasm-bindgen-cli 0.2.126，与 Cargo.lock 匹配。
+Rust 1.97.0 与 wasm32-unknown-unknown 由 rust/rust-toolchain.toml 固定；wasm-bindgen CLI 版本取自 Cargo.lock。tooling.mjs 是唯一的工具准备入口：rustup 读 toolchain 文件，固定版本的 cargo-binstall 只接受上游预编译 wasm-bindgen（禁用 quick-install 与源码编译），装到仓库外的版本化目录，不覆盖全局 wasm-bindgen。
+
+- bun run game:qin-polar-run:tools：准备 Rust、cargo-binstall 与 wasm-bindgen（缺 rustup/cargo-binstall 时仅在 Unix 自动引导）。
 
 - npm run game:qin-polar-run:wasm：仅测试并编译本游戏 Rust，生成 wasm-bindgen web 包。
 - npm run game:qin-polar-run:test：Node 内置加载器、ABI 版本、键盘/手势、音频生命周期测试。
@@ -84,6 +86,6 @@ Rust 每 40s 固定输出：冰封秦直道 → 风雪长城关隘 → 冰封陵
 
 道路/金币/障碍和三种环境使用固定实例池，只有一个场景激活；一个半球光加一个方向光，假接触阴影，无纹理、后处理或动态阴影。竖屏 DPR ≤1.25，其余 ≤1.5。热路径复用 Float32Array、向量和变换对象。
 
-Pages 发布路径与权限不变。缓存仍是 docs/public/game-assets/qin-polar-run/wasm/，键基于 Cargo.toml/lock、工具链、rust/src/** 和构建脚本。Rust 改动自然失效；新闻或音频改动不会进入键。命中跳过 Rust 安装/测试/编译；缺失或驱逐时从源码重建。音频是一次加工后提交的静态文件，不放 Rust 缓存，不在 CI 运行 FFmpeg。
+Pages 发布路径与权限不变。缓存仍是 docs/public/game-assets/qin-polar-run/wasm/，键基于 Cargo.toml/lock、工具链、rust/src/** 和构建脚本。Rust 改动自然失效；新闻或音频改动不会进入键。命中跳过 Rust 安装/测试/编译；缺失或驱逐时从源码重建。Cloudflare Pages 不共享该缓存，用 bun run build:source 从干净源码独立构建（scripts/build-from-source.mjs）；两条路径在 VitePress 前后都用 scripts/verify-production-assets.mjs 校验 WASM 魔数。音频是一次加工后提交的静态文件，不放 Rust 缓存，不在 CI 运行 FFmpeg。
 
 实际测试、视口、资源统计与限制见 [QA.md](./QA.md)。浏览器触摸模拟与加速安全路线验证不是实际手机 GPU 或新玩家体验统计。

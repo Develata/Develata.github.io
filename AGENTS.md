@@ -26,6 +26,12 @@ This site has no dedicated unit-test suite. Verification means checking the Vite
   ```
   Use after a successful build when rendered output or routing needs inspection.
 
+- **Clean-source build** (Cloudflare Pages path)
+  ```bash
+  bun run build:source
+  ```
+  Runs the Node test suites and the Northern Run toolchain + WASM build concurrently, then `verify:assets:public` → VitePress → `verify:assets:dist`. `bun run build` stays VitePress-only; GitHub Actions keeps its own cached WASM path in `.github/workflows/deploy.yml`. Node major version lives only in `.node-version`.
+
 - **Do not use `bun run test` as verification.**
   The current `test` script is a placeholder that exits with an error.
 
