@@ -63,10 +63,12 @@ const steps = {
     if (!probe('rustup', ['--version'])) {
       // Official installer; the channel itself comes from rust-toolchain.toml below.
       shell("curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none --no-modify-path")
-      if (!probe('rustup', ['--version'])) throw new Error('rustup bootstrap did not produce ' + join(cargoBin, 'rustup'))
     }
-    // Argument-less install reads rust-toolchain.toml (rustup >= 1.28).
-    run('rustup', ['toolchain', 'install'], { cwd: rustDir })
+    const [major, minor] = (probe('rustup', ['--version'])?.match(/^rustup (\d+)\.(\d+)/) ?? []).slice(1).map(Number)
+    if (major === undefined) throw new Error('rustup is unavailable (expected ' + join(cargoBin, 'rustup') + ')')
+    // Both forms install the toolchain named by rust-toolchain.toml: rustup >= 1.28
+    // needs the explicit argument-less install; older rustup does it in `show`.
+    run('rustup', major > 1 || minor >= 28 ? ['toolchain', 'install'] : ['show'], { cwd: rustDir })
     run('rustc', ['--version'], { cwd: rustDir })
     // Host `cargo test` and proc-macro build scripts need a system linker.
     if (unix && !probe('cc', ['--version'])) throw new Error('No C linker (cc) on PATH; host cargo test cannot link.')
@@ -75,9 +77,10 @@ const steps = {
     // `cargo-binstall -V` prints the bare version.
     const version = () => probe('cargo-binstall', ['-V'])
     if (version() !== BINSTALL_VERSION) {
-      // Official prebuilt installer, script and release both pinned to the tag.
+      // Official prebuilt installer, script and release both pinned to the tag. Its
+      // fallback (`cargo-binstall --force cargo-binstall`) is kept prebuilt-only too.
       shell('curl --proto \'=https\' --tlsv1.2 -sSfL https://raw.githubusercontent.com/cargo-bins/cargo-binstall/v' +
-        BINSTALL_VERSION + '/install-from-binstall-release.sh | sh', { BINSTALL_VERSION })
+        BINSTALL_VERSION + '/install-from-binstall-release.sh | sh', { BINSTALL_VERSION, BINSTALL_STRATEGIES: 'crate-meta-data' })
     }
     // The installer's fallback path installs the latest release; refuse any drift.
     const found = version()
