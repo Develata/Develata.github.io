@@ -1,0 +1,90 @@
+name: Deploy VitePress site to Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      # Cold Rust output depends only on this game's source and tooling.
+      # Warm site / hot news changes reuse it without setting up Rust.
+      - name: Restore Northern Run WASM
+        id: northern-wasm
+        uses: actions/cache@v6
+        with:
+          path: docs/public/game-assets/qin-polar-run/wasm
+          key: northern-run-wasm-v1-${{ runner.os }}-${{ hashFiles('docs/.vitepress/theme/components/games/qin-polar-run/rust/Cargo.toml', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/Cargo.lock', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/rust-toolchain.toml', 'docs/.vitepress/theme/components/games/qin-polar-run/rust/src/**', 'docs/.vitepress/theme/components/games/qin-polar-run/build-wasm.mjs') }}
+      # Node stays the runtime (VitePress, node --test); Bun only installs and runs scripts.
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+      # Same game-local primitive as the clean-source build: Rust from rust-toolchain.toml,
+      # pinned cargo-binstall, wasm-bindgen from Cargo.lock as an upstream prebuilt only.
+      - name: Prepare pinned Rust and wasm-bindgen on cache miss
+        if: steps.northern-wasm.outputs.cache-hit != 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node docs/.vitepress/theme/components/games/qin-polar-run/tooling.mjs
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Check brain-training invariants
+        run: bun run brain-training:test
+      - name: Check Northern Run loader lifecycle
+        run: bun run game:qin-polar-run:test
+      - name: Test and build Northern Run on cache miss
+        if: steps.northern-wasm.outputs.cache-hit != 'true'
+        run: bun run game:qin-polar-run:wasm
+      - name: Verify generated Northern Run assets
+        run: bun run verify:assets:public
+      - name: Build with VitePress
+        run: bun run build
+      - name: Verify deployable output
+        run: bun run verify:assets:dist
+      - name: Package Pages artifact
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory docs/.vitepress/dist \
+            -cvf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=".[^/]*" \
+            .
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
