@@ -42,7 +42,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.2
+          # Floats on purpose: the frozen lockfile pins dependencies, and a newer Bun
+          # can always read a lockfile written by an older one (not vice versa).
+          bun-version: latest
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Install dependencies
