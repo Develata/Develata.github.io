@@ -1,0 +1,7 @@
+# robots.txt for https://develata.me/
+
+User-agent: *
+Allow: /
+
+# Public RSS feeds.
+Allow: /rss/
