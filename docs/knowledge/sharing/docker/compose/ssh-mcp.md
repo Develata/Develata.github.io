@@ -4,13 +4,13 @@ title: ssh-mcp
 
 ## Github Repo
 
-[SSH MCP Github Repo](https://github.com/tufantunc/ssh-mcp)
+[SSH MCP Github Repo](https://github.com/Develata/ssh-mcp) · [上游项目](https://github.com/tufantunc/ssh-mcp) · [GHCR 镜像](https://github.com/Develata/ssh-mcp/pkgs/container/ssh-mcp)
 
 compose更新日期: 2026-10-06
 
 ## docker-compose
 
-保存为 `compose.yaml`（固定上游 v2.18.0 源码构建，首次部署须先按下方步骤构建本地镜像）：
+保存为 `compose.yaml`（直接拉取预构建镜像，固定 v2.18.0 和 digest，支持 amd64 / arm64）：
 
 ```yaml
 networks:
@@ -20,11 +20,7 @@ networks:
 services:
     ssh-mcp:
         container_name: ssh-mcp
-        image: localhost/ssh-mcp:v2.18.0-723a7c5a4846
-        pull_policy: never
-        build:
-            context: https://github.com/tufantunc/ssh-mcp.git#723a7c5a4846dfba822894d566212b1a58656b5e
-            dockerfile: Dockerfile
+        image: ghcr.io/develata/ssh-mcp:2.18.0@sha256:c18a1e6e6e179a0b35ad4ab6c187b8e538770cfff77b76750ad59f6a6d9f0ab1
         restart: unless-stopped
         init: true
         user: "65532:65532"
@@ -172,15 +168,14 @@ chown 65532:65532 config config/config.toml secrets/id_ed25519 data
 
 # 同时检查 1Panel 所用的 Compose 解析参数；不输出含 token 的配置
 docker compose config --format json --no-normalize >/dev/null
-docker compose build ssh-mcp
-docker image inspect --format '{{.Id}}' localhost/ssh-mcp:v2.18.0-723a7c5a4846
+docker compose pull ssh-mcp
 ```
 
-以上全部成功后，再到 **容器 → 编排 → 创建编排 → 路径选择**，选择 `/opt/ssh-mcp/compose.yaml`。确认环境变量栏已加载同目录 `.env`，**不要勾选「强制拉取镜像」**，然后创建。终端与 1Panel 必须使用同一个 Docker daemon；本地镜像不是可从仓库拉取的镜像。
+以上全部成功后，再到 **容器 → 编排 → 创建编排 → 路径选择**，选择 `/opt/ssh-mcp/compose.yaml`。确认环境变量栏已加载同目录 `.env`，然后创建。终端与 1Panel 必须使用同一个 Docker daemon。
 
-不用 1Panel 时，在同目录执行 `docker compose up -d --no-build`。目录可以更换，但配置、私钥、数据目录必须与 Compose 文件保持上述相对位置。UID/GID `65532:65532` 适用于普通 Linux Docker；rootless / userns 环境按实际映射调整。
+不用 1Panel 时，在同目录执行 `docker compose up -d`。目录可以更换，但配置、私钥、数据目录必须与 Compose 文件保持上述相对位置。UID/GID `65532:65532` 适用于普通 Linux Docker；rootless / userns 环境按实际映射调整。
 
-若仍出现 `cannot unmarshal !!map into string`，先检查 token/Host 是否填写，以及上述 Compose 解析命令是否成功。旧写法只有 `build` 没有 `image`，会让部分 1Panel 进入仅接受字符串挂载的回退解析；不要为绕过报错删掉 `create_host_path: false`。
+若仍出现 `cannot unmarshal !!map into string`，先检查 token/Host 是否填写，以及上述 Compose 解析命令是否成功。本例已提供 `image`；不要为绕过报错删掉 `create_host_path: false`。
 
 MCP：`http://127.0.0.1:3000/`，Streamable HTTP，请求头 `Authorization: Bearer <token>`。1Panel 同网络反代地址：`http://ssh-mcp:3000`，保留认证头并同步 Host 白名单。
 
