@@ -10,7 +10,7 @@ compose更新日期: 2026-10-06
 
 ## docker-compose
 
-保存为 `compose.yaml`（固定上游 v2.18.0 源码构建）：
+保存为 `compose.yaml`（固定上游 v2.18.0 源码构建，首次部署须先按下方步骤构建本地镜像）：
 
 ```yaml
 networks:
@@ -20,6 +20,8 @@ networks:
 services:
     ssh-mcp:
         container_name: ssh-mcp
+        image: localhost/ssh-mcp:v2.18.0-723a7c5a4846
+        pull_policy: never
         build:
             context: https://github.com/tufantunc/ssh-mcp.git#723a7c5a4846dfba822894d566212b1a58656b5e
             dockerfile: Dockerfile
@@ -151,23 +153,38 @@ tty = false
 
 ## 使用
 
-在同一目录准备配置和专用私钥：
+在 **1Panel 当前节点的终端**准备目录；以下命令用 root 执行：
 
 ```bash
+mkdir -p /opt/ssh-mcp
+cd /opt/ssh-mcp
 mkdir -p config secrets data
-# 保存上述配置，并放入专用私钥 secrets/id_ed25519 后执行
+```
+
+将上述 `compose.yaml`、`.env`、`config/config.toml` 保存到对应位置，填好 token 和实际 SSH 配置，再放入专用私钥 `secrets/id_ed25519`。对应公钥须已配置到目标账号。
+
+```bash
+cd /opt/ssh-mcp
 printf '%s\n' '.env' 'config/' 'secrets/' 'data/' > .gitignore
 chmod 600 .env config/config.toml secrets/id_ed25519
 chmod 700 config secrets data
-sudo chown 65532:65532 config config/config.toml secrets/id_ed25519 data
+chown 65532:65532 config config/config.toml secrets/id_ed25519 data
 
-docker compose config --quiet
-docker compose up -d --build
+# 同时检查 1Panel 所用的 Compose 解析参数；不输出含 token 的配置
+docker compose config --format json --no-normalize >/dev/null
+docker compose build ssh-mcp
+docker image inspect --format '{{.Id}}' localhost/ssh-mcp:v2.18.0-723a7c5a4846
 ```
 
-UID/GID `65532:65532` 适用于普通 Linux Docker；rootless / userns 环境按实际映射调整。
+以上全部成功后，再到 **容器 → 编排 → 创建编排 → 路径选择**，选择 `/opt/ssh-mcp/compose.yaml`。确认环境变量栏已加载同目录 `.env`，**不要勾选「强制拉取镜像」**，然后创建。终端与 1Panel 必须使用同一个 Docker daemon；本地镜像不是可从仓库拉取的镜像。
+
+不用 1Panel 时，在同目录执行 `docker compose up -d --no-build`。目录可以更换，但配置、私钥、数据目录必须与 Compose 文件保持上述相对位置。UID/GID `65532:65532` 适用于普通 Linux Docker；rootless / userns 环境按实际映射调整。
+
+若仍出现 `cannot unmarshal !!map into string`，先检查 token/Host 是否填写，以及上述 Compose 解析命令是否成功。旧写法只有 `build` 没有 `image`，会让部分 1Panel 进入仅接受字符串挂载的回退解析；不要为绕过报错删掉 `create_host_path: false`。
 
 MCP：`http://127.0.0.1:3000/`，Streamable HTTP，请求头 `Authorization: Bearer <token>`。1Panel 同网络反代地址：`http://ssh-mcp:3000`，保留认证头并同步 Host 白名单。
 
-- 仅供测试机的低权限账号只读试用，保留严格指纹校验；`ask-all` 需要客户端支持 elicitation。未配置公网入口或 OAuth。不要公开 `.env`、私钥及 `docker inspect` 输出
-- 使用 Docker Engine ≥28 和 Compose V2；已有 `1panel-network` 应为可信容器专用的 bridge/NAT 网络，禁用直连容器路由。同网络容器仍可访问端口，`127.0.0.1` 不隔离它们
+验收：先看容器为 `healthy`；再用支持 elicitation 的 MCP 客户端连接，调用 `list-connections` 和 `read-command`（`profile="trial"`、`command="pwd"`），确认审批后返回目标机目录。`healthy` 只检查服务和配置，实际 SSH 连通与认证以这次命令为准。
+
+- 当前为测试机低权限账号的只读配置，不等于完整交互终端；保留严格指纹校验，`ask-all` 需要客户端支持 elicitation。未配置公网入口或 OAuth。不要公开 `.env`、私钥及 `docker inspect` 完整输出
+- 使用 Docker Engine ≥28 和支持上述解析参数的 Compose V2；已有 `1panel-network` 应为可信容器专用的 bridge/NAT 网络，禁用直连容器路由。同网络容器仍可访问端口，`127.0.0.1` 不隔离它们
