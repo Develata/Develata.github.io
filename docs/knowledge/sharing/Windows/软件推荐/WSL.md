@@ -1,228 +1,197 @@
 ---
 title: WSL
-date: 2026-3-1
+date: 2026-10-14
 order: 4
 ---
 
 # WSL 使用指南
-[WSL github repo](https://github.com/microsoft/WSL)
 
-## 1. 什么是 WSL
+[WSL](https://learn.microsoft.com/windows/wsl/) 可以在 Windows 里运行 Linux 发行版。日常开发优先选 WSL 2：它通过轻量虚拟机运行真实 Linux 内核，不是双系统，也不是完全没有虚拟机。
 
-WSL（Windows Subsystem for Linux）是微软官方提供的兼容层，让你在 Windows 上直接运行完整的 GNU/Linux 环境——无需虚拟机，无需双系统。
+## 1. 安装与更新
 
-- **原生集成**：可在 Windows 文件系统与 Linux 互相访问，共享网络。
-- **低开销**：WSL 2 基于轻量级 Hyper-V VM，启动快、内存占用低。
-- **开发首选**：与 VS Code Remote、Docker Desktop 深度集成，是 Windows 开发者的最佳伴侣。
-
----
-
-## 2. 安装
-
-### 2.1 一行命令安装（推荐）
-
-以**管理员身份**打开 PowerShell 或 Windows Terminal，执行：
+简化安装命令要求 Windows 10 2004（Build 19041）及以上，或 Windows 11。在管理员 PowerShell 中运行：
 
 ```powershell
 wsl --install
 ```
 
-此命令会自动完成：启用必要的 Windows 功能、安装 WSL 2 内核、安装默认发行版（Ubuntu）。**安装完成后需重启**。
+按提示重启，首次打开发行版时创建 Linux 用户名和密码。它们独立于 Windows 账号。
 
-> **系统要求**：Windows 10 版本 2004（Build 19041）及以上，或 Windows 11。
-
-### 2.2 安装指定发行版
+默认安装 Ubuntu。想选其他发行版：
 
 ```powershell
-# 查看可用发行版列表
 wsl --list --online
-
-# 安装指定发行版（如 Debian、Kali）
 wsl --install -d Debian
-wsl --install -d kali-linux
 ```
 
-### 2.3 验证安装
+如果已有 WSL，`wsl --install` 只显示帮助，也可以用上面的 `-d` 显式安装。常规下载卡住时试：
 
 ```powershell
+wsl --install --web-download -d Ubuntu
+```
+
+安装后检查：
+
+```powershell
+wsl --update
 wsl --version
 wsl --status
-wsl -l -v        # 列出已安装发行版及 WSL 版本
+wsl -l -v
 ```
 
----
+`wsl --version` 看 WSL 软件版本，`wsl -l -v` 看各发行版运行在 WSL 1 还是 WSL 2。老的系统内置 WSL 可能不认识 `--version`，先按[官方安装说明](https://learn.microsoft.com/windows/wsl/install)更新。
 
-## 3. 常用命令速查
+## 2. 常用命令
 
-| 目的 | 命令 |
+以下在 PowerShell 中执行，`<Distro>` 换成 `wsl -l -v` 显示的名称。
+
+| 操作 | 命令 |
 | :--- | :--- |
 | 启动默认发行版 | `wsl` |
-| 启动指定发行版 | `wsl -d <DistroName>` |
-| 查看已安装发行版 | `wsl -l -v` |
-| 设置默认发行版 | `wsl --set-default <DistroName>` |
-| 停止指定发行版 | `wsl --terminate <DistroName>` |
-| 停止所有发行版 | `wsl --shutdown` |
-| 更新 WSL 内核 | `wsl --update` |
-| 导出发行版备份 | `wsl --export <Distro> <file.tar>` |
-| 导入发行版 | `wsl --import <Distro> <InstallDir> <file.tar>` |
-| 卸载发行版 | `wsl --unregister <DistroName>` |
+| 启动指定发行版 | `wsl -d <Distro>` |
+| 设置默认发行版 | `wsl --set-default <Distro>` |
+| 新安装默认用 WSL 2 | `wsl --set-default-version 2` |
+| 转换已有发行版为 WSL 2 | `wsl --set-version <Distro> 2` |
+| 停止一个发行版 | `wsl --terminate <Distro>` |
+| 停止全部发行版和 WSL 2 虚拟机 | `wsl --shutdown` |
+| 导出 | `wsl --export <Distro> <file.tar>` |
+| 导入 | `wsl --import <Distro> <InstallDir> <file.tar>` |
+| 删除发行版及其数据 | `wsl --unregister <Distro>` |
 
----
+**`--unregister` 不是重启，会删除该发行版的数据。** 版本转换或删除前先导出需要保留的内容；Windows 盘、外部挂载和应用数据还要分别备份。
 
-## 4. 文件系统互操作
+在 Linux shell 中调用这些管理命令时写 `wsl.exe`，例如 `wsl.exe -l -v`。
 
-### 4.1 从 Windows 访问 Linux 文件
+## 3. 文件放在哪里
 
-在资源管理器地址栏输入 `\\wsl$` 或 `\\wsl.localhost`，可浏览所有发行版的文件系统。
+原则很简单：**Linux 工具处理的项目放 Linux 文件系统，Windows 工具处理的项目放 Windows 文件系统**。
 
-Linux 文件路径映射示例：
-
+```text
+Linux 项目：~/projects/my-project
+Windows 项目：C:\Users\你的用户名\Projects\my-project
 ```
-\\wsl.localhost\Ubuntu\home\username\project
-```
 
-### 4.2 从 Linux 访问 Windows 文件
-
-Windows 的各盘符挂载在 `/mnt/` 下：
+在 WSL 中访问 C 盘：
 
 ```bash
-ls /mnt/c/Users
-cd /mnt/d/Projects
+cd /mnt/c
 ```
 
-### 4.3 互调命令
+在资源管理器地址栏查看 Linux 文件：
+
+```text
+\\wsl$\Ubuntu\home
+```
+
+也可以从 WSL 当前目录打开资源管理器：
+
+```bash
+explorer.exe .
+```
+
+不要直接修改发行版的 `ext4.vhdx`。Linux 下的 Git、依赖安装和编译如果在 `/mnt/c` 很慢，优先把项目搬到 `~/projects`。
+
+### 命令互调
 
 ```powershell
-# 在 PowerShell 中执行 Linux 命令
-wsl ls -la /home
-
-# 混合管道
-wsl ls -la | findstr ".md"
-dir | wsl grep ".md"
+# 从 PowerShell 执行 Linux 命令
+wsl -d Ubuntu -- bash -lc 'uname -a'
 ```
+
+Windows 程序不会自动把 Linux 路径转换成 Windows 路径。需要用记事本编辑 Linux 文件时，显式转换：
 
 ```bash
-# 在 WSL 中调用 Windows 程序
-notepad.exe .bashrc
-explorer.exe .        # 用资源管理器打开当前目录
-code .                # 用 VS Code 打开
+notepad.exe "$(wslpath -w ~/.bashrc)"
 ```
 
-> **性能提示**：将项目文件放在 Linux 文件系统（`~/projects`）内，而非 `/mnt/c/`，可获得显著更好的 IO 性能。
+## 4. 网络与镜像模式
 
----
+默认 NAT 模式下：
 
-## 5. 配置文件
+* Windows 访问 WSL 内开发服务，通常直接用 `localhost:端口`。
+* WSL 访问 Windows 服务，通常使用 Windows 主机 IP；服务也要监听这个地址并允许对应防火墙流量。
 
-WSL 有两个配置文件，分别作用于不同范围：
+在 WSL 内查询 NAT 网关地址：
 
-### 5.1 `.wslconfig`（全局，WSL 2 VM 设置）
+```bash
+ip route show default | awk '{print $3}'
+```
 
-位于 `%UserProfile%\.wslconfig`（即 `C:\Users\<你的用户名>\.wslconfig`），控制 WSL 2 虚拟机资源。
+Windows 11 22H2 及以上可以尝试 mirrored networking，改善 localhost 双向访问、IPv6 和 VPN 兼容性。在 `%UserProfile%\.wslconfig` 中添加：
 
 ```ini
-# 全局 WSL 2 虚拟机设置
 [wsl2]
-# 限制内存（默认为物理内存的 50%）
-memory=4GB
-
-# 分配虚拟 CPU 数量
-processors=4
-
-# 交换空间（默认为 RAM 的 25%）
-swap=2GB
-
-# 启用镜像网络（Windows 11 22H2+，让 WSL 与 Windows 共享同一 IP）
-# networkingMode=mirrored
-
-[experimental]
-# 稀疏 VHD，按需分配磁盘，节省空间
-sparseVhd=true
+networkingMode=mirrored
 ```
 
-修改后执行 `wsl --shutdown` 再重启生效。
+保存工作后，在 PowerShell 中执行 `wsl --shutdown`，重新打开发行版。镜像模式不等于关闭 Windows / Hyper-V 防火墙；局域网访问仍要检查服务监听地址和规则。
 
-### 5.2 `wsl.conf`（per-distro，发行版内部设置）
+## 5. 两个配置文件
 
-在 Linux 发行版内编辑 `/etc/wsl.conf`，控制该发行版的行为。
+| 文件 | 位置 | 用途 |
+| :--- | :--- | :--- |
+| `.wslconfig` | Windows 用户目录 | WSL 2 虚拟机的内存、CPU、网络等全局设置 |
+| `wsl.conf` | Linux 内 `/etc/wsl.conf` | 单个发行版的用户、挂载、systemd、互操作设置 |
+
+例如限制资源，以下数值只是示例，按机器配置调整；已有 `[wsl2]` 时合并到同一节：
+
+```ini
+[wsl2]
+memory=8GB
+processors=4
+swap=4GB
+```
+
+需要让 Windows 盘保存 Linux 权限元数据时，在 `/etc/wsl.conf` 中添加：
+
+```ini
+[automount]
+options="metadata,umask=022"
+```
+
+不写死 `uid=1000,gid=1000`，让它沿用发行版默认用户。`metadata` 也不能绕过 Windows 自身的文件权限。
+
+`.wslconfig` 改动用 `wsl --shutdown` 后重新启动；只改某个发行版的 `wsl.conf`，可以用 `wsl --terminate <Distro>`。直接关掉再立刻打开一个终端，不一定已经完成发行版的停止过程。
+
+### systemd
+
+先看是否已经启用：
+
+```bash
+ps -p 1 -o comm=
+systemctl status
+```
+
+未启用且确实需要时，确认使用 WSL 2、WSL 版本至少为 0.67.6，在 `/etc/wsl.conf` 合并：
 
 ```ini
 [boot]
-# 启用 systemd（Ubuntu 22.04+ / Debian 推荐开启）
 systemd=true
-
-[automount]
-# 自动挂载 Windows 盘符
-enabled=true
-options="metadata,uid=1000,gid=1000,umask=022"
-
-[network]
-hostname=my-wsl
-generateResolvConf=true
-
-[interop]
-# 允许从 WSL 调用 Windows 程序
-enabled=true
-appendWindowsPath=true
 ```
 
----
+Debian / Ubuntu / Kali 还需安装 `systemd` 和 `systemd-sysv` 包。回到 PowerShell 执行 `wsl --shutdown`，重开后检查。systemd 服务本身不会让 WSL 永久驻留，长期运行的服务器另做安排。
 
-## 6. 开发环境最佳实践
+## 6. 开发环境
 
-### 6.1 与 VS Code 集成
+* **VS Code**：在 Windows 安装 VS Code 和 **WSL** 扩展，再从 WSL 项目目录执行 `code .`，扩展与工具链运行位置更清楚。
+* **Docker Desktop**：启用 WSL 2 backend 和目标发行版的 WSL Integration。先用 `docker context ls`、`docker version` 确认连接目标，不要同时装两套 Engine 却不知道 CLI 在操作哪一个。
+* **Git / SSH**：Linux 项目优先使用 WSL 内的 Git 和 SSH。需要共用 Windows 凭据时再配置 GCM，不照抄旧教程中的固定安装路径。
 
-安装 VS Code 扩展 **Remote - WSL**（或 Remote Development 包），然后在 WSL 终端中：
+## 7. 排错
 
-```bash
-code .
-```
-
-VS Code 将在 WSL 内运行服务器，完全原生 Linux 开发体验。
-
-### 6.2 与 Docker Desktop 集成
-
-Docker Desktop 支持 WSL 2 后端。在 Docker Desktop 设置中启用 **Use the WSL 2 based engine**，并在 Resources → WSL Integration 中勾选目标发行版。之后在 WSL 内即可直接使用 `docker` 命令。
-
-### 6.3 Git 凭据共享
-
-让 WSL 内的 Git 使用 Windows 的凭据管理器，避免重复登录：
-
-```bash
-git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"
-```
-
----
-
-## 7. 故障排查
-
-```powershell
-# 查看 WSL 版本与内核信息
-wsl --version
-
-# 更新 WSL 内核
-wsl --update
-
-# 强制重置 WSL 2 内核（修复异常）
-wsl --update --rollback
-
-# 重启所有 WSL 实例
-wsl --shutdown
-```
-
-常见问题：
-
-| 现象 | 原因 / 解决 |
+| 现象 | 先检查 |
 | :--- | :--- |
-| `wsl --install` 报错 0x800701bc | WSL 内核未更新，运行 `wsl --update` |
-| 发行版启动后立即退出 | 尝试 `wsl --shutdown` 再重启；或检查 `wsl.conf` 语法 |
-| 访问 `/mnt/c` 性能慢 | 将项目迁移到 Linux 文件系统内（`~/`） |
-| 网络无法访问 | 执行 `wsl --shutdown` 重启；或检查 `.wslconfig` 网络设置 |
-
----
+| 安装、内核错误 | `wsl --update`，以及虚拟化是否开启 |
+| 配置没有生效 | 文件位置、INI 节名，停止后重新启动 |
+| `/mnt/c` 构建慢 | 项目是否应该放 Linux 文件系统 |
+| 网络异常 | NAT / mirrored 模式、VPN、服务监听和防火墙 |
+| 版本不清楚 | `wsl --version`、`wsl --status`、`wsl -l -v` |
 
 ## 参考链接
 
-- [WSL 官方文档](https://learn.microsoft.com/windows/wsl/)
-- [WSL GitHub 仓库](https://github.com/microsoft/WSL)
-- [WSL 配置参考（.wslconfig & wsl.conf）](https://learn.microsoft.com/windows/wsl/wsl-config)
+* [安装](https://learn.microsoft.com/windows/wsl/install) / [基础命令](https://learn.microsoft.com/windows/wsl/basic-commands)
+* [文件系统互操作](https://learn.microsoft.com/windows/wsl/filesystems)
+* [网络](https://learn.microsoft.com/windows/wsl/networking)
+* [高级配置](https://learn.microsoft.com/windows/wsl/wsl-config)
+* [systemd](https://learn.microsoft.com/windows/wsl/systemd)

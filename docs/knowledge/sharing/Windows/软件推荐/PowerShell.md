@@ -1,191 +1,181 @@
 ---
 title: PowerShell
-date: 2026-3-1
+date: 2026-10-14
 order: 2
 ---
 
 # PowerShell 使用指南
 
-[PowerShell github repo](https://github.com/PowerShell/PowerShell)
+PowerShell 不只是「Windows 版 Bash」：它的管道主要传递对象，处理进程、服务、JSON 和系统配置很方便。日常使用建议装 PowerShell 7，再搭配 Windows Terminal。
 
-## 1. 什么是 PowerShell
+## 1. 先分清 shell 和终端
 
-PowerShell 是微软官方跨平台任务自动化 Shell，Windows 11 内置 Windows PowerShell 5.1，推荐额外安装更新的 PowerShell 7（pwsh）。
+| 工具 | 启动命令 | 说明 |
+| :--- | :--- | :--- |
+| Windows PowerShell 5.1 | `powershell.exe` | 系统自带，部分旧 Windows 模块仍需要它 |
+| PowerShell 7 | `pwsh.exe` | 开源、跨平台，与 5.1 并存 |
+| Windows Terminal | `wt.exe` | 管标签页、字体和配色，可以运行上述两种 shell，也可以运行 WSL |
 
-PowerShell 分两条线：
-- **Windows PowerShell 5.1**：内置于 Windows，路径 `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`，不再更新。
-- **PowerShell 7（pwsh）**：开源跨平台，持续更新，推荐日常使用。两者可共存。
-
-## 2. 安装 PowerShell 7
-
-### 方法一：使用 MSI 安装包（推荐）
-
-打开 PowerShell 官方 GitHub 发布页[PowerShell github repo release](https://github.com/PowerShell/PowerShell/releases)，找到最新版本，下载适用于 Windows 的 .msi 安装包，默认路径安装即可
-安装完成后，搜索 "PowerShell 7" 打开即可（不会覆盖 Windows PowerShell）
-
-### 方法二：通过 Winget 安装（推荐）：
+查看当前环境：
 
 ```powershell
-winget install --id Microsoft.PowerShell --source winget
+$PSVersionTable
+$PSHOME
 ```
 
-安装后可直接执行 `pwsh` 启动。
+## 2. 安装与更新
 
-### 验证版本
+Windows 桌面端可以直接用 [WinGet](./Winget.md)：
+
+```powershell
+winget search --id Microsoft.PowerShell --exact
+winget install --id Microsoft.PowerShell --exact --source winget
+```
+
+重新打开终端后运行：
 
 ```powershell
 pwsh --version
-$PSVersionTable
 ```
 
-## 3. 以管理员身份运行
+更新：
 
-- **快捷键**：Win+R 输入 `powershell` 或 `pwsh`，按 **Ctrl+Shift+Enter** 以管理员身份运行。
-- **右键菜单**：在开始菜单找到 PowerShell，右键 → "以管理员身份运行"。
-- **从已有窗口提权**：
+```powershell
+winget upgrade --id Microsoft.PowerShell --exact
+```
+
+**安装格式需要留意**：从 PowerShell 7.6.0 起，WinGet 默认安装 MSIX。它适合日常交互，但有全局配置和入站远程会话方面的限制。要给 OpenSSH Server 配默认 shell，优先使用全机可访问的 MSI / ZIP 安装，不要直接拿当前用户的 WindowsApps 别名来配置服务。
+
+需要 MSI 且目标版本仍提供它时：
+
+```powershell
+winget install --id Microsoft.PowerShell --exact --source winget --installer-type wix
+```
+
+微软文档说明从 7.7.0 起不再提供 MSI；离线安装、多版本共存可到 [官方 Releases](https://github.com/PowerShell/PowerShell/releases) 选择对应架构的 ZIP。具体版本以安装时的查询结果为准。
+
+## 3. 执行策略与管理员权限
+
+遇到「禁止运行脚本」时先看实际策略，不必直接改成 `Bypass`：
+
+```powershell
+Get-ExecutionPolicy
+Get-ExecutionPolicy -List
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+`RemoteSigned` 允许本地脚本，带 Internet 来源标记的脚本通常需要签名。对已经检查过的下载脚本，可以单独解除标记：
+
+```powershell
+Unblock-File -Path .\script.ps1
+```
+
+执行策略不是沙箱，组策略也可以覆盖当前用户设置。不同 PowerShell 版本的默认行为有差异，以 `Get-ExecutionPolicy` 为准。
+
+确实需要管理服务、安装系统组件时，再打开管理员窗口：
 
 ```powershell
 Start-Process pwsh -Verb RunAs
 ```
 
-## 4. 执行策略（ExecutionPolicy）
+## 4. Profile：保存日常配置
 
-默认策略可能阻止运行脚本。查看当前策略：
-
-```powershell
-Get-ExecutionPolicy -List
-```
-
-允许本地脚本运行（推荐开发环境）：
+在实际使用的 shell 中查看路径：
 
 ```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-| 策略 | 含义 |
-| :--- | :--- |
-| `Restricted` | 不允许运行任何脚本（默认） |
-| `RemoteSigned` | 本地脚本可运行；网络下载的脚本需签名 |
-| `Unrestricted` | 允许所有脚本（不推荐） |
-| `Bypass` | 完全绕过，常用于 CI/自动化 |
-
-## 5. Profile 配置文件
-
-Profile 是 PowerShell 启动时自动执行的脚本，类似 `.bashrc`。
-
-查看 Profile 路径：
-
-```powershell
-$PROFILE
 $PROFILE | Select-Object *
 ```
 
-创建并编辑 Profile（若不存在会新建）：
+PowerShell 7 与 5.1 的 Profile 分开；VS Code、ISE 等宿主也可能使用不同文件。Windows Terminal 本身不会为同一个 PowerShell ConsoleHost 另建一套 `$PROFILE`。
+
+创建文件时先判断是否存在，避免覆盖原有配置：
 
 ```powershell
-if (!(Test-Path $PROFILE)) { New-Item -Path $PROFILE -ItemType File -Force }
+if (!(Test-Path -LiteralPath $PROFILE)) {
+    New-Item -ItemType Directory -Path (Split-Path -Parent $PROFILE) -Force | Out-Null
+    New-Item -ItemType File -Path $PROFILE | Out-Null
+}
 notepad $PROFILE
 ```
 
-常见用途：设置别名、加载模块、自定义提示符（如 oh-my-posh）。
-
-## 6. 常用命令速查
-
-| 目的 | 命令 |
-| :--- | :--- |
-| 列出文件 | `Get-ChildItem`（别名 `ls`/`dir`/`gci`） |
-| 查看内容 | `Get-Content <file>`（别名 `cat`） |
-| 复制 | `Copy-Item <src> <dst>` |
-| 移动/重命名 | `Move-Item <src> <dst>` |
-| 删除 | `Remove-Item <path>` |
-| 查看进程 | `Get-Process` |
-| 停止进程 | `Stop-Process -Name <name>` |
-| 查看服务 | `Get-Service` |
-| 查看环境变量 | `$env:PATH`；`Get-ChildItem Env:` |
-| 查找命令 | `Get-Command <keyword>` |
-| 查看帮助 | `Get-Help <command> -Full` |
-| 历史记录 | `Get-History`；`Ctrl+R` 搜索 |
-| 测试网络连通性 | `Test-Connection <host>`（类似 ping） |
-| DNS 解析 | `Resolve-DnsName <host>` |
-| 查看网络接口 | `Get-NetIPAddress` |
-
-## 7. 管道与对象
-
-PowerShell 传递的是**对象**而非纯文本，这与 Bash 不同：
+把别名、函数、提示符等放进去。修改后重新加载：
 
 ```powershell
-# 获取占用内存最多的前5个进程
-Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 5 Name, WorkingSet
-
-# 过滤正在运行的服务
-Get-Service | Where-Object Status -eq 'Running'
-
-# 导出为 CSV
-Get-Process | Export-Csv processes.csv -NoTypeInformation
-```
-
-## 8. 模块管理
-
-```powershell
-# 搜索模块
-Find-Module <keyword>
-
-# 安装模块
-Install-Module -Name <ModuleName> -Scope CurrentUser
-
-# 查看已安装模块
-Get-InstalledModule
-
-# 更新模块
-Update-Module -Name <ModuleName>
-
-# 导入模块
-Import-Module <ModuleName>
-```
-
-常用模块推荐：
-
-| 模块 | 用途 |
-| :--- | :--- |
-| `PSReadLine` | 命令行编辑增强（Windows PowerShell 5.1 已内置） |
-| `posh-git` | Git 状态提示 |
-| `Terminal-Icons` | 终端文件图标 |
-| `Microsoft.WinGet.Client` | PowerShell 内操作 WinGet |
-
-> **注**：`oh-my-posh` 已从 PowerShell 模块迁移为独立可执行程序，推荐通过 `winget install JanDeDobbeleer.OhMyPosh` 安装，不再使用 `Install-Module oh-my-posh`。
-
-## 9. 实用技巧
-
-```powershell
-# 测量命令耗时
-Measure-Command { Get-ChildItem -Recurse }
-
-# 将输出同时显示并写入文件
-Get-Process | Tee-Object -FilePath processes.txt
-
-# 后台运行任务
-$job = Start-Job { ping 8.8.8.8 -n 4 }
-Receive-Job $job -Wait
-
-# 字符串格式化
-"Hello, {0}! Today is {1}" -f "World", (Get-Date -Format "yyyy-MM-dd")
-
-# 快速打开当前目录资源管理器
-explorer .
-
-# 重新加载 Profile（不重启终端）
 . $PROFILE
 ```
 
-## 10. 与 Windows Terminal 配合
+如果 Profile 写坏了，用不加载配置的方式启动：
 
-推荐搭配 **Windows Terminal** 使用 PowerShell 7，可在设置中将 `pwsh` 设为默认配置文件。
+```powershell
+pwsh -NoProfile
+```
 
-参考：[Windows Terminal 文档](https://learn.microsoft.com/windows/terminal/)
+## 5. 对象管道与常用命令
 
----
+```powershell
+# 内存占用最高的五个进程
+Get-Process |
+    Sort-Object WorkingSet -Descending |
+    Select-Object -First 5 Name, Id, WorkingSet
+
+# 正在运行的 Windows 服务
+Get-Service | Where-Object Status -eq 'Running'
+
+# 导出结构化数据
+Get-Process |
+    Select-Object Name, Id, CPU, WorkingSet |
+    Export-Csv .\processes.csv -NoTypeInformation -Encoding utf8
+
+# 生成 JSON
+@{ name = 'example'; enabled = $true } | ConvertTo-Json
+```
+
+| 操作 | 命令 |
+| :--- | :--- |
+| 列目录、读文件 | `Get-ChildItem`、`Get-Content` |
+| 复制、移动 | `Copy-Item`、`Move-Item` |
+| 删除前预演 | `Remove-Item .\example.txt -WhatIf` |
+| 找命令与参数 | `Get-Command Get-Process -Syntax` |
+| 查看帮助 | `Get-Help Get-Process -Full` |
+| 环境变量 | `Get-ChildItem Env:`、`$env:Path` |
+| 测量耗时 | `Measure-Command { Get-ChildItem -Recurse }` |
+| 同时显示和保存 | `Get-Process \| Tee-Object -FilePath .\processes.txt` |
+
+对象管道主要指 PowerShell 命令之间的传递；调用 `git`、`ssh` 等外部程序时，仍要处理文本输出和 `$LASTEXITCODE`。
+
+## 6. 模块与交互增强
+
+新版 PowerShell 使用 `Microsoft.PowerShell.PSResourceGet` 管理模块。先检查命令是否可用：
+
+```powershell
+Get-Command Install-PSResource
+Get-PSResourceRepository
+```
+
+以 `posh-git` 为例：
+
+```powershell
+Find-PSResource -Name posh-git -Repository PSGallery
+Install-PSResource -Name posh-git -Scope CurrentUser -Repository PSGallery
+Import-Module posh-git
+Get-InstalledPSResource
+Update-PSResource -Name posh-git
+```
+
+如果没有 `Install-PSResource`，按[官方安装说明](https://learn.microsoft.com/powershell/gallery/powershellget/install-powershellget)安装 PSResourceGet。模块装好后不会自动加载到每次会话，可以把需要的 `Import-Module` 放进 Profile。
+
+| 工具 | 用途 |
+| :--- | :--- |
+| PSReadLine | 命令行编辑、历史与补全，PowerShell 通常已附带 |
+| posh-git | Git 状态与补全 |
+| Terminal-Icons | 文件和目录图标，需要合适的字体 |
+| Oh My Posh | 提示符主题；现在按独立程序安装，不沿用旧的模块安装教程 |
+
+Profile 里只放经常用的模块，启动太慢时先用 `pwsh -NoProfile` 对照。Windows 旧模块不兼容时，可单独回到 `powershell.exe` 执行，不必降级整套环境。
 
 ## 参考链接
 
-- [PowerShell 官方文档](https://learn.microsoft.com/powershell/)
-- [PowerShell GitHub 仓库](https://github.com/PowerShell/PowerShell)
+* [Windows 安装方式与 MSIX 限制](https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows)
+* [执行策略](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_execution_policies)
+* [Profile](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_profiles)
+* [PSResourceGet](https://learn.microsoft.com/powershell/gallery/powershellget/overview)
