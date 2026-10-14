@@ -1,39 +1,22 @@
 ---
 title: Homebrew
-date: 2026-3-9
+date: 2026-10-14
 order: 1
 ---
 
 # Homebrew 使用指南
 
-## 1. 什么是 Homebrew
-[Homebrew 官网](https://brew.sh/)
+[Homebrew](https://brew.sh/) 不只适用于 macOS，也可以在 Linux 和 WSL 2 上使用。这里主要记录 Linux 的安装和日常命令：系统组件留给 `apt` / `dnf` / `pacman`，Homebrew 用来补充较新的 CLI 和开发工具。
 
-Homebrew 是 macOS / Linux 上常用的命令行包管理器。在 Linux 上，它更适合扮演“系统包管理器的补充”：
-- **适合装新工具**：当发行版仓库版本偏旧时，Homebrew 往往能提供更现代的 CLI / 开发工具。
-- **跨平台一致**：同一套 `brew` 命令可以同时管理 macOS、Linux，甚至 WSL 2 环境。
-- **隔离性较好**：默认安装到 `/home/linuxbrew/.linuxbrew`，尽量减少对系统目录的直接污染。
+## 1. 安装
 
-> 建议把 Homebrew 理解为 `apt` / `dnf` / `pacman` 的补充，而不是替代品。内核、驱动、system library、桌面核心组件仍优先交给发行版自身管理。
+Linux 默认前缀是 `/home/linuxbrew/.linuxbrew`。尽量沿用它，很多预编译包（bottle）依赖这个路径；自定义目录可能让安装变成漫长的源码编译。
 
----
-
-## 2. 安装与部署
-
-### 2.1 环境要求
-Homebrew 官方对 Linux 的推荐环境大致如下：
-- **Tier 1**：支持窗口内的 Ubuntu，或 Homebrew 官方 Docker 镜像。
-- **默认前缀**：`/home/linuxbrew/.linuxbrew`
-- **架构**：`x86_64` 或 `ARM64/AArch64`
-- **glibc**：`>= 2.35` 最稳；`2.13 ~ 2.34` 仍可用，但通常会自动补装 Homebrew 自己的 `glibc`
-
-如果你装在默认前缀之外，很多包会失去 bottle（二进制包）优势，被迫源码编译，速度更慢、问题更多。
-
-### 2.2 安装依赖
-先用系统包管理器装好基础依赖：
+先安装基础编译与下载工具，按发行版选一组：
 
 ```bash
 # Debian / Ubuntu
+sudo apt-get update
 sudo apt-get install build-essential procps curl file git
 
 # Fedora
@@ -48,196 +31,163 @@ sudo dnf install procps-ng curl file
 sudo pacman -S base-devel procps-ng curl file git
 ```
 
-### 2.3 一行命令安装
-执行官方安装脚本：
+运行官方安装器：
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-Linux 下推荐安装位置是：
+用普通用户运行，安装器会按需请求 `sudo`；日常安装软件不需要 `sudo brew install`。
+
+按安装器最后的 **Next steps** 配置 shell。默认 Linux 路径、Bash 的例子：
 
 ```bash
-/home/linuxbrew/.linuxbrew
-```
-
-安装过程中可能会请求 `sudo` 来创建或修复默认前缀；安装完成后，日常 `brew install` 一般不再需要 `sudo`。
-
-### 2.4 配置环境变量
-安装完成后，把 `brew` 加入当前 shell：
-
-```bash
-test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)"
-test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
 ```
 
-如果你用的是 `zsh`，把最后一行写入 `~/.zshrc` 即可。
+Zsh 则写入 `~/.zshrc`，这行配置添加一次即可。
 
-### 2.5 验证安装
 ```bash
 brew --version
 brew config
 brew doctor
+brew install hello
+hello
 ```
 
-其中 `brew --version` 用来确认命令存在，`brew config` 用来查看当前前缀和系统信息，`brew doctor` 用来排查常见环境问题。
+新机器优先使用受支持的 64 位 Linux 或 WSL 2。WSL 1 和 ARM32 的支持有限，32 位 x86 不受支持；发行版、glibc 和 CPU 的具体要求看 [Support Tiers](https://docs.brew.sh/Support-Tiers#linux)，不必在笔记里维护一份容易过期的版本表。
 
----
+## 2. 常用命令
 
-## 3. 快速上手
+下表的 `<formula>` 表示软件包名，执行时换成 `jq`、`ripgrep` 等实际名称。
 
-### 3.1 常用命令速查
+| 操作 | 命令 |
+| :--- | :--- |
+| 搜索 | `brew search <keyword>` |
+| 查看详情与安装提示 | `brew info <formula>` |
+| 安装、卸载 | `brew install <formula>`、`brew uninstall <formula>` |
+| 已安装软件及版本 | `brew list --versions` |
+| 更新 Homebrew 和软件描述 | `brew update` |
+| 查看可升级项 | `brew outdated` |
+| 升级单个软件 | `brew upgrade <formula>` |
+| 升级全部 | `brew upgrade` |
+| 预览无用依赖 | `brew autoremove --dry-run` |
+| 预览清理、实际清理 | `brew cleanup --dry-run`、`brew cleanup` |
+| 排错 | `brew doctor`、`brew config` |
 
-| 操作 | 命令 | 示例 |
-| :--- | :--- | :--- |
-| 搜索软件 | `brew search <keyword>` | `brew search python` |
-| 查看详情 | `brew info <formula>` | `brew info node` |
-| 安装软件 | `brew install <formula>` | `brew install wget` |
-| 查看已装 | `brew list` | `brew list` |
-| 检查更新 | `brew outdated` | `brew outdated` |
-| 更新索引 | `brew update` | `brew update` |
-| 升级软件 | `brew upgrade` | `brew upgrade` |
-| 卸载软件 | `brew uninstall <formula>` | `brew uninstall wget` |
-| 清理缓存/旧版本 | `brew cleanup` | `brew cleanup` |
-| 清理无用依赖 | `brew autoremove` | `brew autoremove` |
-
-### 3.2 先装几个高频工具
-Homebrew 在 Linux 上最适合先装现代 CLI 工具：
-
-```bash
-brew install wget curl jq ripgrep fd fzf bat eza zoxide neovim
-```
-
-如果你是第一次使用，建议顺手了解两个目录：
-
-```bash
-brew --prefix
-brew --cellar
-```
-
-`prefix` 是 Homebrew 当前工作前缀，`cellar` 是公式实际安装目录。
-
-### 3.3 你应该形成的基本习惯
-日常维护通常就是这一套：
+`update` 更新的是软件描述，`upgrade` 才升级已安装软件。通常这样就够了：
 
 ```bash
 brew update
 brew outdated
 brew upgrade
-brew cleanup
 ```
 
-Homebrew 会自动做部分清理，但手动执行一次 `brew cleanup` 仍然是好习惯。
-
----
-
-## 4. 开发环境配置（最佳实践）
-
-### 4.1 核心编程语言
-
-**Python**
-```bash
-brew install python
-python3 --version
-pip3 --version
-```
-
-**Node.js**
-```bash
-brew install node
-node --version
-npm --version
-```
-
-**Go**
-```bash
-brew install go
-go version
-```
-
-**Java（OpenJDK）**
-```bash
-brew install openjdk
-java --version
-```
-
-### 4.2 常见构建工具
-```bash
-brew install cmake pkg-config
-```
-
-如果你经常自己编译项目，这两个包基本是高频常客。
-
-### 4.3 一条建议
-在 Linux 上：
-- **系统编译链**（如 `gcc`、`make`、基础头文件）优先走发行版仓库
-- **用户态开发工具**（如 `node`、`go`、`python`、`neovim`、`fzf`）优先考虑 Homebrew
-
-这样更稳，也更容易排查问题。
-
----
-
-## 5. 命令行效率神器（CLI Power Tools）
-
-| 工具 | 用途 | 命令 |
-| :--- | :--- | :--- |
-| `ripgrep` | 极速全文搜索 | `brew install ripgrep` |
-| `fd` | 更友好的文件搜索 | `brew install fd` |
-| `fzf` | 模糊查找 | `brew install fzf` |
-| `bat` | 带高亮的 `cat` 替代品 | `brew install bat` |
-| `eza` | 更现代的 `ls` | `brew install eza` |
-| `zoxide` | 智能目录跳转 | `brew install zoxide` |
-| `jq` | JSON 处理 | `brew install jq` |
-| `neovim` | 现代编辑器 | `brew install neovim` |
-
----
-
-## 6. 进阶技巧
-
-### 6.1 锁定版本，防止被升级
-如果某个工具版本很关键，可以 pin 住：
+编译器、数据库等不方便马上升级的工具，可以先只升级其他包，或临时 pin：
 
 ```bash
 brew pin node
 brew unpin node
 ```
 
-### 6.2 用 Brewfile 复刻环境
-`brew bundle` 很适合把你的开发机环境声明化：
+Pin 不是版本锁文件，也不能用来安装任意历史版本。
+
+## 3. 常用开发工具
+
+按需选，不必整行全装：
 
 ```bash
-brew bundle dump --describe --force
-brew bundle
-brew bundle check
+brew install jq ripgrep fd fzf bat eza zoxide neovim
+brew install python node go openjdk
+brew install cmake pkgconf
 ```
 
-这会在当前目录生成 `Brewfile`。以后换机器时，直接在同目录执行 `brew bundle` 即可恢复常用工具。
+几个容易踩的点：
 
-### 6.3 管理后台服务
-如果某些公式带 service 定义，可以在 Linux + `systemd` 环境下这样管理：
+* `keg-only` 表示不会链接进默认前缀下的 `bin` 等目录。先看 `brew info` 的提示，再决定是否改 PATH。
+* OpenJDK 的安装提示用 `brew info openjdk` 查看；也可以直接运行 `"$(brew --prefix openjdk)/bin/java" --version`。
+* `pkgconf` 提供 `pkg-config` 命令。
+* Homebrew 的新版本 Python 遵循 externally managed 规则，项目依赖放进虚拟环境，不全局 `pip install`。
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install requests
+```
+
+内核、驱动、系统编译依赖仍用发行版包管理器；Python、Node、Java 项目内部的依赖则交给各自的项目工具。
+
+## 4. 用 Brewfile 搬家
+
+在当前目录导出清单：
+
+```bash
+brew bundle dump
+```
+
+已有 Brewfile 且确实要覆盖时才加 `--force`。新机器上查看清单，再安装：
+
+```bash
+brew bundle check --verbose
+brew bundle install
+```
+
+也可以用全局清单：
+
+```bash
+brew bundle dump --global
+brew bundle install --global
+```
+
+Brewfile 记录要装哪些工具，不是精确版本 lockfile。`brew bundle install` 默认也会升级已安装项；只想补齐缺少的软件时：
+
+```bash
+brew bundle install --no-upgrade
+```
+
+项目锁文件、配置和数据库还要单独保留。注意 `brew cleanup` 清理旧版本与缓存，而 **`brew bundle cleanup` 会移除清单之外的软件**，不是同一回事。
+
+## 5. 服务、代理与排错
+
+### 服务
+
+对于提供服务定义的软件：
 
 ```bash
 brew services list
-brew services start mysql
-brew services stop mysql
+brew services info redis
+brew services start redis
+brew services stop redis
 ```
 
-### 6.4 故障排查
-遇到安装失败、链接异常、路径混乱时，优先执行：
+Linux 上默认管理当前用户的 systemd 服务，一般在登录时启动；系统级服务与开机启动是另一种用法，见 [brew services](https://docs.brew.sh/Manpage#services-subcommand)。数据库的数据目录不会因为导出了 Brewfile 就自动备份。
+
+### 代理
+
+在当前 shell 设置代理，地址和端口换成自己的：
 
 ```bash
-brew doctor
-brew config
-brew info <formula>
+export http_proxy="http://127.0.0.1:7890"
+export https_proxy="$http_proxy"
 ```
 
-如果某个包总是在源码编译，先检查自己是不是偏离了默认前缀。
+不再需要时：
+
+```bash
+unset http_proxy https_proxy
+```
+
+### 排错与卸载
+
+先看 `brew doctor`、`brew config` 和 `brew info <formula>`。下载失败检查网络；大量源码编译检查默认前缀与平台支持；命令版本不对则检查 PATH。`doctor` 的 warning 是排查线索，不必为了消除提示删除系统软件。
+
+卸载 Homebrew 按[官方 FAQ](https://docs.brew.sh/FAQ#how-do-i-uninstall-homebrew)操作，先保留 Brewfile 和需要的数据。
 
 ## 参考链接
 
-- [Homebrew 官网](https://brew.sh/)
-- [Homebrew 官方安装文档](https://docs.brew.sh/Installation)
-- [Homebrew on Linux 官方文档](https://docs.brew.sh/Homebrew-on-Linux)
-- [Homebrew 官方命令手册](https://docs.brew.sh/Manpage)
-- [Homebrew FAQ](https://docs.brew.sh/FAQ)
+* [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux)
+* [安装说明](https://docs.brew.sh/Installation)
+* [命令手册](https://docs.brew.sh/Manpage)
+* [Bundle 与 Brewfile](https://docs.brew.sh/Brew-Bundle-and-Brewfile)
+* [Homebrew 与 Python](https://docs.brew.sh/Homebrew-and-Python)
