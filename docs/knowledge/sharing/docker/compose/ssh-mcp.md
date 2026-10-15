@@ -6,11 +6,11 @@ title: ssh-mcp
 
 [SSH MCP Github Repo](https://github.com/Develata/ssh-mcp) · [上游项目](https://github.com/tufantunc/ssh-mcp) · [GHCR 镜像](https://github.com/Develata/ssh-mcp/pkgs/container/ssh-mcp)
 
-compose更新日期: 2026-10-06
+compose更新日期: 2026-10-15
 
 ## docker-compose
 
-保存为 `compose.yaml`（直接拉取预构建镜像，固定 v2.18.0 和 digest，支持 amd64 / arm64）：
+保存为 `compose.yaml`（直接使用 `ghcr.io/develata/ssh-mcp:latest` 预构建镜像）：
 
 ```yaml
 networks:
@@ -20,7 +20,7 @@ networks:
 services:
     ssh-mcp:
         container_name: ssh-mcp
-        image: ghcr.io/develata/ssh-mcp:2.18.0@sha256:c18a1e6e6e179a0b35ad4ab6c187b8e538770cfff77b76750ad59f6a6d9f0ab1
+        image: ghcr.io/develata/ssh-mcp:latest
         restart: unless-stopped
         init: true
         user: "65532:65532"
@@ -51,25 +51,11 @@ services:
         networks:
             - 1panel-network
         ports:
-            - "127.0.0.1:${SSH_MCP_HOST_PORT:-3000}:3000"
+            - "127.0.0.1:${SSH_MCP_HOST_PORT:-35486}:3000"
         volumes:
-            - type: bind
-              source: ./config
-              target: /home/appuser/.config/ssh-mcp
-              read_only: true
-              bind:
-                  create_host_path: false
-            - type: bind
-              source: ./secrets/id_ed25519
-              target: /run/secrets/ssh-mcp-id_ed25519
-              read_only: true
-              bind:
-                  create_host_path: false
-            - type: bind
-              source: ./data
-              target: /var/lib/ssh-mcp
-              bind:
-                  create_host_path: false
+            - ./config:/home/appuser/.config/ssh-mcp:ro
+            - ./secrets/id_ed25519:/run/secrets/ssh-mcp-id_ed25519:ro
+            - ./data:/var/lib/ssh-mcp
         tmpfs:
             - /tmp:rw,noexec,nosuid,nodev,size=32m,mode=1777
         healthcheck:
@@ -98,13 +84,14 @@ services:
 
 ```env
 TIME_ZONE=Asia/Shanghai
-SSH_MCP_HOST_PORT=3000
+SSH_MCP_HOST_PORT=35486
 
 # 必填：本机执行 openssl rand -hex 32 生成，不要提交到仓库
 SSH_MCP_BEARER_TOKEN=
 
-# HTTP Host 白名单；修改端口时同步修改，反代时添加实际 Host
-SSH_MCP_ALLOWED_HOSTS=127.0.0.1:3000,localhost:3000,ssh-mcp:3000
+# HTTP Host 白名单；修改宿主机端口时同步修改，反代时添加实际 Host
+# 127.0.0.1:3000 用于容器内健康检查，ssh-mcp:3000 用于同网络反代
+SSH_MCP_ALLOWED_HOSTS=127.0.0.1:35486,localhost:35486,127.0.0.1:3000,ssh-mcp:3000
 
 # 私钥有口令才填；含 $、# 或空格时用单引号包住
 SSH_MCP_TRIAL_PASSPHRASE=
@@ -159,8 +146,14 @@ mkdir -p config secrets data
 
 将上述 `compose.yaml`、`.env`、`config/config.toml` 保存到对应位置，填好 token 和实际 SSH 配置，再放入专用私钥 `secrets/id_ed25519`。对应公钥须已配置到目标账号。
 
+`volumes` 使用短语法字符串列表，兼容当前 1Panel 的卷字段解析。短语法不提供 `create_host_path: false`：启动前必须先创建 `config/`、`data/`，并确认 `config/config.toml` 和 `secrets/id_ed25519` 是实际文件。尤其不要让缺失的私钥路径被自动创建成目录。
+
 ```bash
 cd /opt/ssh-mcp
+test -d config && test -d data && test -f config/config.toml && test -f secrets/id_ed25519 || {
+    echo "请先准备配置目录、数据目录、config.toml 和私钥文件"
+    exit 1
+}
 printf '%s\n' '.env' 'config/' 'secrets/' 'data/' > .gitignore
 chmod 600 .env config/config.toml secrets/id_ed25519
 chmod 700 config secrets data
@@ -175,11 +168,13 @@ docker compose pull ssh-mcp
 
 不用 1Panel 时，在同目录执行 `docker compose up -d`。目录可以更换，但配置、私钥、数据目录必须与 Compose 文件保持上述相对位置。UID/GID `65532:65532` 适用于普通 Linux Docker；rootless / userns 环境按实际映射调整。
 
-若仍出现 `cannot unmarshal !!map into string`，先检查 token/Host 是否填写，以及上述 Compose 解析命令是否成功。本例已提供 `image`；不要为绕过报错删掉 `create_host_path: false`。
+若仍出现 `cannot unmarshal !!map into string`，确认 1Panel 读取的是这份已保存的 Compose，`volumes` 下每项都是上述短语法字符串，且没有残留 `type/source/target/bind` 映射；再检查 `.env` 必填项和上述 Compose 解析命令。
 
-MCP：`http://127.0.0.1:3000/`，Streamable HTTP，请求头 `Authorization: Bearer <token>`。1Panel 同网络反代地址：`http://ssh-mcp:3000`，保留认证头并同步 Host 白名单。
+`latest` 是可变标签。更新时在同目录执行 `docker compose pull ssh-mcp && docker compose up -d ssh-mcp`；仅重启容器不会拉取新镜像。首次部署和更新都应先确认拉取成功。
+
+MCP：`http://127.0.0.1:35486/`，Streamable HTTP，请求头 `Authorization: Bearer <token>`。1Panel 同网络反代地址：`http://ssh-mcp:3000`，保留认证头并同步 Host 白名单。
 
 验收：先看容器为 `healthy`；再用支持 elicitation 的 MCP 客户端连接，调用 `list-connections` 和 `read-command`（`profile="trial"`、`command="pwd"`），确认审批后返回目标机目录。`healthy` 只检查服务和配置，实际 SSH 连通与认证以这次命令为准。
 
-- 当前为测试机低权限账号的只读配置，不等于完整交互终端；保留严格指纹校验，`ask-all` 需要客户端支持 elicitation。未配置公网入口或 OAuth。不要公开 `.env`、私钥及 `docker inspect` 完整输出
+- 示例使用专用低权限账号，并启用应用层 `readOnly`、`viewer` 和逐次审批；这些设置不构成目标服务器操作系统级的只读保证，实际权限仍由目标账号和服务器策略决定。保留严格指纹校验，`ask-all` 需要客户端支持 elicitation。未配置公网入口或 OAuth。不要公开 `.env`、私钥及 `docker inspect` 完整输出
 - 使用 Docker Engine ≥28 和支持上述解析参数的 Compose V2；已有 `1panel-network` 应为可信容器专用的 bridge/NAT 网络，禁用直连容器路由。同网络容器仍可访问端口，`127.0.0.1` 不隔离它们
