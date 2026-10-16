@@ -1,0 +1,76 @@
+/**
+ * @file bilingual.css
+ * @description 双语配对块的显示模式（结构由 plugins/bilingual-pairs.ts 生成）。
+ *
+ * - 默认（中文）：隐藏 .bi-en。.bi-pair / .bi-zh 是无样式 div，外边距照常穿透折叠，
+ *   因此排版与未配对时完全一致。
+ * - 对照（html.bi-mode-both）：桌面左右两栏逐段对齐；窄屏一段中文紧跟一段英文。
+ *   网格项不再折叠外边距，所以清掉单元格首尾外边距，段距改由 .bi-pair 统一给出。
+ */
+
+.bi-en {
+  display: none;
+}
+
+html.bi-mode-both .bi-en {
+  display: block;
+}
+
+html.bi-mode-both .bi-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 32px;
+  margin: 16px 0;
+}
+
+html.bi-mode-both .bi-pair > div > :first-child {
+  margin-top: 0;
+}
+
+html.bi-mode-both .bi-pair > div > :last-child {
+  margin-bottom: 0;
+}
+
+/* 标题所在的配对行保留 .vp-doc 原本的标题上方留白。 */
+html.bi-mode-both .bi-pair:has(> .bi-zh > h2) {
+  margin-top: 48px;
+}
+
+html.bi-mode-both .bi-pair:has(> .bi-zh > h3) {
+  margin-top: 32px;
+}
+
+html.bi-mode-both .bi-pair:first-child {
+  margin-top: 0;
+}
+
+html.bi-mode-both .bi-en {
+  padding-left: 16px;
+  border-left: 1px solid var(--vp-c-divider);
+}
+
+/* 对照模式需要更宽的正文区；只在有右侧大纲的宽屏上放开 .vp-doc 的阅读宽度上限。 */
+@media (min-width: 1280px) {
+  html.bi-mode-both .VPDoc.has-aside .content-container {
+    max-width: none;
+  }
+}
+
+@media (max-width: 767px) {
+  html.bi-mode-both .bi-pair {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+
+  html.bi-mode-both .bi-en {
+    padding-left: 12px;
+    border-left-width: 2px;
+    color: var(--vp-c-text-2);
+  }
+
+  /* 上下排列时，英文标题紧跟中文标题，不再重复 .vp-doc h2 的分隔线。 */
+  html.bi-mode-both .bi-en > h2 {
+    padding-top: 0;
+    border-top: 0;
+  }
+}

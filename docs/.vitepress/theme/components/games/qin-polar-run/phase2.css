@@ -1,0 +1,27 @@
+/* Phase 2 additions remain local to the game and respect its safe-area offsets. */
+.northern-run .nr-boost-meter {
+  height:4px; margin-top:7px; background:#9bb0b52e; overflow:hidden; border-radius:2px;
+}
+.northern-run .nr-boost-meter i {
+  display:block; height:100%; background:#d1be8a; transform-origin:left;
+  transition:transform .16s ease;
+}
+.northern-run .nr-boost-meter.ready {box-shadow:0 0 7px #f1d79d88}
+.northern-run .nr-boost-meter.active i {background:#edf8fa}
+.northern-run .nr-mute {
+  position:absolute; top:calc(var(--nr-safe-top) + var(--nr-hud-gap));
+  right:calc(var(--nr-safe-right) + var(--nr-hud-gap) + 52px);
+  width:44px; height:44px; border:0; border-radius:50%; background:#19313d99; font-size:17px;
+}
+.northern-run .nr-boost-hint {
+  position:absolute; top:calc(var(--nr-safe-top) + var(--nr-hud-gap) + 92px);
+  left:calc(var(--nr-safe-left) + var(--nr-hud-gap));
+  font-size:12px; color:#fff0c5; background:#18303dc9; padding:5px 9px; pointer-events:none;
+}
+.northern-run.is-boosting .nr-vignette {box-shadow:inset 0 0 42px #d8eff53b}
+@media (prefers-reduced-motion:reduce) {
+  .northern-run .nr-boost-meter i {transition:none}
+  .northern-run.is-boosting .nr-vignette {box-shadow:none}
+}
+
+.northern-run .nr-feedback {top:calc(var(--nr-safe-top) + var(--nr-hud-gap) + 92px)}
