@@ -1,6 +1,6 @@
 # 北境狂奔 / Northern Run
 
-秦始皇骑北极熊的独立三道跑酷。Phase 2 保留原有 Vue/Three.js/Rust 边界，新增持续加速、三种秦境、金币蓄力冲刺与可静音循环音乐。没有账号、存档、历史最佳或跨游戏引擎。
+秦始皇骑北极熊的独立三道跑酷。Phase 2 保留原有 Vue/Three.js/Rust 边界，新增持续加速、三种秦境、金币蓄力冲刺与可静音循环音乐。新增实时 AI 竞速残影：同一可复现世界、同一玩家物理、独立碰撞与拾取。没有账号、存档、历史最佳或跨游戏引擎。实现依据和当前验收见 [AI-RIVAL.md](./AI-RIVAL.md)。
 
 ## 本地构建
 
@@ -8,10 +8,10 @@ Rust 1.97.0 与 wasm32-unknown-unknown 由 rust/rust-toolchain.toml 固定；was
 
 - bun run game:qin-polar-run:tools：准备 Rust、cargo-binstall 与 wasm-bindgen（缺 rustup/cargo-binstall 时仅在 Unix 自动引导）。
 
-- npm run game:qin-polar-run:wasm：仅测试并编译本游戏 Rust，生成 wasm-bindgen web 包。
-- npm run game:qin-polar-run:test：Node 内置加载器、ABI 版本、键盘/手势、音频生命周期测试。
-- npm run dev：开发预览。Rust 修改后需重新运行 WASM 命令。
-- npm run build，然后 npm run preview：完整生产验证。全站较大，本地必要时仅为构建进程设置 NODE_OPTIONS=--max-old-space-size=4096。
+- bun run game:qin-polar-run:wasm：仅测试并编译本游戏 Rust，生成 wasm-bindgen web 包。
+- bun run game:qin-polar-run:test：Node 内置加载器、ABI 版本、键盘/手势、音频生命周期测试。
+- bun run dev：开发预览。Rust 修改后需重新运行 WASM 命令。
+- bun run build，然后 bun run preview：完整生产验证。全站较大，本地必要时仅为构建进程设置 NODE_OPTIONS=--max-old-space-size=4096。
 
 生成包位于 docs/public/game-assets/qin-polar-run/wasm/，与 rust/target/ 一起忽略。发布 profile 使用 opt-level=s、LTO、单 codegen unit、panic=abort、strip；没有 wasm-pack/wasm-opt 或额外引擎依赖。
 
@@ -23,7 +23,11 @@ Rust 1.97.0 与 wasm32-unknown-unknown 由 rust/rust-toolchain.toml 固定；was
 | rust/src/player.rs | 0.16s smoothstep 换道、解析跳跃、俯身、逻辑碰撞 |
 | rust/src/track.rs | 有界路段、确定性 xorshift32、障碍库、动态间距与可达性 |
 | rust/src/boost.rs | 10 枚金币充能、手动启动、计时与结束保护 |
-| rust/src/runner.rs | 权威状态、120Hz 固定步进、积分、碰撞、回收、紧凑帧 |
+| rust/src/world.rs | 世界定义与两个有界游标；以绝对路段编号确定地形 |
+| rust/src/runner.rs | 双方复用的物理、120Hz 步进、独立积分/碰撞/拾取与窗口 |
+| rust/src/autopilot.rs | 仅读局面并返回合法换道动作的安全路线控制器 |
+| rust/src/race.rs | 同钟推进、暂停与 ABI v3 对手状态 |
+| render/GhostView.ts / GhostHud.vue | 透明角色实例批次、显示开关、实际距离差 |
 | input/InputController.ts | 浏览器事件映射为动作位；不决定游戏规则 |
 | render/ | Three.js 投影帧、三个预生成环境、相机与有限特效池 |
 | audio/GameAudio.ts | 单个延迟创建的 HTMLAudioElement |
@@ -37,11 +41,11 @@ Game Lab AGENTS.md 明确独立纵向模块。共享的只有 Vue/VitePress/Thre
 
 保留八个 48m 路段、每段两处 24m 间隔的候选排。生成器累计距上一排**实际危险障碍**的距离，空排不重置累计值。若间距不足，则插入空排；金币和景物仍可出现。
 
-最低运动速度是 12×0.65=7.8m/s，所以 d 米前的候选排最迟在 elapsed+d/7.8 到达。用该时刻的单调速度函数作为普通到达速度上界 v；不会把普通障碍全按冲刺倍数拉疏。
+最低运动速度是 12×0.65=7.8m/s。世界流使用固定 epoch=0 和候选排的绝对距离 d，以 d/7.8 的速度作为普通到达速度上界 v。生成不再依赖游玩者何时回收槽位，因此冲刺或跌撞不能改变双方赛道。此上界比旧的局部生成时刻上界更保守，部分后期障碍会更疏；速度曲线和动作手感不变，旧版本同 seed 的后续地形不保证一致。
 
 安全决策时间取 max(0.32s 反应 + 两次固定步量化换道, 0.9s 跳跃, 0.8s 俯身)+0.1s，目前为 1s。危险排至少相距 2×1.15m 碰撞窗口 + v×1s。三位 mask 校验器使用**累计真实间距和速度上界**传播站立可通过的车道；非法/不可达模式退为空排。它保证存在安全路线，不保证追逐每一枚恢复排金币都安全。
 
-玩家 Z 固定，路段相对坐标有界。横向渲染和碰撞共用 Rust 的权威 x；同一窗口内检查过渡时重叠的车道。每排最多两个障碍，逻辑上至多 32 个障碍、16 枚金币。
+双方累计距离使用 f64，路段原点为固定的编号×48m；渲染相对坐标每步由原点减累计距离计算，避免重复 f32 减法漂移。玩家 Z 固定，路段相对坐标有界。横向渲染和碰撞共用 Rust 的权威 x；同一窗口内检查过渡时重叠的车道。每排最多两个障碍，逻辑上至多 32 个障碍、16 枚金币。
 
 ## 冲刺与积分
 
@@ -61,18 +65,21 @@ Rust 每 40s 固定输出：冰封秦直道 → 风雪长城关隘 → 冰封陵
 
 跑动步频累积积分，避免速度变化令正弦相位跳变；高速度轻微前倾、FOV 最多多 6°，冲刺额外约 2°。12–28 条近景雪线和一个六碎片池形成有限反馈。prefers-reduced-motion 关闭非必要晃动、雪线、碎片和额外 FOV。
 
-## ABI v2（仍为 144 个 f32 / 576 字节）
+## ABI v3（160 个 f32 / 640 字节）
 
-每个浏览器帧一个 advance(dt, actionMask, Float32Array)，最多 12 个 120Hz 子步；dt 截至 0.1s，小 dt 输入暂存在 Rust。没有 JSON 或逐物体 getter。wasm-bindgen mutable slice 会复制进出，约 1.1KiB/帧；未声称零复制。
+每个浏览器帧一个 advance(dt, actionMask, Float32Array)，最多 12 个 120Hz 子步；dt 截至 0.1s，小 dt 输入暂存在 Rust。没有 JSON 或逐物体 getter。wasm-bindgen mutable slice 会复制进出，约 1.25KiB/帧；未声称零复制。
 
 | 位置 | 含义 |
 | --- | --- |
-| 0 | ABI_VERSION=2，加载后核对 |
+| 0 | ABI_VERSION=3，加载后核对 |
 | 1..12 | 阶段、时间、48m 滚动偏移、分数、x、y、俯身、保护余量、跌撞、实际速度、事件、受撞数 |
 | 13/14/15 | 蓄力 0..10 / 冲刺剩余秒 / 场景编号 0..2 |
 | 16+16×slot | z；两排各 [三道类型、金币车道、已拾取]；两排破坏 mask；余项保留 |
+| 144 / 145 / 146 | 玩家累计米数 / AI 累计米数 / AI − 玩家距离差（先 f64 相减） |
+| 147..157 | AI 的 x/y/俯身/速度/受撞数/原始碰撞数/阶段/金币/保护/跌撞/时间 |
+| 158..159 | 保留 |
 
-动作位：left=1/right=2/jump=4/duck=8/boost=16。事件位：coin=1/hit=2/over=4/boost=8/smash=16/biome=32。生成 JS 与 WASM 请求带 abi=2，避免静默复用旧 ABI；同页图形恢复和路由返回仍复用成功初始化的模块。
+动作位：left=1/right=2/jump=4/duck=8/boost=16。事件位：coin=1/hit=2/over=4/boost=8/smash=16/biome=32。生成 JS 与 WASM 请求带 abi=3，避免静默复用旧 ABI；同页图形恢复和路由返回仍复用成功初始化的模块。
 
 ## 音频与浏览器生命周期
 

@@ -90,7 +90,7 @@ fn first_hit_slowdown_duplicate_immunity_then_game_over() {
 fn score_distance_and_actual_coin_pickup_reset() {
     let mut c = RunnerCore::new(3);
     c.start();
-    c.chunks[0].z = -7.0;
+    c.chunks[0].origin = c.distance - 7.0;
     c.chunks[0].coin_lanes[0] = 0;
     c.advance(FIXED_DT, 0);
     assert_eq!(c.coins, 1);
@@ -207,7 +207,7 @@ fn actual_obstacle_windows_accept_jump_and_duck_and_count_hits() {
         for chunk in &mut c.chunks {
             chunk.rows = [[0; 3]; 2];
         }
-        c.chunks[0].z = 6.0 - ROWS[0];
+        c.chunks[0].origin = c.distance + (6.0 - ROWS[0]) as f64;
         c.chunks[0].rows[0] = [0, kind, 0];
         c.advance(FIXED_DT, action);
         for _ in 0..90 {

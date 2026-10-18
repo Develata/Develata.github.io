@@ -62,6 +62,6 @@ test('failed WASM initialization retries without importing another JS module', a
 
 test('ABI version is explicit on both browser asset requests', async () => {
   const h = await harness(); await h.load()
-  assert.equal(new URL(h.urls[0]).searchParams.get('abi'), '2')
-  assert.match(h.wasmUrls[0], /\?abi=2$/)
+  assert.equal(new URL(h.urls[0]).searchParams.get('abi'), '3')
+  assert.match(h.wasmUrls[0], /\?abi=3$/)
 })

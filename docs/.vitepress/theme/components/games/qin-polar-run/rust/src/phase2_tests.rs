@@ -59,12 +59,8 @@ fn high_speed_generation_validates_real_gaps_between_meaningful_rows() {
 }
 
 fn late_core(seed: u32, elapsed: f64) -> RunnerCore {
-    let mut c = RunnerCore::new(seed);
+    let mut c = RunnerCore::in_world(&crate::world::World::at_time(seed, elapsed as f32));
     c.elapsed = elapsed;
-    let mut generator = Generator::new(seed);
-    for (i, chunk) in c.chunks.iter_mut().enumerate() {
-        *chunk = generator.chunk((i as f32 - 1.0) * LENGTH, elapsed as f32);
-    }
     c.start();
     c
 }
@@ -120,7 +116,7 @@ fn clear_track(c: &mut RunnerCore) {
     }
 }
 fn pickup(c: &mut RunnerCore, lane: i8) {
-    c.chunks[0].z = 5.0 - ROWS[0];
+    c.chunks[0].origin = c.distance + (5.0 - ROWS[0]) as f64;
     c.chunks[0].coin_lanes[0] = lane;
     c.chunks[0].collected[0] = false;
     c.advance(FIXED_DT, 0);
@@ -182,7 +178,7 @@ fn boost_duration_smash_exit_grace_and_no_healing() {
     c.hit();
     c.invulnerable = 0.0;
     c.boost.charge = 10;
-    c.chunks[0].z = -ROWS[0];
+    c.chunks[0].origin = c.distance + (-ROWS[0]) as f64;
     c.chunks[0].rows[0] = [0, 1, 0];
     c.advance(FIXED_DT, BOOST_ACTION);
     assert_eq!(c.hits, 1);
@@ -190,7 +186,7 @@ fn boost_duration_smash_exit_grace_and_no_healing() {
     assert_eq!(c.chunks[0].smashed[0], 2);
     assert_ne!(c.events & 16, 0);
     c.boost.remaining = FIXED_DT / 2.0;
-    c.chunks[0].z = -ROWS[0];
+    c.chunks[0].origin = c.distance + (-ROWS[0]) as f64;
     c.chunks[0].rows[0] = [0, 1, 0];
     c.chunks[0].resolved[0] = false;
     c.advance(FIXED_DT, 0);

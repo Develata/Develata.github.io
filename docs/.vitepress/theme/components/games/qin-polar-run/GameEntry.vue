@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { withBase } from 'vitepress'
-import { FIELD as F, EVENT, ABI_VERSION, FRAME_LENGTH, type Phase, type WasmRunner } from './config'
+import { FIELD as F, GHOST as G, DISTANCE, EVENT, ABI_VERSION, FRAME_LENGTH, type Phase, type WasmRunner } from './config'
 import { GameAudio } from './audio/GameAudio'
 import { InputController } from './input/InputController'
 import { loadWasm } from './loadWasm'
 import type { RunnerScene } from './render/RunnerScene'
+import GhostHud from './GhostHud.vue'
 import './game.css'
 import './phase2.css'
 const surface = ref<HTMLElement>()
@@ -16,6 +17,16 @@ const score = ref(0)
 const charge = ref(0)
 const boosting = ref(false)
 const muted = ref(false)
+const ghostEnabled = ref(true)
+const ghostLead = ref(0), ghostContacts = ref(0), ghostStopped = ref(false), distance = ref(0)
+function updateRival() {
+  ghostLead.value = frame[G.lead]; ghostContacts.value = frame[G.contacts]
+  ghostStopped.value = frame[G.phase] === 3; distance.value = frame[DISTANCE]
+}
+function toggleGhost() {
+  ghostEnabled.value = !ghostEnabled.value; scene?.setGhostVisible(ghostEnabled.value)
+  input?.clear(); surface.value?.focus({ preventScroll: true })
+}
 const boostHint = ref(false)
 const music = new GameAudio()
 const feedback = ref('')
@@ -51,7 +62,8 @@ async function boot() {
     if (frame[0] !== ABI_VERSION) throw new Error('Unsupported runner ABI')
     scene = new view.RunnerScene(canvas.value!, () => fail('画面连接已中断。请重新加载游戏。'))
     input = new InputController(surface.value!, () => phase.value === 'running', togglePause)
-    phase.value = 'ready'; scene.draw(frame, 0)
+    scene.setGhostVisible(ghostEnabled.value)
+    updateRival(); phase.value = 'ready'; scene.draw(frame, 0)
   } catch (error) {
     if (alive && token === generation) {
       console.error('[Northern Run]', error)
@@ -65,7 +77,7 @@ function tick(now: number) {
   const dt = previous ? Math.min((now - previous) / 1000, 0.1) : 0
   previous = now
   core.advance(dt, input?.read() ?? 0, frame)
-  score.value = frame[F.score]
+  score.value = frame[F.score]; updateRival()
   charge.value = frame[F.charge]; boosting.value = frame[F.boost] > 0
   if (charge.value === 10 && !boostHintShown) {
     boostHintShown = true; boostHintUntil = frame[F.time] + 3; boostHint.value = true
@@ -82,7 +94,7 @@ function tick(now: number) {
 function start() {
   if (!core || !scene) return
   stopLoop(); core.reset(seed()); input?.clear(); core.advance(0, 0, frame)
-  score.value = 0; charge.value = 0; boosting.value = false; boostHint.value = false
+  updateRival(); score.value = 0; charge.value = 0; boosting.value = false; boostHint.value = false
   boostHintShown = false; boostHintUntil = 0; feedbackUntil = 0; feedback.value = ''; phase.value = 'running'
   music.start()
   surface.value?.focus({ preventScroll: true }); scene.draw(frame, 0)
@@ -134,6 +146,8 @@ defineExpose({ diagnostics: () => ({ phase: phase.value, raf: !!raf,
     <button v-if="phase === 'running'" class="nr-pause" aria-label="暂停" @click="pause">Ⅱ</button>
     <button v-if="phase === 'running'" class="nr-mute" :aria-label="muted ? '开启音乐' : '静音音乐'"
       :aria-pressed="muted" @click="toggleMute">{{ muted ? '🔇' : '🔊' }}</button>
+    <GhostHud v-if="phase === 'running' || phase === 'paused'" :enabled="ghostEnabled" :lead="ghostLead"
+      :contacts="ghostContacts" :stopped="ghostStopped" :distance="distance" @toggle="toggleGhost" />
     <p v-if="boostHint && phase === 'running'" class="nr-boost-hint" role="status">
       <span class="nr-touch">双击冲刺</span><span class="nr-keyboard">Shift / E 冲刺</span>
     </p>
@@ -145,7 +159,7 @@ defineExpose({ diagnostics: () => ({ phase: phase.value, raf: !!raf,
     <div v-if="phase === 'ready'" class="nr-intro">
       <a :href="withBase('/games/')" class="nr-back">← GAME LAB</a>
       <div class="nr-title"><p class="nr-eyebrow">NORTHERN RUN</p><h1>北境狂奔</h1>
-        <p class="nr-premise">秦始皇骑北极熊</p></div>
+        <p class="nr-premise">秦始皇骑北极熊</p><p class="nr-rival-intro">与实时 AI 同路竞速 · 残影可关闭</p></div>
       <div class="nr-start"><button class="nr-primary" @click="start">开始奔跑 <span>↗</span></button>
         <p class="nr-controls"><span class="nr-keyboard">← → / A D 换道 · ↑ / Space 跳跃 · ↓ 俯身 · Shift / E 冲刺</span>
           <span class="nr-touch">左右滑动换道 · 上滑跳跃 · 下滑俯身 · 满蓄力双击冲刺</span></p></div>
