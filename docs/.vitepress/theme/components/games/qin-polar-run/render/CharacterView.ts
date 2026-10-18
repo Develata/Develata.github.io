@@ -8,7 +8,7 @@ export class CharacterView {
   private rider = new T.Group()
   private legs: T.Group[] = []
   private stride = 0
-  private shadow: T.Mesh
+  readonly shadow: T.Mesh
   private shadowMaterial = new T.MeshBasicMaterial({ color: 0x1c3a46, transparent: true, opacity: 0.24, depthWrite: false })
   private shadowGeometry = new T.CircleGeometry(1, 24)
   constructor(scene: T.Scene, p: Palette) {
@@ -60,7 +60,7 @@ export class CharacterView {
     this.shadow.rotation.x = -Math.PI / 2; this.shadow.scale.set(1.1, 1.9, 1)
     this.shadow.position.y = 0.025; scene.add(this.shadow)
   }
-  update(frame: Float32Array, reduced: boolean, dt = 0) {
+  update(frame: Float32Array, reduced: boolean, dt = 0, z = 0) {
     const time = frame[F.time], running = frame[F.phase] === 1
     if (time === 0) this.stride = 0
     if (running) this.stride = (this.stride + dt * Math.min(22, 7 + frame[F.speed] * 0.2)) % (Math.PI * 2)
@@ -68,7 +68,7 @@ export class CharacterView {
     const lean = Math.min(0.12, Math.max(0, frame[F.speed] - 12) * 0.003) + (frame[F.boost] > 0 ? 0.07 : 0)
     const crouch = frame[F.duck]
     const bob = running && !reduced ? Math.sin(pace * 2) * 0.07 : 0
-    this.root.position.set(frame[F.x] * LANE_WIDTH, frame[F.y], 0)
+    this.root.position.set(frame[F.x] * LANE_WIDTH, frame[F.y], z)
     this.root.rotation.y = frame[F.phase] === 0 ? -1.15 : 0
     this.bear.position.y = bob - crouch * 0.35
     this.bear.scale.y = 1 - crouch * 0.2
@@ -80,6 +80,7 @@ export class CharacterView {
       this.legs[i].rotation.x = running ? Math.sin(pace + (i === 0 || i === 3 ? 0 : Math.PI)) * 0.42 : 0
     }
     this.shadow.position.x = this.root.position.x
+    this.shadow.position.z = z
     this.shadowMaterial.opacity = 0.24 / (1 + frame[F.y] * 0.3)
   }
   dispose() { this.shadowGeometry.dispose(); this.shadowMaterial.dispose() }

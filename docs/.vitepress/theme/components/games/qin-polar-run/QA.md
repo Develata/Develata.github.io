@@ -1,6 +1,6 @@
 # Northern Run 验证记录
 
-本文件按阶段保留历史证据。最新 Phase 2 验收位于末节；第一阶段的速度上限、两击玩法与资源统计不代表 Phase 2 全部状态。
+本文件按阶段保留历史证据。最新实时 AI 残影验收见 [AI-RIVAL.md](./AI-RIVAL.md)，Phase 2 历史验收保留在下文；第一阶段的速度上限、两击玩法与资源统计不代表 Phase 2 全部状态。
 
 日期：2026-09-07。工作目录：WSL Debian /home/deve/gitclone/Develata.github.io。
 浏览器：Windows Chrome 151.0.7922.172，由 Playwright 控制独立无头浏览器。

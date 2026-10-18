@@ -1,6 +1,8 @@
 //! Pure authoritative state. Fixed 120Hz steps; at most 12 steps per browser frame.
 use crate::player::{Player, hits};
-use crate::track::{CHUNKS, Chunk, Generator, LENGTH, ROWS, WINDOW};
+use crate::track::{CHUNKS, Chunk, LENGTH, ROWS, WINDOW};
+
+use crate::world::{Cursor, World};
 
 use crate::boost::{BOOST_ACTION, BOOST_MULTIPLIER, Boost};
 use crate::difficulty::{ABSOLUTE_SPEED_GUARD, STUMBLE_MULTIPLIER, base_speed_at, biome_at};
@@ -21,18 +23,20 @@ pub struct RunnerCore {
     pub stumble: f32,
     pub speed: f32,
     pub boost: Boost,
-    generator: Generator,
+    cursor: Cursor,
+    pub contacts: u32, // raw obstacle contacts, including protected collisions
     accumulator: f32,
     pending: u32,
     pub events: u32, // coin=1, first hit=2, over=4, boost=8, smash=16, biome=32
 }
 impl RunnerCore {
+    #[cfg(test)]
     pub fn new(seed: u32) -> Self {
-        let mut generator = Generator::new(seed);
-        let chunks = std::array::from_fn(|i| {
-            let z = (i as f32 - 1.0) * LENGTH;
-            generator.chunk(z, 0.0)
-        });
+        Self::in_world(&World::new(seed))
+    }
+    pub fn in_world(world: &World) -> Self {
+        let mut cursor = world.cursor();
+        let chunks = std::array::from_fn(|_| cursor.next(0.0));
         Self {
             player: Player::default(),
             chunks,
@@ -45,7 +49,8 @@ impl RunnerCore {
             stumble: 0.0,
             speed: 12.0,
             boost: Boost::default(),
-            generator,
+            cursor,
+            contacts: 0,
             accumulator: 0.0,
             pending: 0,
             events: 0,
@@ -82,7 +87,7 @@ impl RunnerCore {
             self.tick(actions);
         }
     }
-    fn tick(&mut self, actions: u32) {
+    pub(crate) fn tick(&mut self, actions: u32) {
         let previous_biome = biome_at(self.elapsed);
         self.elapsed += FIXED_DT as f64;
         if previous_biome != biome_at(self.elapsed) {
@@ -103,13 +108,15 @@ impl RunnerCore {
         let travel = self.speed * FIXED_DT;
         self.distance += travel as f64;
         let mut collision = false;
+        let mut contact = false;
         for chunk in &mut self.chunks {
-            chunk.z -= travel;
+            chunk.z = (chunk.origin - self.distance) as f32;
             for (r, offset) in ROWS.iter().enumerate() {
                 let z = chunk.z + offset;
                 if z.abs() <= WINDOW && (!chunk.resolved[r] || self.boost.active()) {
                     for lane in 0..3 {
                         if hits(chunk.rows[r][lane], lane as i8 - 1, &self.player) {
+                            contact = true;
                             if self.boost.active() {
                                 chunk.rows[r][lane] = 0;
                                 chunk.smashed[r] |= 1 << lane;
@@ -135,19 +142,16 @@ impl RunnerCore {
                 }
             }
         }
+        if contact {
+            self.contacts = self.contacts.saturating_add(1);
+        }
         if collision {
             self.hit();
         }
         // A slot is reused only after its entire chunk has left the camera.
         for i in 0..CHUNKS {
             if self.chunks[i].z < -LENGTH - 6.0 {
-                let farthest = self
-                    .chunks
-                    .iter()
-                    .map(|c| c.z)
-                    .fold(f32::NEG_INFINITY, f32::max);
-                let z = farthest + LENGTH;
-                self.chunks[i] = self.generator.chunk(z, self.elapsed as f32);
+                self.chunks[i] = self.cursor.next(self.distance);
             }
         }
     }

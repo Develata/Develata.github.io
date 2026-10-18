@@ -25,3 +25,5 @@
 }
 
 .northern-run .nr-feedback {top:calc(var(--nr-safe-top) + var(--nr-hud-gap) + 92px)}
+
+.northern-run .nr-rival-intro {font-size:12px; margin-top:12px; color:#e1f4f6; letter-spacing:.04em}

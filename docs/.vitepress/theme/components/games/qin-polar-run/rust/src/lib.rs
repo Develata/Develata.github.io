@@ -1,30 +1,35 @@
 //! Northern Run: independent pure core with a coarse, copied numeric WASM ABI.
+mod autopilot;
 mod boost;
 mod difficulty;
 #[cfg(test)]
 mod phase2_tests;
 mod player;
+mod race;
+#[cfg(test)]
+mod race_tests;
 mod runner;
 #[cfg(test)]
 mod tests;
 mod track;
-use runner::RunnerCore;
+mod world;
+use race::Race;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct Runner {
-    core: RunnerCore,
+    core: Race,
 }
 #[wasm_bindgen]
 impl Runner {
     #[wasm_bindgen(constructor)]
     pub fn new(seed: u32) -> Self {
         Self {
-            core: RunnerCore::new(seed),
+            core: Race::new(seed),
         }
     }
     pub fn reset(&mut self, seed: u32) {
-        self.core = RunnerCore::new(seed);
+        self.core = Race::new(seed);
         self.core.start();
     }
     pub fn pause(&mut self, paused: bool) {

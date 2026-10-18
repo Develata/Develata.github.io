@@ -3,6 +3,7 @@ import * as T from 'three'
 import { FIELD as F } from '../config'
 import { Palette } from './Palette'
 import { CharacterView } from './CharacterView'
+import { GhostView } from './GhostView'
 import { TrackView } from './TrackView'
 import { EnvironmentView } from './EnvironmentView'
 import { EffectsView } from './EffectsView'
@@ -12,6 +13,8 @@ export class RunnerScene {
   private camera = new T.PerspectiveCamera(52, 1, 0.1, 550)
   private palette = new Palette()
   private character!: CharacterView
+  private ghost!: GhostView
+  private ghostEnabled = true
   private track!: TrackView
   private environment!: EnvironmentView
   private effects!: EffectsView
@@ -35,6 +38,7 @@ export class RunnerScene {
       this.environment = new EnvironmentView(this.scene, this.palette)
       this.track = new TrackView(this.scene, this.palette)
       this.character = new CharacterView(this.scene, this.palette)
+      this.ghost = new GhostView(this.scene, this.palette)
       this.effects = new EffectsView(this.scene, this.palette)
       this.observer = new ResizeObserver(this.resize); this.observer.observe(container)
       this.resize()
@@ -55,10 +59,15 @@ export class RunnerScene {
     this.renderer.setSize(width, height)
     if (this.lastFrame) this.draw(this.lastFrame, 0)
   }
+  setGhostVisible(enabled: boolean) {
+    this.ghostEnabled = enabled
+    if (this.lastFrame) this.draw(this.lastFrame, 0)
+  }
   draw(frame: Float32Array, dt: number) {
     if (this.disposed) return
     this.lastFrame = frame
     this.track.update(frame); this.character.update(frame, this.reduced.matches, dt)
+    this.ghost.update(frame, this.reduced.matches, dt, this.ghostEnabled)
     this.effects.update(frame, this.reduced.matches)
     const veil = this.environment.update(frame)
     const fog = this.scene.fog as T.Fog
@@ -81,7 +90,7 @@ export class RunnerScene {
   }
   diagnostics() {
     let objects = 0; this.scene.traverse(() => objects++)
-    return { objects, geometries: this.renderer.info.memory.geometries,
+    return { objects, ghost: this.ghost.diagnostics(), geometries: this.renderer.info.memory.geometries,
       textures: this.renderer.info.memory.textures, drawCalls: this.renderer.info.render.calls,
       triangles: this.renderer.info.render.triangles, biome: this.lastFrame?.[F.biome], speed: this.lastFrame?.[F.speed], dpr: this.renderer.getPixelRatio() }
   }
@@ -90,7 +99,7 @@ export class RunnerScene {
     this.disposed = true; this.observer?.disconnect()
     this.renderer?.domElement.removeEventListener('webglcontextlost', this.lost)
     this.scene.traverse(object => { if (object instanceof T.InstancedMesh) object.dispose() })
-    this.character?.dispose(); this.environment?.dispose(); this.effects?.dispose(); this.palette.dispose()
+    this.ghost?.dispose(); this.character?.dispose(); this.environment?.dispose(); this.effects?.dispose(); this.palette.dispose()
     this.renderer?.dispose(); this.renderer?.forceContextLoss(); this.renderer?.domElement.remove()
     this.scene.clear(); this.lastFrame = null
   }

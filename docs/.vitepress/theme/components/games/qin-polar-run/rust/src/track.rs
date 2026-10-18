@@ -66,6 +66,8 @@ pub fn reachable(previous: u8, row: Row, gap: f32, speed: f32, recovery: f32) ->
 #[derive(Clone, Debug)]
 pub struct Chunk {
     pub z: f32,
+    pub origin: f64,
+    pub id: u64,
     pub rows: [Row; 2],
     pub coin_lanes: [i8; 2],
     pub collected: [bool; 2],
@@ -76,6 +78,8 @@ impl Default for Chunk {
     fn default() -> Self {
         Self {
             z: 0.0,
+            origin: 0.0,
+            id: 0,
             rows: [[0; 3]; 2],
             coin_lanes: [0; 2],
             collected: [false; 2],
@@ -85,6 +89,7 @@ impl Default for Chunk {
     }
 }
 
+#[derive(Clone)]
 pub struct Generator {
     rng: Rng,
     reachable: u8,
@@ -103,6 +108,7 @@ impl Generator {
     pub fn chunk(&mut self, z: f32, elapsed: f32) -> Chunk {
         let mut chunk = Chunk {
             z,
+            origin: z as f64,
             ..Chunk::default()
         };
         for (row_index, offset) in ROWS.iter().enumerate() {
