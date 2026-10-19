@@ -66,6 +66,11 @@ export function syncJournal(archive, repo = root) {
   const allowed = new Set(['index.md', 'manifest.json', ...records.map(r => `${r.date}.md`)]);
   if (fs.existsSync(target)) {
     for (const entry of fs.readdirSync(target, { withFileTypes: true })) {
+      // Only our exact atomic-write remnants may be removed after interruption.
+      if (entry.isFile() && entry.name.endsWith('.tmp') && allowed.has(entry.name.slice(0, -4))) {
+        fs.unlinkSync(path.join(target, entry.name));
+        continue;
+      }
       if (!allowed.has(entry.name) || !entry.isFile()) throw new Error(`Unexpected projection file: ${entry.name}`);
     }
   }

@@ -99,7 +99,7 @@ test('real Bun CLI and Git preserve trailing-space source and commit successfull
   const f = fixture(t);
   const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const file = path.join(f.archive, f.records[0].path);
-  fs.appendFileSync(file, '\nMarkdown hard break  \nnext line\n');
+  fs.appendFileSync(file, '\nMarkdown hard break  \nnext line\n  \tindent\n\n');
   f.records[0].sha256 = sha256(fs.readFileSync(file)); f.save();
   fs.mkdirSync(path.join(f.root, 'scripts'));
   fs.copyFileSync(path.join(repo, 'scripts/daily-math.mjs'), path.join(f.root, 'scripts/daily-math.mjs'));
@@ -116,8 +116,14 @@ test('real Bun CLI and Git preserve trailing-space source and commit successfull
   run('git', ['init', '-q']);
   run('git', ['add', '--', projectionPath, '.gitattributes']);
   run('git', ['diff', '--cached', '--check']);
-  run('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'fixture']);
+  run('git', ['-c', 'commit.gpgsign=false', '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'fixture']);
   assert.equal(JSON.parse(run('bun', ['run', 'daily-math:sync', f.archive])).changed, 0);
+  fs.writeFileSync(path.join(f.target, '2026-07-17.md.tmp'), 'interrupted atomic write');
+  assert.equal(syncJournal(f.archive, f.root).changed, 0);
+  assert.equal(fs.existsSync(path.join(f.target, '2026-07-17.md.tmp')), false);
+  fs.appendFileSync(path.join(f.target, '2026-07-17.md'), '\n<<<<<<< conflict\n');
+  run('git', ['add', '--', projectionPath]);
+  assert.notEqual(spawnSync('git', ['diff', '--cached', '--check'], { cwd: f.root }).status, 0);
   fs.writeFileSync(path.join(f.target, 'unregistered.md'), 'not registered');
   assert.throws(() => syncJournal(f.archive, f.root), /Unexpected projection/);
 });
