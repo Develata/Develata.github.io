@@ -30,7 +30,7 @@ assert.equal(guids.length, new Set(guids).size, 'No duplicate identities');
 const newsFeed = fs.readFileSync(new URL('rss/daily-news.xml', dist), 'utf8');
 assert.match(newsFeed, /<link>https:\/\/develata.me\/daily\/news\//);
 // Historical RSS identities are stable, not public-route aliases.
-assert.match(newsFeed, /<guid[^>]*>https:\/\/develata.me\/news\//);
+assert.match(newsFeed, /<guid isPermaLink="false">https:\/\/develata.me\/news\//);
 assert.ok(!fs.existsSync(new URL('rss/news.xml', dist)), 'No legacy feed alias');
 for (const name of ['knowledge.xml', 'knowledge-math.xml']) {
   assert.doesNotMatch(fs.readFileSync(new URL(`rss/${name}`, dist), 'utf8'), /daily\/math|daily-math/);

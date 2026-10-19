@@ -38,7 +38,7 @@ export function writeDailyMathFeeds(outDir: string, items: Item[], render: (item
       const entry = `    <item>
       <title>${xml(item.title)}</title>
       <link>${xml(item.url)}</link>
-      <guid isPermaLink="true">${xml(item.url.replace('/daily/math/', '/knowledge/math/daily-math/'))}</guid>
+      <guid isPermaLink="false">${xml(item.url.replace('/daily/math/', '/knowledge/math/daily-math/'))}</guid>
       <pubDate>${item.date.toUTCString()}</pubDate>
       <description>${xml(item.description)}</description>
       <content:encoded><![CDATA[${body.replaceAll(']]>', ']]]]><![CDATA[>')}]]></content:encoded>

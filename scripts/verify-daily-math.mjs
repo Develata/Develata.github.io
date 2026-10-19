@@ -56,7 +56,7 @@ for (let i = 0; i < manifest.length; i++) {
   assert.ok(projected.content.startsWith(`\n# ${title}\n`) || projected.content.startsWith(`# ${title}\n`));
   assert.equal(sha256(fs.readFileSync(path.join(source, `${r.date}.md`))), r.projectionSha256);
   const url = `https://develata.me${base}${r.date}`;
-  assert.ok(items[i].includes(`<guid isPermaLink="true">${url.replace('/daily/math/', '/knowledge/math/daily-math/')}</guid>`));
+  assert.ok(items[i].includes(`<guid isPermaLink="false">${url.replace('/daily/math/', '/knowledge/math/daily-math/')}</guid>`));
   assert.ok(items[i].includes(`<pubDate>${new Date(`${r.date}T00:00:00+08:00`).toUTCString()}</pubDate>`));
   assert.ok(items[i].includes(`<title>${escapeXml(title)}</title>`));
   assert.ok(items[i].includes(`<link>${url}</link>`));
@@ -82,5 +82,5 @@ for (const name of ['all.xml']) {
   assert.deepEqual(journal, recent, `${name}: identical recent content and identities`);
   assert.ok(entries.some(item => !journal.includes(item) && item.includes('<content:encoded')), `${name}: unrelated full articles retained`);
 }
-console.log(JSON.stringify({ status: 'ok', articles: manifest.length, fullHistoryItems: items.length, recentItems: recent.length, summaries: 0,
+console.log(JSON.stringify({ status: 'ok', articles: manifest.length, fullHistoryItems: items.length, recentItems: recent.length, summaries: items.filter(item => !item.includes('<content:encoded')).length,
   oldest: manifest.at(-1).date, newest: manifest[0].date, recentBytes: Buffer.byteLength(feed), fullHistoryBytes: Buffer.byteLength(fullFeed) }));

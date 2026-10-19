@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { journalEntries } from '../docs/.vitepress/daily/journal.ts';
 import { getNewsEntries, getRecentNewsCards } from '../docs/.vitepress/utils/news-index.ts';
-import { buildNewsArticleSidebar } from '../docs/.vitepress/theme/components/newsSidebarTree.ts';
+import { buildNewsArticleSidebar, isNewsArticlePath } from '../docs/.vitepress/theme/components/newsSidebarTree.ts';
 import { calendarSidebar } from '../docs/.vitepress/daily/calendar.ts';
 import { isSearchableContent } from '../docs/.vitepress/configs/content-modules.shared.ts';
 
@@ -17,6 +17,8 @@ test('canonical sources use native routes and preserve search eligibility', () =
 });
 
 test('News adapter preserves latest-20 and category/month article navigation', () => {
+  assert.ok(isNewsArticlePath('daily/news/中文/2027/20270101.md'));
+  assert.ok(!isNewsArticlePath('daily/news/index.md'));
   const entries = getNewsEntries();
   assert.ok(entries.length > 20);
   assert.equal(getRecentNewsCards().length, 20);

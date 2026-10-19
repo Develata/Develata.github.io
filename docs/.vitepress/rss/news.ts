@@ -84,7 +84,7 @@ function renderItem(item: NewsRssItem): string {
   return `    <item>
       <title>${escapeXml(item.title)}</title>
       <link>${escapeXml(item.url)}</link>
-      <guid isPermaLink="true">${escapeXml(item.url.replace('/daily/news/', '/news/'))}</guid>
+      <guid isPermaLink="false">${escapeXml(item.url.replace('/daily/news/', '/news/'))}</guid>
       <pubDate>${item.date?.toUTCString()}</pubDate>${description}${content}
     </item>`;
 }
