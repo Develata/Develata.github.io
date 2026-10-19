@@ -1,4 +1,4 @@
-/** Build acceptance: concise titles, summary RSS, stable identity and complete SSR articles. */
+/** Build acceptance: concise titles, rolling full-text RSS, stable identity and complete SSR articles. */
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
@@ -20,7 +20,7 @@ assert.deepEqual(fs.readdirSync(source).sort(), ['index.md', 'manifest.json', ..
 const feed = fs.readFileSync(path.join(dist, 'rss/daily-math.xml'), 'utf8');
 const items = [...feed.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
 assert.equal(items.length, manifest.length, 'RSS must contain all history');
-assert.ok(!feed.includes('<content:encoded'), 'Journal RSS must not embed full articles');
+assert.equal(items.filter(item => item.includes('<content:encoded')).length, Math.min(5, manifest.length));
 const escapeXml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
 const base = '/knowledge/math/daily-math/';
 const index = fs.readFileSync(path.join(dist, base, 'index.html'), 'utf8');
@@ -41,6 +41,11 @@ for (let i = 0; i < manifest.length; i++) {
   assert.ok(items[i].includes(`<title>${escapeXml(title)}</title>`));
   assert.ok(items[i].includes(`<link>${url}</link>`));
   assert.match(items[i], /<description>[^<]+<\/description>/);
+  assert.equal(items[i].includes('<content:encoded'), i < 5, `Full-text window: ${r.date}`);
+  if (i < 5) {
+    assert.ok(items[i].includes('<math'), `RSS math missing: ${r.date}`);
+    assert.ok(items[i].includes('<details>'), `RSS full article folds missing: ${r.date}`);
+  }
   const html = fs.readFileSync(path.join(dist, base, `${r.date}.html`), 'utf8');
   assert.ok(html.includes('<math'), `SSR math missing: ${r.date}`);
   assert.ok(html.includes(`<title>${escapeXml(title)} |`), `Page title missing: ${r.date}`);
@@ -54,8 +59,8 @@ for (const name of ['knowledge.xml', 'knowledge-math.xml', 'all.xml']) {
   const entries = [...aggregate.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
   const journal = entries.filter(item => item.includes(`<link>https://develata.me${base}`));
   assert.equal(journal.length, manifest.length, `${name}: all journal history`);
-  assert.ok(journal.every(item => !item.includes('<content:encoded')), `${name}: journal must stay lightweight`);
+  assert.deepEqual(journal, items, `${name}: identical journal window, content and identities`);
   assert.ok(entries.some(item => !journal.includes(item) && item.includes('<content:encoded')), `${name}: unrelated full articles retained`);
 }
-console.log(JSON.stringify({ status: 'ok', articles: manifest.length, rssItems: items.length,
+console.log(JSON.stringify({ status: 'ok', articles: manifest.length, rssItems: items.length, fullText: Math.min(5, items.length), summaries: Math.max(0, items.length - 5),
   oldest: manifest.at(-1).date, newest: manifest[0].date, rssBytes: Buffer.byteLength(feed) }));

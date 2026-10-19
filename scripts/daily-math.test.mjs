@@ -194,6 +194,41 @@ test('content-free template opts out explicitly while main stays fail-closed', t
   assert.ok(!JSON.parse(fs.readFileSync(path.join(repo, 'package.json'), 'utf8')).scripts['daily-math:verify'].includes('--allow-empty'));
 });
 
+test('RSS full-text window retains all history, renders only five and preserves identities on shift', async () => {
+  const { applyDailyMathWindow, DAILY_MATH_FULL_TEXT_LIMIT } = await import('../docs/.vitepress/rss/knowledge.ts');
+  assert.equal(DAILY_MATH_FULL_TEXT_LIMIT, 5);
+  const make = n => ({
+    title: `Issue ${n}`, url: `https://develata.me/knowledge/math/daily-math/${n}`,
+    date: new Date(Date.UTC(2026, 0, n)), description: `Summary ${n}`,
+  });
+  const identity = ({ contentHtml, ...metadata }) => metadata;
+  for (const count of [0, 1, 4, 5, 6, 76]) {
+    const items = Array.from({ length: count }, (_, i) => make(i + 1)); // oldest first deliberately
+    const unrelated = { title: 'Other', url: 'https://develata.me/knowledge/math/other', date: new Date('2030-01-01'), contentHtml: '<p>unchanged</p>' };
+    const before = items.map(identity);
+    let calls = [];
+    const render = item => { calls.push(item.url); return `<p>${item.title}</p>`; };
+    applyDailyMathWindow([unrelated, ...items], render);
+    assert.equal(calls.length, Math.min(5, count));
+    assert.deepEqual(calls, items.slice(-5).reverse().map(item => item.url));
+    assert.equal(items.filter(item => item.contentHtml).length, Math.min(5, count));
+    assert.deepEqual(items.map(identity), before);
+    assert.equal(unrelated.contentHtml, '<p>unchanged</p>');
+    if (count >= 5) {
+      const formerFifth = items[count - 5];
+      assert.ok(formerFifth.contentHtml);
+      const next = make(count + 1);
+      calls = [];
+      applyDailyMathWindow([next, unrelated, ...items], render);
+      assert.equal(calls.length, 5);
+      assert.equal(formerFifth.contentHtml, undefined);
+      assert.ok(next.contentHtml);
+      assert.deepEqual(items.map(identity), before);
+      assert.equal(new Set([...items, next].map(item => item.url)).size, count + 1);
+    }
+  }
+});
+
 test('journal MathML is compact and deterministic across cache eviction', async () => {
   const { default: MarkdownIt } = await import('markdown-it');
   const { boundedMath } = await import('../docs/.vitepress/utils/bounded-math.ts');

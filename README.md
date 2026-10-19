@@ -113,9 +113,11 @@ bun run dev
 manifest，原有 description 保持。除首个 H1 外正文保持不变，仅修复历史 TeX 中已确认的 form-feed + `rac`、backspace + `igl`
 转义损坏；原归档及 Telegram 回执不改动。内部编辑元数据不写入网站 pageData。
 
-首页按原日期倒序列出全部历史；`/rss/daily-math.xml` 保留全部条目，但仅含标题、
-原日期（Asia/Shanghai）、稳定文章 URL/GUID 与简短纯文本摘要，不内嵌全文。
-Knowledge/Math/All 聚合中的每日数学条目也复用摘要策略，不进行 RSS 数学渲染；
+首页按原日期倒序列出全部历史；`/rss/daily-math.xml` 保留全部条目，最近 5 篇
+（不足 5 篇时为全部）通过 `content:encoded` 内嵌完整 HTML/MathML；其余仅含标题、
+原日期（Asia/Shanghai）、稳定文章 URL/GUID 与简短纯文本摘要。新文章加入后第六篇
+转为摘要，但身份与日期不变，不创建新条目。Knowledge/Math/All 聚合复用同一窗口，
+只为窗口内文章执行 RSS 数学渲染；
 其他文章不受影响。全文保留在服务器渲染的文章页；阅读器可按自身功能从链接提取
 全文，RSS 没有强制客户端自动抓取全文的通用标准。订阅入口在 `/about/rss`。
 
@@ -126,7 +128,7 @@ RSS 阅读器可打开文章阅读。完整站点构建固定 Node 4 GiB 堆上�
 
 验证：`bun run daily-math:test` → `bun run build` → `bun run daily-math:verify`。
 GitHub Actions 和 clean-source 构建均包含这些门禁，校验所有文章与 RSS 的数量、
-投影 hash、简洁标题、GUID、原日期、摘要策略和文章 SSR 数学。同步重复运行不改变文件时间，也不产生
+投影 hash、简洁标题、GUID、原日期、滚动全文窗口和文章 SSR 数学。同步重复运行不改变文件时间，也不产生
 空提交；本地 journal 自动化独立重试推送，CI/Pages 负责部署，不依赖 Telegram。
 
 ## 📬 联系方式

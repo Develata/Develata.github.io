@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import MarkdownIt from 'markdown-it';
+import { boundedMath } from '../utils/bounded-math.ts';
 
 const SITE_URL = 'https://develata.me';
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +15,19 @@ const __dirname = path.dirname(__filename);
 const docsRoot = path.resolve(__dirname, '../../');
 const knowledgeRoot = path.join(docsRoot, 'knowledge');
 const md = new MarkdownIt({ html: true, linkify: true });
+const journalMd = new MarkdownIt({ html: true, linkify: true }).use(boundedMath, { native: true });
+export const DAILY_MATH_FULL_TEXT_LIMIT = 5;
+const journalPrefix = `${SITE_URL}/knowledge/math/daily-math/`;
+
+/** Select by original date, not feed position; render only the rolling full-text window.
+ * Shared item objects carry the same policy into dedicated and aggregate feeds. */
+export function applyDailyMathWindow(items: KnowledgeRssItem[], render: (item: KnowledgeRssItem) => string): void {
+  items.filter(item => item.url.startsWith(journalPrefix)).sort(compareDatedItems)
+    .forEach((item, index) => {
+      if (index < DAILY_MATH_FULL_TEXT_LIMIT) item.contentHtml = render(item);
+      else delete item.contentHtml;
+    });
+}
 
 export interface KnowledgeRssItem {
   title: string;
@@ -52,7 +66,7 @@ export function listKnowledgeFeedLinks(): KnowledgeFeedLink[] {
     {
       title: '每日数学',
       url: '/rss/daily-math.xml',
-      description: '每日数学全部历史的摘要与原文链接，保留原始日期，持续更新。',
+      description: '每日数学最近 5 篇全文及全部历史摘要与原文链接，保留原始日期，持续更新。',
     },
     {
       title: 'Knowledge 全部',
@@ -79,6 +93,12 @@ export function generateKnowledgeRss(outDir: string): KnowledgeRssResult {
     .flatMap((feed) => feed.items)
     .sort(compareDatedItems);
 
+  applyDailyMathWindow(items, item => {
+    const file = path.join(docsRoot, `${new URL(item.url).pathname}.md`);
+    const { content } = matter(fs.readFileSync(file, 'utf8'));
+    return absolutizeHtmlUrls(journalMd.render(stripVitePressOnlyContent(content)), item.url);
+  });
+
   const allFeed: KnowledgeFeed = {
     title: "Develata's Space - Knowledge",
     url: '/rss/knowledge.xml',
@@ -89,11 +109,11 @@ export function generateKnowledgeRss(outDir: string): KnowledgeRssResult {
   for (const feed of [allFeed, ...feeds]) {
     writeFeed(outDir, feed);
   }
-  // Reuse Knowledge items; journal entries are summaries in every feed, never rendered here.
+  // Reuse the same window and identities in every feed.
   writeFeed(outDir, {
     title: "Develata's Space - 每日数学",
     url: '/rss/daily-math.xml',
-    description: '每日数学全部历史的摘要与原文链接。',
+    description: '每日数学最近 5 篇全文及全部历史摘要与原文链接。',
     items: items.filter(item => item.url.startsWith(`${SITE_URL}/knowledge/math/daily-math/`)),
   });
 
@@ -134,8 +154,7 @@ function readItem(file: string): KnowledgeRssItem | undefined {
     url,
     date,
     description: summarize(data.description || data.excerpt || excerpt || content),
-    // Keep the complete SSR article at its stable URL. RSS readers may opt into
-    // full-text extraction; embedding/rendering journal math defeats this light feed.
+    // Defer journal rendering until all original dates are known; older items stay light.
     contentHtml: url.startsWith(`${SITE_URL}/knowledge/math/daily-math/`) ? undefined : renderContent(content, url),
   };
 }
