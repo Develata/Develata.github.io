@@ -41,7 +41,8 @@ export function listRssFeeds(): RssFeedLink[] {
       description: '聚合 Knowledge、Blog、News 与 Books 的全部订阅。',
     },
     ...listKnowledgeFeedLinks(),
-    { title: 'Daily / Math', url: '/rss/daily-math.xml', description: '每日数学最近 5 篇全文与全部历史摘要。' },
+    { title: 'Daily / Math · 最近 14 期全文（默认）', url: '/rss/daily-math.xml', description: '最近 14 期，不是 14 个日历日；每期均为全文。' },
+    { title: 'Daily / Math · 全部历史全文', url: '/rss/daily-math-all.xml', description: '按需打开或订阅；阅读器每次请求会下载整份历史全文 XML。' },
     {
       title: 'Blog',
       url: '/rss/blog.xml',

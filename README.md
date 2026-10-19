@@ -96,8 +96,7 @@ bun run dev
 │   ├── books/             # 读书笔记
 │   ├── games/             # 游戏页面入口 (Markdown 引入 Vue 组件)
 │   ├── knowledge/         # 知识库 (Math, Coding, Sharing)
-│   ├── daily/             # Daily 入口与每日数学公共投影
-│   ├── news/              # 自动新闻的原始输入（构建重写至 /daily/news/）
+│   ├── daily/             # Daily 入口、news/ 新闻源与 math/ 每日数学公共投影
 │   └── index.md           # 网站首页
 ├── package.json           # 项目依赖与脚本
 └── .github/workflows/     # 自动部署脚本
@@ -130,27 +129,26 @@ Math/Daily 注入运行时预取补丁；SPA 点击导航与按需搜索不变�
 ### 路由与生产者
 
 - 网站 canonical：`/daily/news/`、`/daily/math/`，导航为 Daily 下拉菜单。
-- News 生产者 `rss-ai-news` 的 `github_path_prefix`/分类/年/日期输出契约继续写入
-  `docs/news/`；VitePress wildcard rewrites 直接映射至 `daily/news/`。不改生产者
-  配置、不复制新闻，后续新增文件自动得到新路由、旧链接跳转和同一套索引/侧栏/RSS。
+- News 生产者 `rss-ai-news` 的 `github_path_prefix = "docs/daily/news"`，分类模板
+  保留 `分类/{YYYY}/{YYYYMMDD}.md`。源目录与路由一致，不使用 VitePress rewrites，
+  不复制新闻；索引、侧栏、RSS 和 canonical 直接消费 `docs/daily/news/`。
 - journal importer 和独立 `publish_website.py` 的允许投影目录均为 `docs/daily/math/`。
   原归档、ledger、Telegram receipts 不移动；迁移后实际重跑发布器并检查 no-op。
-- GitHub Pages **不解释 `_redirects`**。构建结束后 `daily/routes.ts` 为所有旧
-  `/news/`、`/knowledge/math/daily-math/` 首页和文章输出独立 HTTP 200 HTML 跳转页，
-  `location.replace` 保留 query/hash，提供 meta-refresh 和无 JS 原生链接；不声称 HTTP 301。
-  Unicode 目标使用 URL 编码。这些文件不进入 VitePress 页面表、搜索、sitemap 或 RSS。
-  canonical、导航、prev/next、搜索只使用新文章路由；历史文章 URL 仍用于稳定 RSS GUID。
+- 不保留 `/news/`、`/knowledge/math/daily-math/` 旧入口或跳转页；旧书签会失效。
+  canonical、导航、prev/next、搜索只使用新路由；历史 URL 仅保留为稳定 RSS GUID，
+  不作为兼容路由解析。
 - 订阅 canonical 为 `/rss/daily-news.xml`、`/rss/daily-math.xml`。没有为旧 News RSS
   地址添加 alias 或跳转。Knowledge/Math feeds 仅包含普通笔记，All 汇总两类 Daily
   和其他栏目；一个 GUID 只出现一次。`/about/rss` 和页面 autodiscovery 指向新 feeds。
 
-`/rss/daily-math.xml` 保留全部条目，最近 5 篇
-（不足 5 篇时为全部）通过 `content:encoded` 内嵌完整 HTML/MathML；其余仅含标题、
-原日期（Asia/Shanghai）、新文章 URL、稳定旧 GUID 与简短纯文本摘要。新文章加入后第六篇
-转为摘要，但身份与日期不变，不创建新条目。All 聚合复用同一窗口，
-只为窗口内文章执行 RSS 数学渲染；
-其他文章不受影响。全文保留在服务器渲染的文章页；阅读器可按自身功能从链接提取
-全文，RSS 没有强制客户端自动抓取全文的通用标准。订阅入口在 `/about/rss`。
+`/rss/daily-math.xml` 是默认的最近 **14 期全文**订阅（不是 14 个日历日）；
+`/rss/daily-math-all.xml` 是全部历史全文订阅。两者每个条目都通过 `content:encoded`
+内嵌完整 HTML/MathML，没有历史摘要混合模式。原日期（Asia/Shanghai）、标题和 GUID
+保持稳定。All 聚合只读取默认最近 14 期，不重复加入全量订阅。
+构建逐篇渲染一次并写入静态 XML，公式缓存有界，不在内存中保留全历史正文数组。
+普通网站页面只提供订阅链接、不 fetch/preload 全量 XML，也不把全文塞入页面 JS；
+主动打开或阅读器订阅才请求它，但一次请求仍会下载整份 XML，并非条目级懒加载。
+页面 autodiscovery 只指向默认最近订阅；两个明确标注的链接在 `/about/rss` 与 Math 归档首页。
 
 每日数学使用构建期 TeX → 原生 MathML（现代浏览器支持），避免每个公式膨胀成
 SVG 路径；256 项有界公式缓存，无客户端 MathJax 下载。其他页面保持 SVG 行为。
@@ -158,10 +156,10 @@ RSS 阅读器可打开文章阅读。完整站点构建固定 Node 4 GiB 堆上�
 避免 Node 自动选择的 2 GiB 堆在全量历史下溢出。
 
 验证：`bun run daily-math:test` + `bun run sidebar:test` → `bun run build` → `bun run daily-math:verify`。
-路由门禁遍历每个 News/Math 原始页面与真实 dist，检查旧跳转、新 canonical、完整
+路由门禁遍历每个 News/Math 原始页面与真实 dist，检查无旧入口、新 canonical、完整
 SSR 历史、News 最近 20 条、无重复 RSS 身份及 sitemap；未来生产者路径也有独立用例。
 GitHub Actions 和 clean-source 构建均包含这些门禁，校验所有文章与 RSS 的数量、
-投影 hash、简洁标题、GUID、原日期、滚动全文窗口和文章 SSR 数学。同步重复运行不改变文件时间，也不产生
+投影 hash、简洁标题、GUID、原日期、两份全文订阅和文章 SSR 数学。同步重复运行不改变文件时间，也不产生
 空提交；本地 journal 自动化独立重试推送，CI/Pages 负责部署，不依赖 Telegram。
 
 ## 📬 联系方式

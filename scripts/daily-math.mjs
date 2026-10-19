@@ -139,7 +139,7 @@ export function syncJournal(archive, repo = root) {
   }
   const index = ['---', 'title: 每日数学', 'description: 数学概念、证明、反例与思想的每日札记；完整历史归档。', '---', '', '# 每日数学', '',
     '数学概念的来路、证明的机制、假设的边界，以及值得继续追问的问题。', '',
-    '[订阅每日数学 RSS（全部历史、摘要与原文链接）](/rss/daily-math.xml) · [全部订阅](/about/rss)', '',
+    '[订阅 RSS：最近 14 期全文（默认）](/rss/daily-math.xml) · [全部历史全文 RSS（按需）](/rss/daily-math-all.xml) · [全部订阅](/about/rss)', '',
     `共 **${records.length}** 期，按年份、月份、原始日期倒序排列。`, ''];
   let year = '';
   let month = '';

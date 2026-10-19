@@ -18,15 +18,24 @@ assert.ok(manifest.length > 0);
 assert.equal(new Set(manifest.map(r => r.date)).size, manifest.length);
 assert.deepEqual(fs.readdirSync(source).sort(), ['index.md', 'manifest.json', ...manifest.map(r => `${r.date}.md`)].sort(), 'Unexpected public projection files');
 const feed = fs.readFileSync(path.join(dist, 'rss/daily-math.xml'), 'utf8');
-const items = [...feed.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
+const recent = [...feed.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
+const fullFeed = fs.readFileSync(path.join(dist, 'rss/daily-math-all.xml'), 'utf8');
+const items = [...fullFeed.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
 assert.equal(items.length, manifest.length, 'RSS must contain all history');
-assert.equal(items.filter(item => item.includes('<content:encoded')).length, Math.min(5, manifest.length));
+assert.equal(items.filter(item => item.includes('<content:encoded')).length, manifest.length);
+assert.deepEqual(recent, items.slice(0, 14), 'Default feed is the latest fourteen full issues');
 const escapeXml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
 const base = '/daily/math/';
 const index = fs.readFileSync(path.join(dist, base, 'index.html'), 'utf8');
 const rssPage = fs.readFileSync(path.join(dist, 'about/rss.html'), 'utf8');
 assert.ok(rssPage.includes('/rss/daily-math.xml'));
 assert.ok(index.includes('/rss/daily-math.xml'));
+assert.ok(rssPage.includes('/rss/daily-math-all.xml'));
+assert.ok(index.includes('/rss/daily-math-all.xml'));
+for (const html of [rssPage, index]) {
+  assert.doesNotMatch(html, /<link[^>]+(?:preload|prefetch|alternate)[^>]+daily-math-all\.xml/, 'Full archive is only an explicit link');
+  assert.ok(html.includes('rel="alternate" type="application/rss+xml"'));
+}
 const indexBody = index.split('<main')[1]?.split('</main>')[0] ?? '';
 const archiveLinks = [...indexBody.matchAll(/href="(?:\.\/|\/daily\/math\/)(\d{4}-\d{2}-\d{2})"/g)].map(m => m[1]);
 assert.deepEqual(archiveLinks, manifest.map(r => r.date), 'SSR archive links: all history exactly once, descending');
@@ -52,8 +61,8 @@ for (let i = 0; i < manifest.length; i++) {
   assert.ok(items[i].includes(`<title>${escapeXml(title)}</title>`));
   assert.ok(items[i].includes(`<link>${url}</link>`));
   assert.match(items[i], /<description>[^<]+<\/description>/);
-  assert.equal(items[i].includes('<content:encoded'), i < 5, `Full-text window: ${r.date}`);
-  if (i < 5) {
+  assert.ok(items[i].includes('<content:encoded'), `Full text: ${r.date}`);
+  {
     assert.ok(items[i].includes('<math'), `RSS math missing: ${r.date}`);
     assert.ok(items[i].includes('<details>'), `RSS full article folds missing: ${r.date}`);
   }
@@ -69,9 +78,9 @@ for (const name of ['all.xml']) {
   const aggregate = fs.readFileSync(path.join(dist, 'rss', name), 'utf8');
   const entries = [...aggregate.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
   const journal = entries.filter(item => item.includes(`<link>https://develata.me${base}`));
-  assert.equal(journal.length, manifest.length, `${name}: all journal history`);
-  assert.deepEqual(journal, items, `${name}: identical journal window, content and identities`);
+  assert.equal(journal.length, Math.min(14, manifest.length), `${name}: recent issues only`);
+  assert.deepEqual(journal, recent, `${name}: identical recent content and identities`);
   assert.ok(entries.some(item => !journal.includes(item) && item.includes('<content:encoded')), `${name}: unrelated full articles retained`);
 }
-console.log(JSON.stringify({ status: 'ok', articles: manifest.length, rssItems: items.length, fullText: Math.min(5, items.length), summaries: Math.max(0, items.length - 5),
-  oldest: manifest.at(-1).date, newest: manifest[0].date, rssBytes: Buffer.byteLength(feed) }));
+console.log(JSON.stringify({ status: 'ok', articles: manifest.length, fullHistoryItems: items.length, recentItems: recent.length, summaries: 0,
+  oldest: manifest.at(-1).date, newest: manifest[0].date, recentBytes: Buffer.byteLength(feed), fullHistoryBytes: Buffer.byteLength(fullFeed) }));
