@@ -103,3 +103,9 @@ for (const [file, content] of Object.entries(filesToReset)) {
 }
 
 console.log('✨ 清理完成！项目现在是一个纯净的模板。');
+
+// Main requires all journal artifacts; the deliberately content-free template does not.
+const packagePath = path.join(rootDir, 'package.json');
+const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+pkg.scripts['daily-math:verify'] = 'node scripts/verify-daily-math.mjs --allow-empty-template';
+fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2) + '\n');

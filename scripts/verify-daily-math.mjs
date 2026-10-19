@@ -7,6 +7,11 @@ import { sha256, projectionPath } from './daily-math.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = path.join(root, projectionPath);
 const dist = path.join(root, 'docs/.vitepress/dist');
+// Only the content-free template generator opts into this; main stays fail-closed.
+if (!fs.existsSync(source) && process.argv.includes('--allow-empty-template')) {
+  console.log('Daily Math verification: content-free template, no journal to verify.');
+  process.exit(0);
+}
 const manifest = JSON.parse(fs.readFileSync(path.join(source, 'manifest.json'), 'utf8'));
 assert.ok(manifest.length > 0);
 assert.equal(new Set(manifest.map(r => r.date)).size, manifest.length);

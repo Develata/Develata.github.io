@@ -128,6 +128,30 @@ test('real Bun CLI and Git preserve trailing-space source and commit successfull
   assert.throws(() => syncJournal(f.archive, f.root), /Unexpected projection/);
 });
 
+test('content-free template opts out explicitly while main stays fail-closed', t => {
+  const f = fixture(t);
+  const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  if (!fs.existsSync(path.join(repo, 'scripts/cleanup-for-template.mjs'))) {
+    t.skip('Template branch deliberately removes its generator');
+    return;
+  }
+  fs.mkdirSync(path.join(f.root, 'scripts'));
+  for (const name of ['daily-math.mjs', 'verify-daily-math.mjs', 'cleanup-for-template.mjs']) {
+    fs.copyFileSync(path.join(repo, 'scripts', name), path.join(f.root, 'scripts', name));
+  }
+  fs.copyFileSync(path.join(repo, 'package.json'), path.join(f.root, 'package.json'));
+  fs.symlinkSync(path.join(repo, 'node_modules'), path.join(f.root, 'node_modules'), 'dir');
+  syncJournal(f.archive, f.root);
+  const cleanup = spawnSync(process.execPath, ['scripts/cleanup-for-template.mjs'], { cwd: f.root, encoding: 'utf8' });
+  assert.equal(cleanup.status, 0, cleanup.stderr);
+  assert.equal(fs.existsSync(f.target), false);
+  const template = spawnSync('bun', ['run', 'daily-math:verify'], { cwd: f.root, encoding: 'utf8' });
+  assert.equal(template.status, 0, template.stderr);
+  assert.match(template.stdout, /content-free template/);
+  assert.notEqual(spawnSync(process.execPath, ['scripts/verify-daily-math.mjs'], { cwd: f.root }).status, 0);
+  assert.ok(!JSON.parse(fs.readFileSync(path.join(repo, 'package.json'), 'utf8')).scripts['daily-math:verify'].includes('--allow-empty'));
+});
+
 test('journal MathML is compact and deterministic across cache eviction', async () => {
   const { default: MarkdownIt } = await import('markdown-it');
   const { boundedMath } = await import('../docs/.vitepress/utils/bounded-math.ts');
