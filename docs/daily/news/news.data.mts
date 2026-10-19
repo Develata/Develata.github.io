@@ -7,14 +7,14 @@
  * 3. 旧新闻访问入口完全交给侧边栏归档。
  */
 import { defineLoader } from 'vitepress';
-import { getRecentNewsCards } from '../.vitepress/utils/news-index';
-import type { NewsCardItem } from '../.vitepress/utils/news-types';
+import { getRecentNewsCards } from '../../.vitepress/utils/news-index';
+import type { NewsCardItem } from '../../.vitepress/utils/news-types';
 
 declare const data: NewsCardItem[];
 export { data };
 
 export default defineLoader({
-  watch: 'news/**/*.md',
+  watch: 'daily/news/**/*.md',
   load(watchedFiles): NewsCardItem[] {
     return getRecentNewsCards(20, watchedFiles);
   },

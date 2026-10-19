@@ -29,8 +29,8 @@ watch([() => props.open, navEl], () => {
 }, { immediate: true, flush: 'post' });
 
 const resolvedGroups = computed(() => {
-  const sourcePath = page.value.relativePath.replace(/^daily\/news\//, 'news/');
-  if (sourcePath.startsWith('news/')) {
+  const sourcePath = page.value.relativePath;
+  if (sourcePath.startsWith('daily/news/')) {
     return isNewsArticlePath(sourcePath)
       ? buildNewsArticleSidebar(sidebar.value, sourcePath)
       : sidebar.value;

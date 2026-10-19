@@ -14,12 +14,7 @@ const dirsToEmpty = [
   'knowledge/cli',
   'knowledge/sharing',
   'books',
-  'news',
-  'news/AI_ML',
-  'news/Math',
-  'news/世界时事',
-  'news/科技新闻',
-  'news/舆情热点',
+
   'about/blog'
 ];
 

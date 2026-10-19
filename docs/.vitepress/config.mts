@@ -16,7 +16,6 @@ import { mermaidFence } from './plugins/mermaid-fence';
 import { bilingualPairs } from './plugins/bilingual-pairs';
 import { bilingualModeHeadScript } from './theme/bilingualMode';
 import { generateRssFeeds, rssDevServer } from './rss/index';
-import { writeDailyRedirects } from './daily/routes';
 import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
 
 function escapeHtml(text: string): string {
@@ -70,8 +69,6 @@ export default defineConfig({
   description: 'Math & Code',
   base: '/',
   cleanUrls: true,
-  // Producer-owned News sources stay put; only their public routes move.
-  rewrites: { 'news/:path*': 'daily/news/:path*' },
   // VitePress 1.x offers no scoped prefetch control. Keep Daily metadata-only;
   // restoring global prefetch would eagerly download every visible article body.
   router: { prefetchLinks: false },
@@ -79,9 +76,9 @@ export default defineConfig({
   sitemap: { hostname: 'https://develata.me' },
   // 页面 hash map 抽成共享 chunk；否则每个 HTML 内联一份，dist 体积随页数平方增长。
   metaChunk: true,
-  buildEnd(config) { generateRssFeeds(config); writeDailyRedirects(config); },
+  buildEnd(config) { generateRssFeeds(config); },
   transformHead({ pageData }) {
-    const route = pageData.relativePath.replace(/^news\//, 'daily/news/').replace(/index\.md$/, '').replace(/\.md$/, '');
+    const route = pageData.relativePath.replace(/index\.md$/, '').replace(/\.md$/, '');
     const feed = route.startsWith('daily/news/') ? 'daily-news' : route.startsWith('daily/math/') ? 'daily-math' : 'all';
     return [
       ['link', { rel: 'canonical', href: new URL(route, 'https://develata.me/').href }],
@@ -149,7 +146,7 @@ export default defineConfig({
          * 本地搜索只索引指定栏目中的 Markdown 文本内容。
          * 不变量：
          * 1. frontmatter 显式 `search: false` 的页面必须完全排除；
-         * 2. `news/` 与未来新增的未列入白名单目录默认不进入索引；
+         * 2. `daily/news/` 与未来新增的未列入白名单目录默认不进入索引；
          * 3. 页面标题与正文文本仍保留，但代码块不参与索引；
          * 4. `_render` 必须返回 HTML，交给 VitePress 的 section 抽取逻辑继续处理。
          */

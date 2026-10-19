@@ -7,7 +7,7 @@ import type { NewsCardItem, NewsEntry } from './news-types';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const docsRoot = path.resolve(__dirname, '../../');
-const newsRoot = path.resolve(docsRoot, 'news');
+const newsRoot = path.resolve(docsRoot, 'daily/news');
 let cachedFilesKey = '';
 let cachedEntries: NewsEntry[] = [];
 const cachedEntryMap = new Map<string, { mtimeMs: number; entry: NewsEntry }>();
@@ -102,7 +102,7 @@ function readNewsEntry(filePath: string): NewsEntry {
 
   return {
     title: resolveTitle(data.title, content, stem),
-    url: `/daily/${relativePath.replace(/\.md$/u, '')}`,
+    url: `/${relativePath.replace(/\.md$/u, '')}`,
     excerpt: resolveExcerpt(data.excerpt, content),
     timestamp,
     dateLabel: formatUtcDate(timestamp, 'zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
@@ -110,7 +110,7 @@ function readNewsEntry(filePath: string): NewsEntry {
     monthLabel: formatUtcDate(timestamp, 'en-US', { month: 'short' }),
     year: String(calendarDate.year),
     monthKey: `${calendarDate.year}-${String(calendarDate.month).padStart(2, '0')}`,
-    category: relativePath.split('/')[1] ?? 'news',
+    category: relativePath.split('/')[2] ?? 'news',
   };
 }
 

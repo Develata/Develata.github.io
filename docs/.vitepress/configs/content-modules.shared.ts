@@ -109,7 +109,7 @@ export const contentModules: ContentModule[] = [
   },
   {
     id: 'news',
-    root: 'news/',
+    root: 'daily/news/',
     baseUrl: '/daily/news/',
     search: false,
     randomJump: false,

@@ -12,7 +12,7 @@ const SITE_URL = 'https://develata.me';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const docsRoot = path.resolve(__dirname, '../../');
-const newsRoot = path.join(docsRoot, 'news');
+const newsRoot = path.join(docsRoot, 'daily/news');
 const md = new MarkdownIt({ html: true, linkify: true });
 
 export interface NewsRssItem {
@@ -43,7 +43,7 @@ function readItem(file: string): NewsRssItem | undefined {
   if (data.rss === false) return undefined;
   const date = parseDate(data.date);
   if (!date) return undefined;
-  const url = absoluteUrl(`/daily${markdownPathToUrl(file)}`);
+  const url = absoluteUrl(markdownPathToUrl(file));
 
   return {
     title: String(data.title || firstHeading(content) || path.basename(file, '.md')).trim(),

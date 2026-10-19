@@ -11,7 +11,7 @@ interface NewsPageContext {
 
 export function isNewsArticlePath(relativePath: string): boolean {
   const parts = relativePath.split('/');
-  return parts[0] === 'news' && parts.length >= 4 && parts.at(-1)?.toLowerCase() !== 'index.md';
+  return parts[0] === 'daily' && parts[1] === 'news' && parts.length === 5 && parts.at(-1)?.toLowerCase() !== 'index.md';
 }
 
 export function buildNewsArticleSidebar(items: SidebarItem[], relativePath: string): SidebarItem[] {
@@ -44,8 +44,8 @@ function resolveNewsPageContext(relativePath: string): NewsPageContext | null {
   const parts = relativePath.split('/');
   if (!isNewsArticlePath(relativePath)) return null;
 
-  const category = parts[1];
-  const year = parts[2];
+  const category = parts[2];
+  const year = parts[3];
   const stem = parts.at(-1)?.replace(/\.md$/u, '') ?? '';
   const month = stem.slice(4, 6);
   if (!category || !year || !/^\d{2}$/u.test(month)) return null;

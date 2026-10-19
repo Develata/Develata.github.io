@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NewsCardItem } from '../.vitepress/utils/news-types';
+import type { NewsCardItem } from '../../.vitepress/utils/news-types';
 
 defineProps<{
   items: NewsCardItem[];
