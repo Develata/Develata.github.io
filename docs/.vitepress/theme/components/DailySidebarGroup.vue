@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, provide, ref } from 'vue';
 import type { DefaultTheme } from 'vitepress';
-import NewsSidebarItem from './NewsSidebarItem.vue';
-import { newsSidebarAccordionKey, newsSidebarActiveStateKey, type AccordionController } from './newsSidebarAccordion';
+import DailySidebarItem from './DailySidebarItem.vue';
+import { dailySidebarAccordionKey, dailySidebarActiveStateKey, type AccordionController } from './dailySidebarAccordion';
 import { normalizeSidebarPath } from '../sidebar/normalizePath';
 
 const props = defineProps<{
   items: DefaultTheme.SidebarItem[];
   activePath?: string;
-  // Omit for News's whole-tree accordion; otherwise only descendants of this link.
-  exclusiveWithin?: string;
 }>();
 
 const activeKey = ref<string | null>(resolveDefaultActiveKey());
@@ -20,8 +18,8 @@ const accordion: AccordionController = {
   },
 };
 
-provide(newsSidebarAccordionKey, accordion);
-provide(newsSidebarActiveStateKey, computed(() => resolveActiveState(props.items, normalizeSidebarPath(props.activePath))));
+provide(dailySidebarAccordionKey, accordion);
+provide(dailySidebarActiveStateKey, computed(() => resolveActiveState(props.items, normalizeSidebarPath(props.activePath))));
 
 function resolveDefaultActiveKey(): string | null {
   const index = props.items.findIndex((item) => item.items?.length && item.collapsed === false);
@@ -56,14 +54,13 @@ function resolveActiveState(items: DefaultTheme.SidebarItem[], activePath: strin
 </script>
 
 <template>
-  <div class="NewsSidebarGroup">
-    <NewsSidebarItem
+  <div class="DailySidebarGroup">
+    <DailySidebarItem
       v-for="(item, index) in items"
       :key="item.text"
       :item="item"
       :depth="0"
-      :exclusive="exclusiveWithin == null"
-      :exclusive-within="exclusiveWithin"
+      :exclusive="true"
       :item-key="`${index}:${item.text ?? 'item'}`"
     />
   </div>

@@ -195,10 +195,10 @@ test('content-free template opts out explicitly while main stays fail-closed', t
 });
 
 test('RSS full-text window retains all history, renders only five and preserves identities on shift', async () => {
-  const { applyDailyMathWindow, DAILY_MATH_FULL_TEXT_LIMIT } = await import('../docs/.vitepress/rss/knowledge.ts');
+  const { applyDailyMathWindow, DAILY_MATH_FULL_TEXT_LIMIT } = await import('../docs/.vitepress/rss/daily-math.ts');
   assert.equal(DAILY_MATH_FULL_TEXT_LIMIT, 5);
   const make = n => ({
-    title: `Issue ${n}`, url: `https://develata.me/knowledge/math/daily-math/${n}`,
+    title: `Issue ${n}`, url: `https://develata.me/daily/math/${n}`,
     date: new Date(Date.UTC(2026, 0, n)), description: `Summary ${n}`,
   });
   const identity = ({ contentHtml, ...metadata }) => metadata;
@@ -229,9 +229,9 @@ test('RSS full-text window retains all history, renders only five and preserves 
   }
 });
 
-test('archive navigation disables speculative article-body downloads', () => {
+test('Daily metadata navigation does not prefetch article bodies', () => {
   const config = fs.readFileSync(new URL('../docs/.vitepress/config.mts', import.meta.url), 'utf8');
-  assert.match(config, /router:\s*\{\s*prefetchLinks:\s*false\s*\}/);
+  assert.match(config, /prefetchLinks:\s*false/);
 });
 
 test('year/month archives stay descending and metadata-only as history grows', async t => {
@@ -245,7 +245,7 @@ test('year/month archives stay descending and metadata-only as history grows', a
   assert.equal((index.match(/<details open>/g) ?? []).length, 1);
   assert.doesNotMatch(index, /\$x|Proof|import\(|fetch\(/);
   assert.equal(syncJournal(f.archive, f.root).changed, 0);
-  const { calendarArchive, calendarSidebar } = await import('../docs/.vitepress/utils/calendar-archive.ts');
+  const { calendarArchive, calendarSidebar } = await import('../docs/.vitepress/daily/calendar.ts');
   for (const count of [0, 76, 4000]) {
     const entries = Array.from({ length: count }, (_, i) => {
       const date = new Date(Date.UTC(2020, 0, i + 1)).toISOString().slice(0, 10);

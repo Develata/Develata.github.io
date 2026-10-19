@@ -2,7 +2,7 @@
  * @file content-modules.shared.ts
  * @description 内容模块共享注册表。只能放纯数据与纯函数，供构建配置和客户端组件共同使用。
  */
-export type SidebarSortMode = 'default' | 'news';
+export type SidebarSortMode = 'default' | 'news' | 'journal';
 
 export interface SidebarItemConfig {
   text: string;
@@ -33,6 +33,10 @@ const blogArchiveItem: SidebarItemConfig = {
 };
 
 export const contentModules: ContentModule[] = [
+  { id: 'daily-math', root: 'daily/math/', baseUrl: '/daily/math/',
+    search: true, randomJump: true, titleInject: false, sidebar: { sortMode: 'journal' } },
+  { id: 'daily', root: 'daily/', baseUrl: '/daily/',
+    search: false, randomJump: false, titleInject: false },
   {
     id: 'knowledge-math',
     root: 'knowledge/math/',
@@ -106,7 +110,7 @@ export const contentModules: ContentModule[] = [
   {
     id: 'news',
     root: 'news/',
-    baseUrl: '/news/',
+    baseUrl: '/daily/news/',
     search: false,
     randomJump: false,
     titleInject: true,

@@ -6,4 +6,6 @@
 
 ## 目录导航
 
+[每日数学：独立 Daily 归档](/daily/math/)
+
 <FolderTree />

@@ -12,6 +12,7 @@ import { generateBlogRss } from './blog';
 import { generateBooksRss } from './books';
 import { generateKnowledgeRss, listKnowledgeFeedLinks } from './knowledge';
 import { generateNewsRss } from './news';
+import { generateDailyMathRss } from './daily-math';
 
 export interface RssFeedLink {
   title: string;
@@ -25,6 +26,7 @@ export function generateRssFeeds(siteConfig: SiteConfig): void {
 
 export function generateRssFeedsToDir(outDir: string): void {
   generateKnowledgeRss(outDir);
+  generateDailyMathRss(outDir);
   generateBlogRss(outDir);
   generateNewsRss(outDir);
   generateBooksRss(outDir);
@@ -39,6 +41,7 @@ export function listRssFeeds(): RssFeedLink[] {
       description: '聚合 Knowledge、Blog、News 与 Books 的全部订阅。',
     },
     ...listKnowledgeFeedLinks(),
+    { title: 'Daily / Math', url: '/rss/daily-math.xml', description: '每日数学最近 5 篇全文与全部历史摘要。' },
     {
       title: 'Blog',
       url: '/rss/blog.xml',
@@ -46,7 +49,7 @@ export function listRssFeeds(): RssFeedLink[] {
     },
     {
       title: 'News',
-      url: '/rss/news.xml',
+      url: '/rss/daily-news.xml',
       description: '新闻日汇总更新。',
     },
     {

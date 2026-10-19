@@ -2,20 +2,18 @@
 import { VPLink } from 'vitepress/theme';
 import { computed, inject, provide, ref, watch } from 'vue';
 import type { DefaultTheme } from 'vitepress';
-import { newsSidebarAccordionKey, newsSidebarActiveStateKey } from './newsSidebarAccordion';
-import { normalizeSidebarPath } from '../sidebar/normalizePath';
+import { dailySidebarAccordionKey, dailySidebarActiveStateKey } from './dailySidebarAccordion';
 
 const props = defineProps<{
   item: DefaultTheme.SidebarItem;
   depth: number;
   itemKey: string;
   exclusive: boolean;
-  exclusiveWithin?: string;
 }>();
 
 const collapsed = ref(!!props.item.collapsed);
-const parentAccordion = inject(newsSidebarAccordionKey, null);
-const activeState = inject(newsSidebarActiveStateKey, null);
+const parentAccordion = inject(dailySidebarAccordionKey, null);
+const activeState = inject(dailySidebarActiveStateKey, null);
 const activeTopLevelKey = ref<string | null>(null);
 const accordion = parentAccordion ?? {
   activeKey: activeTopLevelKey,
@@ -31,7 +29,7 @@ const childAccordion = {
   },
 };
 
-provide(newsSidebarAccordionKey, childAccordion);
+provide(dailySidebarAccordionKey, childAccordion);
 
 watch(() => props.item.collapsed, (next) => {
   collapsed.value = !!next;
@@ -48,10 +46,6 @@ const classes = computed(() => [
 ]);
 const headingTag = computed(() => (!hasChildren.value ? 'p' : `h${Math.min(props.depth + 2, 6)}`));
 const isAccordionItem = computed(() => props.exclusive && hasChildren.value && props.item.collapsed != null);
-// The archive root itself stays independent of ordinary Math siblings.
-const exclusiveChildren = computed(() => props.exclusive || (
-  props.exclusiveWithin != null && normalizeSidebarPath(props.item.link) === normalizeSidebarPath(props.exclusiveWithin)
-));
 const showCaretPlaceholder = computed(() => props.item.collapsed != null && isLink.value && !hasChildren.value);
 
 watch(hasActive, (next) => {
@@ -107,7 +101,7 @@ function resolveDefaultChildKey(): string | null {
 </script>
 
 <template>
-  <section class="NewsSidebarItem" :class="classes">
+  <section class="DailySidebarItem" :class="classes">
     <div
       v-if="item.text"
       class="item"
@@ -149,17 +143,16 @@ function resolveDefaultChildKey(): string | null {
     </div>
 
     <div v-if="hasChildren && !collapsed" class="items">
-      <NewsSidebarItem
+      <DailySidebarItem
         v-for="(child, index) in item.items"
         :key="child.text"
         :item="child"
         :depth="depth + 1"
-        :exclusive="exclusiveChildren"
-        :exclusive-within="exclusiveWithin"
+        :exclusive="exclusive"
         :item-key="`${itemKey}/${index}:${child.text ?? 'item'}`"
       />
     </div>
   </section>
 </template>
 
-<style scoped src="./news-sidebar-item.css"></style>
+<style scoped src="./daily-sidebar-item.css"></style>

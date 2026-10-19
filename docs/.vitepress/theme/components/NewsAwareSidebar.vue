@@ -3,7 +3,7 @@ import { useScrollLock } from '@vueuse/core';
 import { inBrowser, useData, useRoute } from 'vitepress';
 import { computed, ref, watch } from 'vue';
 import DefaultSidebarGroup from './DefaultSidebarGroup.vue';
-import NewsSidebarGroup from './NewsSidebarGroup.vue';
+import DailySidebarGroup from './DailySidebarGroup.vue';
 import { buildNewsArticleSidebar, isNewsArticlePath } from './newsSidebarTree';
 import { normalizeSidebarPath } from '../sidebar/normalizePath';
 import { useSidebar } from '../sidebar/useSidebar';
@@ -29,9 +29,10 @@ watch([() => props.open, navEl], () => {
 }, { immediate: true, flush: 'post' });
 
 const resolvedGroups = computed(() => {
-  if (page.value.relativePath.startsWith('news/')) {
-    return isNewsArticlePath(page.value.relativePath)
-      ? buildNewsArticleSidebar(sidebar.value, page.value.relativePath)
+  const sourcePath = page.value.relativePath.replace(/^daily\/news\//, 'news/');
+  if (sourcePath.startsWith('news/')) {
+    return isNewsArticlePath(sourcePath)
+      ? buildNewsArticleSidebar(sidebar.value, sourcePath)
       : sidebar.value;
   }
 
@@ -40,8 +41,7 @@ const resolvedGroups = computed(() => {
 
 const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.length}`);
 const activePath = computed(() => normalizeSidebarPath(route.path));
-// Reuse the news accordion's mount-on-expand tree for the growing math archive.
-const useArchiveSidebar = computed(() => page.value.relativePath.startsWith('news/') || page.value.relativePath.startsWith('knowledge/math/'));
+const useArchiveSidebar = computed(() => route.path.startsWith('/daily/'));
 </script>
 
 <template>
@@ -57,11 +57,10 @@ const useArchiveSidebar = computed(() => page.value.relativePath.startsWith('new
       <span id="sidebar-aria-label" class="visually-hidden">Sidebar Navigation</span>
 
       <slot name="sidebar-nav-before" />
-      <NewsSidebarGroup
+      <DailySidebarGroup
         v-if="useArchiveSidebar"
         :items="resolvedGroups"
         :active-path="activePath"
-        :exclusive-within="page.relativePath.startsWith('knowledge/math/') ? '/knowledge/math/daily-math/' : undefined"
         :key="key"
       />
       <DefaultSidebarGroup

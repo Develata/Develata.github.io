@@ -7,6 +7,7 @@ import type { DefaultTheme } from 'vitepress';
 import { contentModules } from './content-modules.shared';
 import { resolveNewsSidebarItems } from '../utils/news-sidebar';
 import { resolveSidebarItems } from '../utils/sidebar';
+import { journalSidebar } from '../daily/journal';
 
 const sidebarEntries = contentModules.flatMap((module) => {
   if (!module.sidebar) return [];
@@ -14,6 +15,7 @@ const sidebarEntries = contentModules.flatMap((module) => {
   const dirPath = module.root.replace(/\/$/u, '');
   const generatedItems = module.sidebar.sortMode === 'news'
     ? resolveNewsSidebarItems()
+    : module.sidebar.sortMode === 'journal' ? journalSidebar()
     : resolveSidebarItems(dirPath, module.baseUrl);
   const items = module.sidebar.appendItems
     ? [...generatedItems, ...module.sidebar.appendItems]

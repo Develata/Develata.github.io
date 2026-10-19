@@ -22,19 +22,19 @@ const items = [...feed.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
 assert.equal(items.length, manifest.length, 'RSS must contain all history');
 assert.equal(items.filter(item => item.includes('<content:encoded')).length, Math.min(5, manifest.length));
 const escapeXml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
-const base = '/knowledge/math/daily-math/';
+const base = '/daily/math/';
 const index = fs.readFileSync(path.join(dist, base, 'index.html'), 'utf8');
 const rssPage = fs.readFileSync(path.join(dist, 'about/rss.html'), 'utf8');
 assert.ok(rssPage.includes('/rss/daily-math.xml'));
 assert.ok(index.includes('/rss/daily-math.xml'));
 const indexBody = index.split('<main')[1]?.split('</main>')[0] ?? '';
-const archiveLinks = [...indexBody.matchAll(/href="(?:\.\/|\/knowledge\/math\/daily-math\/)(\d{4}-\d{2}-\d{2})"/g)].map(m => m[1]);
+const archiveLinks = [...indexBody.matchAll(/href="(?:\.\/|\/daily\/math\/)(\d{4}-\d{2}-\d{2})"/g)].map(m => m[1]);
 assert.deepEqual(archiveLinks, manifest.map(r => r.date), 'SSR archive links: all history exactly once, descending');
 assert.deepEqual([...indexBody.matchAll(/<summary>(\d{4}-\d{2})<\/summary>/g)].map(m => m[1]), [...new Set(manifest.map(r => r.date.slice(0, 7)))]);
 const mathIndex = fs.readFileSync(path.join(dist, 'knowledge/math/index.html'), 'utf8');
-assert.ok(mathIndex.includes('NewsSidebarGroup'), 'Math reuses news mount-on-expand navigation');
-assert.ok(mathIndex.includes('href="/knowledge/math/daily-math/"'));
-assert.doesNotMatch(mathIndex, /href="\/knowledge\/math\/daily-math\/\d{4}-\d{2}-\d{2}"/, 'Math landing must not eagerly duplicate the journal');
+assert.ok(!mathIndex.includes('DailySidebarGroup'), 'Math uses ordinary independent navigation');
+assert.ok(mathIndex.includes('href="/daily/math/"'));
+assert.doesNotMatch(mathIndex, /href="\/daily\/math\/\d{4}-\d{2}-\d{2}"/, 'Math landing must not eagerly duplicate the journal');
 for (const html of [mathIndex, index]) {
   assert.doesNotMatch(html, /<link[^>]+modulepreload[^>]+(?:localSearchIndex|daily-math_\d{4})/, 'No eager full text/search index preload');
 }
@@ -47,7 +47,7 @@ for (let i = 0; i < manifest.length; i++) {
   assert.ok(projected.content.startsWith(`\n# ${title}\n`) || projected.content.startsWith(`# ${title}\n`));
   assert.equal(sha256(fs.readFileSync(path.join(source, `${r.date}.md`))), r.projectionSha256);
   const url = `https://develata.me${base}${r.date}`;
-  assert.ok(items[i].includes(`<guid isPermaLink="true">${url}</guid>`));
+  assert.ok(items[i].includes(`<guid isPermaLink="true">${url.replace('/daily/math/', '/knowledge/math/daily-math/')}</guid>`));
   assert.ok(items[i].includes(`<pubDate>${new Date(`${r.date}T00:00:00+08:00`).toUTCString()}</pubDate>`));
   assert.ok(items[i].includes(`<title>${escapeXml(title)}</title>`));
   assert.ok(items[i].includes(`<link>${url}</link>`));
@@ -65,7 +65,7 @@ for (let i = 0; i < manifest.length; i++) {
   assert.ok(indexBody.includes(`href="./${r.date}"`), `Archive link missing: ${r.date}`);
   assert.ok(index.includes(r.date));
 }
-for (const name of ['knowledge.xml', 'knowledge-math.xml', 'all.xml']) {
+for (const name of ['all.xml']) {
   const aggregate = fs.readFileSync(path.join(dist, 'rss', name), 'utf8');
   const entries = [...aggregate.matchAll(/<item>[\s\S]*?<\/item>/g)].map(m => m[0]);
   const journal = entries.filter(item => item.includes(`<link>https://develata.me${base}`));

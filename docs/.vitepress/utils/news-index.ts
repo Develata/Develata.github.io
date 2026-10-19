@@ -102,7 +102,7 @@ function readNewsEntry(filePath: string): NewsEntry {
 
   return {
     title: resolveTitle(data.title, content, stem),
-    url: `/${relativePath.replace(/\.md$/u, '')}`,
+    url: `/daily/${relativePath.replace(/\.md$/u, '')}`,
     excerpt: resolveExcerpt(data.excerpt, content),
     timestamp,
     dateLabel: formatUtcDate(timestamp, 'zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }),

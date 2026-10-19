@@ -16,6 +16,7 @@ import { mermaidFence } from './plugins/mermaid-fence';
 import { bilingualPairs } from './plugins/bilingual-pairs';
 import { bilingualModeHeadScript } from './theme/bilingualMode';
 import { generateRssFeeds, rssDevServer } from './rss/index';
+import { writeDailyRedirects } from './daily/routes';
 import { tokenizeMixedText, tokenizeSearchQuery } from './utils/search-tokenize';
 
 function escapeHtml(text: string): string {
@@ -69,15 +70,24 @@ export default defineConfig({
   description: 'Math & Code',
   base: '/',
   cleanUrls: true,
-  // VitePress 1.x has no per-link prefetch opt-out. Visible archive links were
-  // downloading whole article chunks on idle (13 journal bodies on its index).
-  // Keep navigation on demand; native links and SPA routing are unchanged.
+  // Producer-owned News sources stay put; only their public routes move.
+  rewrites: { 'news/:path*': 'daily/news/:path*' },
+  // VitePress 1.x offers no scoped prefetch control. Keep Daily metadata-only;
+  // restoring global prefetch would eagerly download every visible article body.
   router: { prefetchLinks: false },
   // 构建时生成 /sitemap.xml，随页面增删自动更新；不开 lastUpdated（CI 浅克隆下 git 时间不可信）。
   sitemap: { hostname: 'https://develata.me' },
   // 页面 hash map 抽成共享 chunk；否则每个 HTML 内联一份，dist 体积随页数平方增长。
   metaChunk: true,
-  buildEnd: generateRssFeeds,
+  buildEnd(config) { generateRssFeeds(config); writeDailyRedirects(config); },
+  transformHead({ pageData }) {
+    const route = pageData.relativePath.replace(/^news\//, 'daily/news/').replace(/index\.md$/, '').replace(/\.md$/, '');
+    const feed = route.startsWith('daily/news/') ? 'daily-news' : route.startsWith('daily/math/') ? 'daily-math' : 'all';
+    return [
+      ['link', { rel: 'canonical', href: new URL(route, 'https://develata.me/').href }],
+      ['link', { rel: 'alternate', type: 'application/rss+xml', title: 'RSS', href: `/rss/${feed}.xml` }],
+    ];
+  },
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     // 双语「对照」偏好须在首帧前生效，否则会先闪一下单语版式。

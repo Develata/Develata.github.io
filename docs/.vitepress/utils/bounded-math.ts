@@ -25,7 +25,7 @@ export function boundedMath(md: MarkdownIt, options: { native?: boolean } = {}) 
   for (const [rule, display] of [['math_inline', false], ['math_block', true]] as const) {
     const original = md.renderer.rules[rule]!;
     md.renderer.rules[rule] = (tokens, idx, renderOptions, env, self) => {
-      const native = options.native || String(env?.relativePath || env?.path || '').includes('daily-math/');
+      const native = options.native || String(env?.relativePath || env?.path || '').includes('daily/math/');
       if (!native) return original(tokens, idx, renderOptions, env, self);
       const tex = tokens[idx].content;
       const key = `${display}:${tex}`;

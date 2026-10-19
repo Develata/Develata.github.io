@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 
-export const projectionPath = 'docs/knowledge/math/daily-math';
+export const projectionPath = 'docs/daily/math';
 export const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 

@@ -20,6 +20,8 @@ function loadModule(url) {
     let target;
     if (specifier === 'vitepress/theme') {
       target = 'data:text/javascript,' + encodeURIComponent('export const VPLink = "a";');
+    } else if (specifier === 'vitepress') {
+      target = 'data:text/javascript,' + encodeURIComponent('export const useRoute = () => ({path: "/knowledge/math/"});');
     } else if (specifier.startsWith('.')) {
       target = loadModule(new URL(/\.(vue|ts)$/u.test(specifier) ? specifier : `${specifier}.ts`, url));
     } else target = import.meta.resolve(specifier);
@@ -29,7 +31,20 @@ function loadModule(url) {
   modules.set(url.href, target);
   return target;
 }
-const { default: Group } = await import(loadModule(new URL('../docs/.vitepress/theme/components/NewsSidebarGroup.vue', import.meta.url)));
+const { default: Group } = await import(loadModule(new URL('../docs/.vitepress/theme/components/DailySidebarGroup.vue', import.meta.url)));
+const { useDefaultSidebarControl } = await import(loadModule(new URL('../docs/.vitepress/theme/sidebar/defaultSidebarControl.ts', import.meta.url)));
+const { computed, effectScope } = await import('vue');
+test('ordinary Math siblings keep independent default collapse state', () => {
+  const scope = effectScope();
+  scope.run(() => {
+    const a = useDefaultSidebarControl(computed(() => ({ text: 'A', collapsed: true, items: [{ text: 'a', link: '/a' }] })));
+    const b = useDefaultSidebarControl(computed(() => ({ text: 'B', collapsed: true, items: [{ text: 'b', link: '/b' }] })));
+    a.toggle(); b.toggle();
+    assert.equal(a.collapsed.value, false); assert.equal(b.collapsed.value, false);
+    a.toggle(); assert.equal(b.collapsed.value, false);
+  });
+  scope.stop();
+});
 const node = (type, text = '') => ({ type, text, props: {}, children: [], parent: null });
 const renderer = createRenderer({
   createElement: node, createText: text => node('#text', text), createComment: text => node('#comment', text),
@@ -44,7 +59,7 @@ const renderer = createRenderer({
   },
   remove(el) { el.parent.children.splice(el.parent.children.indexOf(el), 1); el.parent = null; },
 });
-const archive = '/knowledge/math/daily-math/';
+const archive = '/daily/math/';
 const leaf = (text, link) => ({ text, link });
 const folder = (text, items, extra = {}) => ({ text, collapsed: true, items, ...extra });
 const fixture = () => [
@@ -70,38 +85,20 @@ function mount(props) {
   return { app, all, section, expanded, toggle };
 }
 
-test('Math keeps independent peers and nested folders; only archive years/months are exclusive', async () => {
-  const ui = mount({ items: fixture(), exclusiveWithin: archive });
-  assert.equal(ui.section('2026'), undefined, 'closed children are not mounted');
-  await ui.toggle('Math A'); await ui.toggle('Math B'); await ui.toggle('Archive');
-  assert.ok(ui.expanded('Math A') && ui.expanded('Math B') && ui.expanded('Archive'));
-  await ui.toggle('A1'); await ui.toggle('A2', true);
-  assert.ok(ui.expanded('A1') && ui.expanded('A2'));
-  await ui.toggle('2026'); await ui.toggle('2026-10'); await ui.toggle('2026-09', true);
-  assert.equal(ui.expanded('2026-10'), false); assert.ok(ui.expanded('2026-09'));
-  assert.ok(!ui.section('2026-10 article'), 'collapsed month unmounts articles');
-  await ui.toggle('2025');
-  assert.equal(ui.expanded('2026'), false); assert.ok(ui.expanded('2025'));
-  assert.ok(ui.expanded('Math A') && ui.expanded('Math B') && ui.expanded('A1') && ui.expanded('A2'));
-  await ui.toggle('Math B'); assert.ok(ui.expanded('2025'));
-  ui.app.unmount();
-});
-
 test('direct historical article opens exact branch and retains native links', async () => {
-  const ui = mount({ items: fixture(), exclusiveWithin: archive, activePath: `${archive}2025-09-01` });
+  const ui = mount({ items: fixture(), activePath: `${archive}2025-09-01` });
   for (const text of ['Archive', '2025', '2025-09']) assert.ok(ui.expanded(text));
   assert.equal(ui.expanded('2026'), false);
   assert.match(ui.section('2025-09 article').props.class, /is-active/u);
   assert.ok(ui.all().some(el => el.type === 'a' && el.props.href === `${archive}2025-09-01`));
-  await ui.toggle('Math A'); await ui.toggle('Math B'); assert.ok(ui.expanded('2025-09'));
   ui.app.unmount();
 });
 
-test('omitting the boundary preserves News whole-tree sibling exclusion', async () => {
+test('Daily has whole-tree sibling exclusion and keyboard toggles', async () => {
   const ui = mount({ items: fixture() });
   await ui.toggle('Math A'); await ui.toggle('Math B');
   assert.equal(ui.expanded('Math A'), false); assert.ok(ui.expanded('Math B'));
-  await ui.toggle('Archive'); await ui.toggle('2026'); await ui.toggle('2025');
+  await ui.toggle('Archive'); await ui.toggle('2026'); await ui.toggle('2025', true);
   assert.equal(ui.expanded('Math B'), false); assert.equal(ui.expanded('2026'), false);
   assert.ok(ui.expanded('2025'));
   ui.app.unmount();

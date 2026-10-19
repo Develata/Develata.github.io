@@ -10,5 +10,5 @@ export interface SidebarActiveState {
   exactActiveKey: string | null;
 }
 
-export const newsSidebarAccordionKey: InjectionKey<AccordionController> = Symbol('news-sidebar-accordion');
-export const newsSidebarActiveStateKey: InjectionKey<ComputedRef<SidebarActiveState>> = Symbol('news-sidebar-active-state');
+export const dailySidebarAccordionKey: InjectionKey<AccordionController> = Symbol('daily-sidebar-accordion');
+export const dailySidebarActiveStateKey: InjectionKey<ComputedRef<SidebarActiveState>> = Symbol('daily-sidebar-active-state');

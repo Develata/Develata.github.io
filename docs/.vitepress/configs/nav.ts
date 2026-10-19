@@ -17,7 +17,11 @@ export const nav: DefaultTheme.Config['nav'] = [
       { text: 'Repo-AI-Analy', link: 'https://develata.github.io/Repo-AI-Analysis/' },
     ],
   },
-  { text: 'News', link: '/news/' },
+  { text: 'Daily', items: [
+    { text: 'Overview', link: '/daily/' },
+    { text: 'News', link: '/daily/news/' },
+    { text: 'Math', link: '/daily/math/' },
+  ] },
   { text: 'Books', link: '/books/' },
   { text: 'Games', link: '/games/' },
   {

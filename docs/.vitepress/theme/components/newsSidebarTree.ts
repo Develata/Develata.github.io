@@ -58,7 +58,7 @@ function resolveNewsPageContext(relativePath: string): NewsPageContext | null {
 }
 
 function isCurrentCategory(item: SidebarItem, category: string): boolean {
-  const prefix = `/news/${category}/`;
+  const prefix = `/daily/news/${category}/`;
   return getLatestLink(item)?.startsWith(prefix) ?? false;
 }
 

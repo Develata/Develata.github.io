@@ -36,10 +36,10 @@ features:
     link: /books/
     linkText: 浏览书单
 
-  - title:  News
-    details: 时事新闻、科技大事。
-    link: /news/
-    linkText: 新闻
+  - title:  Daily
+    details: 每日新闻与数学札记。
+    link: /daily/
+    linkText: 每日更新
 
   - title:  RSS
     details: 按板块订阅站点更新。

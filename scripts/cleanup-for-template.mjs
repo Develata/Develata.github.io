@@ -8,6 +8,7 @@ const docsDir = path.resolve(rootDir, 'docs');
 
 // Configuration: Directories to empty (keep the directory, remove files)
 const dirsToEmpty = [
+  'daily',
   'knowledge/math',
   'knowledge/coding',
   'knowledge/cli',

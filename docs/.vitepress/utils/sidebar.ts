@@ -11,7 +11,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
-import { calendarSidebar } from './calendar-archive';
 import type { DefaultTheme } from 'vitepress';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -81,7 +80,6 @@ export function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarIt
       items.push({
         text: title,
         collapsed: true,
-        ...(nextBaseUrl === '/knowledge/math/daily-math/' ? { link: nextBaseUrl } : {}),
         items: children,
         order,
         name: entry.name,
@@ -162,11 +160,5 @@ export function resolveSidebarItems(dirPath: string, baseUrl: string): SidebarIt
     return (a.name ?? '').localeCompare(b.name ?? '', 'en');
   });
 
-  if (baseUrl === '/knowledge/math/daily-math/') {
-    return calendarSidebar(result.filter(item => item.link && item.date).map(item => ({
-      title: item.text ?? '', url: item.link!, timestamp: item.date!,
-      year: item.name!.slice(0, 4), monthKey: item.name!.slice(0, 7),
-    })));
-  }
   return result.map(({ order, name, date, ...rest }) => rest);
 }

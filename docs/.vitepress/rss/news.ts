@@ -43,7 +43,7 @@ function readItem(file: string): NewsRssItem | undefined {
   if (data.rss === false) return undefined;
   const date = parseDate(data.date);
   if (!date) return undefined;
-  const url = absoluteUrl(markdownPathToUrl(file));
+  const url = absoluteUrl(`/daily${markdownPathToUrl(file)}`);
 
   return {
     title: String(data.title || firstHeading(content) || path.basename(file, '.md')).trim(),
@@ -57,7 +57,7 @@ function readItem(file: string): NewsRssItem | undefined {
 function writeFeed(outDir: string, items: NewsRssItem[]): void {
   const rssDir = path.join(outDir, 'rss');
   fs.mkdirSync(rssDir, { recursive: true });
-  fs.writeFileSync(path.join(rssDir, 'news.xml'), renderFeed(items), 'utf-8');
+  fs.writeFileSync(path.join(rssDir, 'daily-news.xml'), renderFeed(items), 'utf-8');
 }
 
 function renderFeed(items: NewsRssItem[]): string {
@@ -65,11 +65,11 @@ function renderFeed(items: NewsRssItem[]): string {
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Develata's Space - News</title>
-    <link>${escapeXml(absoluteUrl('/news/'))}</link>
+    <link>${escapeXml(absoluteUrl('/daily/news/'))}</link>
     <description>新闻日汇总更新。</description>
     <language>zh-CN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="${escapeXml(absoluteUrl('/rss/news.xml'))}" rel="self" type="application/rss+xml" />
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="${escapeXml(absoluteUrl('/rss/daily-news.xml'))}" rel="self" type="application/rss+xml" />
 ${items.map(renderItem).join('\n')}
   </channel>
 </rss>
@@ -84,7 +84,7 @@ function renderItem(item: NewsRssItem): string {
   return `    <item>
       <title>${escapeXml(item.title)}</title>
       <link>${escapeXml(item.url)}</link>
-      <guid isPermaLink="true">${escapeXml(item.url)}</guid>
+      <guid isPermaLink="true">${escapeXml(item.url.replace('/daily/news/', '/news/'))}</guid>
       <pubDate>${item.date?.toUTCString()}</pubDate>${description}${content}
     </item>`;
 }

@@ -2,7 +2,7 @@
 import type { DefaultTheme } from 'vitepress';
 import { getNewsEntries } from './news-index';
 import type { NewsEntry } from './news-types';
-import { calendarSidebar } from './calendar-archive';
+import { calendarSidebar } from '../daily/calendar';
 
 export function resolveNewsSidebarItems(): DefaultTheme.SidebarItem[] {
   const categories = new Map<string, NewsEntry[]>();

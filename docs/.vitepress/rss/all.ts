@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const SITE_URL = 'https://develata.me';
-const SOURCE_FEEDS = ['knowledge.xml', 'blog.xml', 'news.xml', 'books.xml'];
+const SOURCE_FEEDS = ['knowledge.xml', 'blog.xml', 'daily-news.xml', 'daily-math.xml', 'books.xml'];
 
 interface RssItem {
   xml: string;

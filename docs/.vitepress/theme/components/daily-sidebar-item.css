@@ -1,8 +1,8 @@
-.NewsSidebarItem.level-0 {
+.DailySidebarItem.level-0 {
   padding-bottom: 24px;
 }
 
-.NewsSidebarItem.collapsed.level-0 {
+.DailySidebarItem.collapsed.level-0 {
   padding-bottom: 10px;
 }
 
@@ -12,7 +12,7 @@
   width: 100%;
 }
 
-.NewsSidebarItem.collapsible > .item {
+.DailySidebarItem.collapsible > .item {
   cursor: pointer;
 }
 
@@ -26,10 +26,10 @@
   transition: background-color 0.25s;
 }
 
-.NewsSidebarItem.level-2.is-active > .item > .indicator,
-.NewsSidebarItem.level-3.is-active > .item > .indicator,
-.NewsSidebarItem.level-4.is-active > .item > .indicator,
-.NewsSidebarItem.level-5.is-active > .item > .indicator {
+.DailySidebarItem.level-2.is-active > .item > .indicator,
+.DailySidebarItem.level-3.is-active > .item > .indicator,
+.DailySidebarItem.level-4.is-active > .item > .indicator,
+.DailySidebarItem.level-5.is-active > .item > .indicator {
   background-color: var(--vp-c-brand-1);
 }
 
@@ -48,30 +48,30 @@
   transition: color 0.25s;
 }
 
-.NewsSidebarItem.level-0 .text {
+.DailySidebarItem.level-0 .text {
   color: var(--vp-c-text-1);
   font-weight: 700;
 }
 
-.NewsSidebarItem.level-1 .text,
-.NewsSidebarItem.level-2 .text,
-.NewsSidebarItem.level-3 .text,
-.NewsSidebarItem.level-4 .text,
-.NewsSidebarItem.level-5 .text {
+.DailySidebarItem.level-1 .text,
+.DailySidebarItem.level-2 .text,
+.DailySidebarItem.level-3 .text,
+.DailySidebarItem.level-4 .text,
+.DailySidebarItem.level-5 .text {
   color: var(--vp-c-text-2);
   font-weight: 500;
 }
 
-.NewsSidebarItem.is-link > .item > .link:hover .text {
+.DailySidebarItem.is-link > .item > .link:hover .text {
   color: var(--vp-c-brand-1);
 }
 
-.NewsSidebarItem.has-active > .item > .text,
-.NewsSidebarItem.has-active > .item > .link > .text {
+.DailySidebarItem.has-active > .item > .text,
+.DailySidebarItem.has-active > .item > .link > .text {
   color: var(--vp-c-text-1);
 }
 
-.NewsSidebarItem.is-active > .item .link > .text {
+.DailySidebarItem.is-active > .item .link > .text {
   color: var(--vp-c-brand-1);
 }
 
@@ -106,19 +106,19 @@
   transition: transform 0.25s;
 }
 
-.NewsSidebarItem.collapsed .caret-icon {
+.DailySidebarItem.collapsed .caret-icon {
   transform: rotate(0deg);
 }
 
-.NewsSidebarItem.level-1 .items,
-.NewsSidebarItem.level-2 .items,
-.NewsSidebarItem.level-3 .items,
-.NewsSidebarItem.level-4 .items,
-.NewsSidebarItem.level-5 .items {
+.DailySidebarItem.level-1 .items,
+.DailySidebarItem.level-2 .items,
+.DailySidebarItem.level-3 .items,
+.DailySidebarItem.level-4 .items,
+.DailySidebarItem.level-5 .items {
   border-left: 1px solid var(--vp-c-divider);
   padding-left: 16px;
 }
 
-.NewsSidebarItem.collapsed .items {
+.DailySidebarItem.collapsed .items {
   display: none;
 }
