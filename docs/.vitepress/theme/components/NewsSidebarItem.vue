@@ -3,11 +3,14 @@ import { VPLink } from 'vitepress/theme';
 import { computed, inject, provide, ref, watch } from 'vue';
 import type { DefaultTheme } from 'vitepress';
 import { newsSidebarAccordionKey, newsSidebarActiveStateKey } from './newsSidebarAccordion';
+import { normalizeSidebarPath } from '../sidebar/normalizePath';
 
 const props = defineProps<{
   item: DefaultTheme.SidebarItem;
   depth: number;
   itemKey: string;
+  exclusive: boolean;
+  exclusiveWithin?: string;
 }>();
 
 const collapsed = ref(!!props.item.collapsed);
@@ -44,7 +47,11 @@ const classes = computed(() => [
   { collapsed: collapsed.value, collapsible: props.item.collapsed != null, 'is-link': isLink.value, 'is-active': isActive.value, 'has-active': hasActive.value },
 ]);
 const headingTag = computed(() => (!hasChildren.value ? 'p' : `h${Math.min(props.depth + 2, 6)}`));
-const isAccordionItem = computed(() => hasChildren.value && props.item.collapsed != null);
+const isAccordionItem = computed(() => props.exclusive && hasChildren.value && props.item.collapsed != null);
+// The archive root itself stays independent of ordinary Math siblings.
+const exclusiveChildren = computed(() => props.exclusive || (
+  props.exclusiveWithin != null && normalizeSidebarPath(props.item.link) === normalizeSidebarPath(props.exclusiveWithin)
+));
 const showCaretPlaceholder = computed(() => props.item.collapsed != null && isLink.value && !hasChildren.value);
 
 watch(hasActive, (next) => {
@@ -147,6 +154,8 @@ function resolveDefaultChildKey(): string | null {
         :key="child.text"
         :item="child"
         :depth="depth + 1"
+        :exclusive="exclusiveChildren"
+        :exclusive-within="exclusiveWithin"
         :item-key="`${itemKey}/${index}:${child.text ?? 'item'}`"
       />
     </div>

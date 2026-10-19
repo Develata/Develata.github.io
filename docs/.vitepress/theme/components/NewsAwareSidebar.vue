@@ -61,6 +61,7 @@ const useArchiveSidebar = computed(() => page.value.relativePath.startsWith('new
         v-if="useArchiveSidebar"
         :items="resolvedGroups"
         :active-path="activePath"
+        :exclusive-within="page.relativePath.startsWith('knowledge/math/') ? '/knowledge/math/daily-math/' : undefined"
         :key="key"
       />
       <DefaultSidebarGroup

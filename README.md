@@ -117,6 +117,8 @@ manifest，原有 description 保持。除首个 H1 外正文保持不变，仅�
 导入器生成原生可折叠月份（默认展开最新月），全部历史链接在 SSR HTML 中可用，
 禁用 JavaScript 也能浏览。Math 目录只链接归档，不再重复渲染整份每日数学目录；
 Math 侧栏直接复用 NewsSidebarGroup / NewsSidebarItem 的按展开挂载机制，
+仅每日数学归档内部的年份、月份同级互斥展开；归档入口与其他 Math 目录保持
+独立折叠，即使正在阅读每日数学文章也可同时展开普通 Math 同级目录。
 两者共用 calendar-archive 元数据分组，不加载文章正文。News 的最近 20 条加载器
 和分类导航语义不变；不为同步静态数据添加假加载动画或额外网络请求。
 VitePress 1.x 没有逐链接预取开关，故关闭全站 speculative link prefetch：点击时

@@ -57,6 +57,8 @@ jobs:
         run: bun run brain-training:test
       - name: Check journal import invariants
         run: bun run daily-math:test
+      - name: Check sidebar expansion boundaries
+        run: bun run sidebar:test
       - name: Check Northern Run loader lifecycle
         run: bun run game:qin-polar-run:test
       - name: Test and build Northern Run on cache miss

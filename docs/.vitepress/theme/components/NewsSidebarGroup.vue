@@ -8,6 +8,8 @@ import { normalizeSidebarPath } from '../sidebar/normalizePath';
 const props = defineProps<{
   items: DefaultTheme.SidebarItem[];
   activePath?: string;
+  // Omit for News's whole-tree accordion; otherwise only descendants of this link.
+  exclusiveWithin?: string;
 }>();
 
 const activeKey = ref<string | null>(resolveDefaultActiveKey());
@@ -60,6 +62,8 @@ function resolveActiveState(items: DefaultTheme.SidebarItem[], activePath: strin
       :key="item.text"
       :item="item"
       :depth="0"
+      :exclusive="exclusiveWithin == null"
+      :exclusive-within="exclusiveWithin"
       :item-key="`${index}:${item.text ?? 'item'}`"
     />
   </div>

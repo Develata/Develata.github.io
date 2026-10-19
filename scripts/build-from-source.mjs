@@ -88,6 +88,7 @@ try {
   const branches = await Promise.allSettled([
     step('brain tests', script('brain-training:test')),
     step('journal tests', script('daily-math:test')),
+    step('sidebar tests', script('sidebar:test')),
     step('game node tests', script('game:qin-polar-run:test')),
     wasm(),
   ])
