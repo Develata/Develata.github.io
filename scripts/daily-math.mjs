@@ -9,6 +9,50 @@ export const projectionPath = 'docs/knowledge/math/daily-math';
 export const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+/** Website-only headline policy. Keep source titles in the manifest/description.
+ * Full-width prose colons introduce subtitles; ASCII colons (maps/ratios), math,
+ * code, brackets, ratios and map notation are not subtitle delimiters.
+ */
+export function websiteTitle(date, sourceTitle) {
+  const prefix = `每日数学 · ${date} · `;
+  let topic = sourceTitle.trim();
+  if (topic.startsWith(prefix)) topic = topic.slice(prefix.length);
+  if (topic.startsWith(`${date} · `)) topic = topic.slice(date.length + 3);
+  let math = 0;
+  let code = 0;
+  const brackets = [];
+  const closing = { '(': ')', '[': ']', '{': '}', '（': '）', '【': '】', '「': '」', '“': '”' };
+  for (let i = 0; i < topic.length; i++) {
+    const c = topic[i];
+    if (c === '\\') { i++; continue; }
+    if (c === '`' && !math) {
+      const width = topic.slice(i).match(/^`+/)[0].length;
+      if (!code) code = width;
+      else if (code === width) code = 0;
+      i += width - 1;
+      continue;
+    }
+    if (code) continue;
+    if (c === '$') {
+      const width = topic.slice(i).match(/^\$+/)[0].length;
+      if (!math) math = width;
+      else if (math === width) math = 0;
+      i += width - 1;
+      continue;
+    }
+    if (math) continue;
+    if (closing[c]) { brackets.push(closing[c]); continue; }
+    if (c === brackets.at(-1)) { brackets.pop(); continue; }
+    if (!brackets.length && c === '：') {
+      const main = topic.slice(0, i).trim();
+      if (main && topic.slice(i + 1).trim()) topic = main;
+      break;
+    }
+  }
+  if (!topic) throw new Error('Empty website title');
+  return `${date} · ${topic}`;
+}
+
 export function registeredIssues(archive) {
   const ledger = fs.readFileSync(path.join(archive, 'state/issues.jsonl'), 'utf8');
   const seen = new Set();
@@ -40,7 +84,7 @@ export function projectIssue(archive, record) {
   if (date !== record.date || data.title !== record.title) throw new Error('Frontmatter disagrees with registry');
   // Public metadata is an allowlist: editorial control-plane keywords never reach pageData.
   const metadata = {
-    title: `每日数学 · ${record.date} · ${record.title}`,
+    title: websiteTitle(record.date, record.title),
     date: `${record.date}T00:00:00+08:00`,
     description: String(data.topic_summary || record.title),
     journalIssue: record.date,
@@ -48,7 +92,8 @@ export function projectIssue(archive, record) {
   };
   // Historical JSON-escape damage: restore only witnessed TeX control prefixes.
   // Archive bytes and their registered hash remain unchanged; this is a public projection.
-  const body = content.replace(/\u000crac/g, '\\frac').replace(/\u0008igl/g, '\\bigl')
+  const body = content.replace(/^(\s*# )[^\r\n]+/, (_match, prefix) => `${prefix}${metadata.title}`)
+    .replace(/\u000crac/g, '\\frac').replace(/\u0008igl/g, '\\bigl')
     .replace(/\]\((?:\.\.?\/)+(?:\d{2}\/)?(\d{4}-\d{2}-\d{2})\.md(#[^)]*)?\)/g,
       (_match, date, fragment = '') => `](./${date}${fragment})`);
   if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(body)) throw new Error('Unsupported control character');
@@ -94,13 +139,13 @@ export function syncJournal(archive, repo = root) {
   }
   const index = ['---', 'title: 每日数学', 'description: 数学概念、证明、反例与思想的每日札记；完整历史归档。', '---', '', '# 每日数学', '',
     '数学概念的来路、证明的机制、假设的边界，以及值得继续追问的问题。', '',
-    '[订阅每日数学 RSS（全部历史、全文）](/rss/daily-math.xml) · [全部订阅](/about/rss)', '',
+    '[订阅每日数学 RSS（全部历史、摘要与原文链接）](/rss/daily-math.xml) · [全部订阅](/about/rss)', '',
     `共 **${records.length}** 期，按原始日期倒序排列。`, ''];
   let month = '';
   for (const r of records) {
     if (r.date.slice(0, 7) !== month) { month = r.date.slice(0, 7); index.push('', `## ${month}`, ''); }
-    const title = r.title.replace(/[\\[\]<>]/g, c => `&#${c.charCodeAt(0)};`);
-    index.push(`- [${r.date} — ${title}](./${r.date})`);
+    const title = websiteTitle(r.date, r.title).replace(/[\\[\]<>]/g, c => `&#${c.charCodeAt(0)};`);
+    index.push(`- [${title}](./${r.date})`);
   }
   write('index.md', `${index.join('\n')}\n`);
   write('manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);

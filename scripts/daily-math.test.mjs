@@ -5,7 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { syncJournal, sha256, projectionPath } from './daily-math.mjs';
+import { syncJournal, sha256, projectionPath, websiteTitle } from './daily-math.mjs';
+import matter from 'gray-matter';
 
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'journal-test-'));
@@ -13,13 +14,13 @@ function fixture(t) {
   const archive = path.join(root, 'archive');
   fs.mkdirSync(path.join(archive, 'state'), { recursive: true });
   const records = [];
-  function issue(date) {
+  function issue(date, title = 'Test') {
     const relative = `${date.slice(0, 4)}/${date.slice(5, 7)}/${date}.md`;
     const file = path.join(archive, relative);
-    const source = `---\ndate: ${date}\ntitle: Test\nsection_keywords: {private: [editorial]}\n---\n# Test\n\n$x^2$\n\n<details><summary>Proof</summary>\n\n$$x=1$$\n\n</details>\n`;
+    const source = `---\ndate: ${date}\ntitle: ${JSON.stringify(title)}\nsection_keywords: {private: [editorial]}\n---\n# ${title}\n\n$x^2$\n\n<details><summary>Proof</summary>\n\n$$x=1$$\n\n</details>\n`;
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, source);
-    records.push({ issue_id: date, date, title: 'Test', path: relative, sha256: sha256(source) });
+    records.push({ issue_id: date, date, title, path: relative, sha256: sha256(source) });
     save();
     return file;
   }
@@ -43,6 +44,47 @@ test('complete history, original dates, body preservation and incremental no-op'
   f.issue('2026-07-18');
   assert.deepEqual(syncJournal(f.archive, f.root), { count: 2, changed: 3, oldest: '2026-07-17', newest: '2026-07-18' });
   assert.equal(fs.statSync(file).mtimeMs, before);
+});
+
+test('concise website titles preserve mathematical punctuation and are idempotent', () => {
+  const cases = [
+    ['边界不是少算半圈：带边曲面的角亏、转角与加倍法', '边界不是少算半圈'],
+    ['把 Euler 公式局部化：平面图、离散曲率与 Gauss–Bonnet', '把 Euler 公式局部化'],
+    ['只有一种简单块，却有 p 种不可分解块：循环 p 群的 Jordan 分类', '只有一种简单块，却有 p 种不可分解块'],
+    ['每日数学 · 2026-10-19 · 边界不是少算半圈：带边曲面', '边界不是少算半圈'],
+    ['没有副标题', '没有副标题'],
+    ['比值 1:2 与映射 f: X → Y', '比值 1:2 与映射 f: X → Y'],
+    ['$f : X \\to Y$：映射的解释', '$f : X \\to Y$'],
+    ['$$x：y$$：解释', '$$x：y$$'],
+    ['`a：b`：解释', '`a：b`'],
+    ['（定义：局部）与“问题：边界”：解释', '（定义：局部）与“问题：边界”'],
+    ['映射 f : X → Y', '映射 f : X → Y'],
+  ];
+  for (const [source, topic] of cases) {
+    const title = websiteTitle('2026-10-19', source);
+    assert.equal(title, `2026-10-19 · ${topic}`);
+    assert.equal(websiteTitle('2026-10-19', title), title);
+  }
+});
+
+test('future imports share headline policy without rewriting sources or body', t => {
+  const f = fixture(t);
+  syncJournal(f.archive, f.root);
+  const date = '2027-01-01';
+  const title = '未来的主标题：完整解释留在描述';
+  const source = f.issue(date, title);
+  const before = fs.readFileSync(source);
+  assert.equal(syncJournal(f.archive, f.root).count, 2);
+  const projected = matter(fs.readFileSync(path.join(f.target, `${date}.md`), 'utf8'));
+  assert.equal(projected.data.title, `${date} · 未来的主标题`);
+  assert.equal(projected.data.description, title);
+  assert.equal(projected.data.sourceSha256, sha256(before));
+  assert.equal(projected.data.date, `${date}T00:00:00+08:00`);
+  assert.equal(projected.content.replace(/^# .+\n/, ''), matter(before.toString()).content.replace(/^# .+\n/, ''));
+  assert.ok(projected.content.startsWith(`# ${projected.data.title}\n`));
+  assert.ok(fs.readFileSync(path.join(f.target, 'index.md'), 'utf8').includes(`[${projected.data.title}](./${date})`));
+  assert.deepEqual(fs.readFileSync(source), before);
+  assert.equal(syncJournal(f.archive, f.root).changed, 0);
 });
 
 test('reject unregistered bytes before writing any projection', t => {

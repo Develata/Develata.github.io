@@ -7,7 +7,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import MarkdownIt from 'markdown-it';
-import { boundedMath } from '../utils/bounded-math';
 
 const SITE_URL = 'https://develata.me';
 const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +14,6 @@ const __dirname = path.dirname(__filename);
 const docsRoot = path.resolve(__dirname, '../../');
 const knowledgeRoot = path.join(docsRoot, 'knowledge');
 const md = new MarkdownIt({ html: true, linkify: true });
-const journalMd = new MarkdownIt({ html: true, linkify: true }).use(boundedMath, { native: true });
 
 export interface KnowledgeRssItem {
   title: string;
@@ -54,7 +52,7 @@ export function listKnowledgeFeedLinks(): KnowledgeFeedLink[] {
     {
       title: '每日数学',
       url: '/rss/daily-math.xml',
-      description: '每日数学完整历史全文，保留原始日期，持续更新。',
+      description: '每日数学全部历史的摘要与原文链接，保留原始日期，持续更新。',
     },
     {
       title: 'Knowledge 全部',
@@ -91,11 +89,11 @@ export function generateKnowledgeRss(outDir: string): KnowledgeRssResult {
   for (const feed of [allFeed, ...feeds]) {
     writeFeed(outDir, feed);
   }
-  // Reuse already-rendered Knowledge items; do not parse/render the archive twice.
+  // Reuse Knowledge items; journal entries are summaries in every feed, never rendered here.
   writeFeed(outDir, {
     title: "Develata's Space - 每日数学",
     url: '/rss/daily-math.xml',
-    description: '每日数学完整历史全文。',
+    description: '每日数学全部历史的摘要与原文链接。',
     items: items.filter(item => item.url.startsWith(`${SITE_URL}/knowledge/math/daily-math/`)),
   });
 
@@ -136,7 +134,9 @@ function readItem(file: string): KnowledgeRssItem | undefined {
     url,
     date,
     description: summarize(data.description || data.excerpt || excerpt || content),
-    contentHtml: renderContent(content, url),
+    // Keep the complete SSR article at its stable URL. RSS readers may opt into
+    // full-text extraction; embedding/rendering journal math defeats this light feed.
+    contentHtml: url.startsWith(`${SITE_URL}/knowledge/math/daily-math/`) ? undefined : renderContent(content, url),
   };
 }
 
@@ -232,8 +232,7 @@ function summarize(value: unknown): string {
 
 function renderContent(content: string, pageUrl: string): string {
   const source = stripVitePressOnlyContent(content);
-  const renderer = pageUrl.startsWith(`${SITE_URL}/knowledge/math/daily-math/`) ? journalMd : md;
-  return absolutizeHtmlUrls(renderer.render(source), pageUrl);
+  return absolutizeHtmlUrls(md.render(source), pageUrl);
 }
 
 function stripVitePressOnlyContent(content: string): string {
