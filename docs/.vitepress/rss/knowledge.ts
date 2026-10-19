@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import MarkdownIt from 'markdown-it';
+import { boundedMath } from '../utils/bounded-math';
 
 const SITE_URL = 'https://develata.me';
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +15,7 @@ const __dirname = path.dirname(__filename);
 const docsRoot = path.resolve(__dirname, '../../');
 const knowledgeRoot = path.join(docsRoot, 'knowledge');
 const md = new MarkdownIt({ html: true, linkify: true });
+const journalMd = new MarkdownIt({ html: true, linkify: true }).use(boundedMath, { native: true });
 
 export interface KnowledgeRssItem {
   title: string;
@@ -50,6 +52,11 @@ export interface KnowledgeRssResult {
 export function listKnowledgeFeedLinks(): KnowledgeFeedLink[] {
   return [
     {
+      title: '每日数学',
+      url: '/rss/daily-math.xml',
+      description: '每日数学完整历史全文，保留原始日期，持续更新。',
+    },
+    {
       title: 'Knowledge 全部',
       url: '/rss/knowledge.xml',
       description: '数学、编程与分享笔记的更新。',
@@ -84,6 +91,13 @@ export function generateKnowledgeRss(outDir: string): KnowledgeRssResult {
   for (const feed of [allFeed, ...feeds]) {
     writeFeed(outDir, feed);
   }
+  // Reuse already-rendered Knowledge items; do not parse/render the archive twice.
+  writeFeed(outDir, {
+    title: "Develata's Space - 每日数学",
+    url: '/rss/daily-math.xml',
+    description: '每日数学完整历史全文。',
+    items: items.filter(item => item.url.startsWith(`${SITE_URL}/knowledge/math/daily-math/`)),
+  });
 
   return { feeds: [allFeed, ...feeds], items };
 }
@@ -218,7 +232,8 @@ function summarize(value: unknown): string {
 
 function renderContent(content: string, pageUrl: string): string {
   const source = stripVitePressOnlyContent(content);
-  return absolutizeHtmlUrls(md.render(source), pageUrl);
+  const renderer = pageUrl.startsWith(`${SITE_URL}/knowledge/math/daily-math/`) ? journalMd : md;
+  return absolutizeHtmlUrls(renderer.render(source), pageUrl);
 }
 
 function stripVitePressOnlyContent(content: string): string {

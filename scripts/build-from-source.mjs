@@ -87,6 +87,7 @@ try {
   console.log('[build] node ' + process.version)
   const branches = await Promise.allSettled([
     step('brain tests', script('brain-training:test')),
+    step('journal tests', script('daily-math:test')),
     step('game node tests', script('game:qin-polar-run:test')),
     wasm(),
   ])
@@ -95,6 +96,7 @@ try {
   await step('verify public', script('verify:assets:public'))
   await step('vitepress', script('build'))
   await step('verify dist', script('verify:assets:dist'))
+  await step('verify journal', script('daily-math:verify'))
   report(performance.now() - start)
 } catch (error) {
   report(performance.now() - start)

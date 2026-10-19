@@ -102,7 +102,30 @@ bun run dev
 └── .github/workflows/     # 自动部署脚本
 ```
 
+## 每日数学发布
+
+`docs/knowledge/math/daily-math/` 是注册归档的公共投影，不是编辑源。
+在归档所在主机运行 `bun run daily-math:sync /absolute/archive`；导入器只接受
+`state/issues.jsonl` 中登记、路径/日期/标题一致且 SHA-256 匹配的文章。
+正文保持不变，仅修复历史 TeX 中已确认的 form-feed + `rac`、backspace + `igl`
+转义损坏；原归档及 Telegram 回执不改动。内部编辑元数据不写入网站 pageData。
+
+首页按原日期倒序列出全部历史；`/rss/daily-math.xml` 全文且不截断，GUID 为稳定
+文章 URL，发布日期取原日期（Asia/Shanghai），同时列入 `/about/rss`。
+Knowledge/Math/All 聚合复用同一份渲染结果，不重复导入或渲染。
+
+每日数学使用构建期 TeX → 原生 MathML（现代浏览器支持），避免每个公式膨胀成
+SVG 路径；256 项有界公式缓存，无客户端 MathJax 下载。其他页面保持 SVG 行为。
+RSS 阅读器若过滤 MathML，可打开文章阅读。完整站点构建固定 Node 4 GiB 堆上限，
+避免 Node 自动选择的 2 GiB 堆在全量历史下溢出。
+
+验证：`bun run daily-math:test` → `bun run build` → `bun run daily-math:verify`。
+GitHub Actions 和 clean-source 构建均包含这些门禁，校验所有文章与 RSS 的数量、
+投影 hash、GUID、原日期、全文和 SSR 数学。同步重复运行不改变文件时间，也不产生
+空提交；本地 journal 自动化独立重试推送，CI/Pages 负责部署，不依赖 Telegram。
+
 ## 📬 联系方式
+
 * **Author**: Develata
 * **Email**: [develata@qq.com](mailto:develata@qq.com)
 * **GitHub**: [Develata](https://github.com/Develata)

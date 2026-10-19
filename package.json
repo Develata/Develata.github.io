@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vitepress dev docs",
-    "build": "vitepress build docs",
+    "build": "node --max-old-space-size=4096 node_modules/vitepress/bin/vitepress.js build docs",
+    "daily-math:sync": "node scripts/daily-math.mjs",
+    "daily-math:test": "node --test scripts/daily-math.test.mjs",
+    "daily-math:verify": "node scripts/verify-daily-math.mjs",
     "brain-training:test": "node scripts/brain-training-core.test.mjs",
     "sokoban:generate": "node scripts/sokoban-levelgen.mjs generate --write",
     "sokoban:check": "node scripts/sokoban-levelgen.mjs check",
@@ -28,6 +31,7 @@
     "gray-matter": "^4.0.3",
     "markdown-it": "^14.1.1",
     "markdown-it-mathjax3": "^4.3.2",
+    "mathjax-full": "3.2.1",
     "mermaid": "^11.12.1",
     "vitepress": "^1.6.4",
     "vue": "^3.5.24"

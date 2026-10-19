@@ -1,0 +1,2 @@
+# Imported journal Markdown preserves source hard line breaks and TeX spacing.
+docs/knowledge/math/daily-math/*.md whitespace=-blank-at-eol
