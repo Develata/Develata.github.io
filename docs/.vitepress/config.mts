@@ -7,7 +7,7 @@
  * 3. 定义全局主题行为 (Search, SocialLinks, Outline)。
  */
 import { defineConfig } from 'vitepress';
-import markdownItMathjax3 from 'markdown-it-mathjax3';
+import { boundedMath } from './utils/bounded-math';
 import { nav } from './configs/nav';
 import { sidebar } from './configs/sidebar';
 import { isSearchableContent } from './configs/content-modules.shared';
@@ -110,7 +110,7 @@ export default defineConfig({
       env: 'dotenv',
     },
     config: (md) => {
-      md.use(markdownItMathjax3);
+      md.use(boundedMath);
       md.use(mermaidFence);
       md.use(bilingualPairs);
     },

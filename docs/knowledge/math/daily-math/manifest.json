@@ -1,0 +1,458 @@
+[
+  {
+    "date": "2026-10-19",
+    "title": "边界不是少算半圈：带边曲面的角亏、转角与加倍法",
+    "sourceSha256": "7da77a1b71592b5b84daf5c7d2bf8c0a42965b83cc40c036ab1a467305b23306",
+    "projectionSha256": "1b0e0413a77feeec4b6399b8c7d014e7a480c0ba3bd875cbd7fd67342c22956d"
+  },
+  {
+    "date": "2026-10-17",
+    "title": "方差预算必须随路径记账：Freedman 不等式与稀疏波动",
+    "sourceSha256": "ee42536f4e678202688554ba9412f56ff912b33dafeb89ad97d32b8557f10309",
+    "projectionSha256": "3248767657c6dda536a1c860d5180492fc8a3023f4bd9e603c9e10ddbfda891b"
+  },
+  {
+    "date": "2026-10-16",
+    "title": "不是把增量减半，而是保住区间宽度：McDiarmid 的四倍指数",
+    "sourceSha256": "79fbff3c59f320dadf5e72f53c3e3e10ab33ebb9fed982b43e00bc69684a8115",
+    "projectionSha256": "1726df337b80dcf59855b15dcd31954818111a5a97e6163e85141fec7f515d30"
+  },
+  {
+    "date": "2026-10-15",
+    "title": "独立性可以退场，条件公平性不能：Azuma–Hoeffding 与揭示鞅",
+    "sourceSha256": "f1c177ad01b1882528a4f27c617e88dfe84f752e166e6f3e2355852e3a2a621a",
+    "projectionSha256": "2664d132ad9cb4abecf16dd4795ef30aa4085852ef41a19e4232b1e83596c9fd"
+  },
+  {
+    "date": "2026-10-14",
+    "title": "固定向量为何提不上去：一阶上同调与带端点的扩张",
+    "sourceSha256": "7da586903ea8d239920cc4571e279f70cf8639de53737497d74060351a11a760",
+    "projectionSha256": "45dad5772fc17ef670530fc9b72677a3484e8b6b4735528413c236a2bb213051"
+  },
+  {
+    "date": "2026-10-13",
+    "title": "只有一种简单块，却有 p 种不可分解块：循环 p 群的 Jordan 分类",
+    "sourceSha256": "5cb41137116b43247d9e79e9979f73841439acdc2f609a947b65c4a5fba1a591",
+    "projectionSha256": "792124d7c65856a03f3564901314285ee1980152d059532b753b32b7e04b3a08"
+  },
+  {
+    "date": "2026-10-12",
+    "title": "当群的阶变成零：Maschke 分裂、平均投影与模表示的入口",
+    "sourceSha256": "5e19197295a57ff4e83089232d924343ec1510b11e8b7f6f872bb412d3bb8054",
+    "projectionSha256": "82228282a6fa0a80c5acab0c43837dff36dc2f81c2fc8cacee95db0c8694d254"
+  },
+  {
+    "date": "2026-10-11",
+    "title": "删去一个零模，数出所有树：矩阵树定理与 Laplacian 的两种读法",
+    "sourceSha256": "dab0ba7090e229f99c7c9ac42fbc9b99569511c8e996018f492c39ad934f26d6",
+    "projectionSha256": "f66aff206ab93b0074d44902075cd95f3bcbfed117cf0c298195a7c20a36934a"
+  },
+  {
+    "date": "2026-10-10",
+    "title": "有限时刻看不见的尖峰：路径概率律的紧性与连续模量",
+    "sourceSha256": "e113818868939e50c21234d107b4a63f714cf38e2684ed98ede39f026e713bd8",
+    "projectionSha256": "9229b66105c2a195b16e0f7948fb6af6d2054ab6d666c0b205e5ca6e786eb918"
+  },
+  {
+    "date": "2026-10-09",
+    "title": "折线为何能长成解：Peano 存在定理、积分残差与唯一性的缺口",
+    "sourceSha256": "ab2d2086b7258440cac7e3e36a400d17a2eb07b970b15835810ed491e867e3bb",
+    "projectionSha256": "497cd928f6b6655482e9153370ecf92b1cf26b869f7e1653681e1a5b2657142b"
+  },
+  {
+    "date": "2026-10-08",
+    "title": "有限采样何时控制整条曲线：Arzelà–Ascoli 定理与共同连续模量",
+    "sourceSha256": "743752c7a0190f87644c82df837736d788b55dad3fcf36adbd74f12d242f3a8b",
+    "projectionSha256": "7b51a8af6c1a9b8c22abe25c29a425d13e92f54ed472429a7bee33f7ac9fc863"
+  },
+  {
+    "date": "2026-10-07",
+    "title": "余量如何买来并行速度：大见证树尾界与极大独立集",
+    "sourceSha256": "ecb0bfbdf97cd64f07677811c7acceff18b429a7d285d8aaed467de260448c9d",
+    "projectionSha256": "39f22ef32546bcb527d93e4f376ee34ff358e426f081d9dd50e2d4b39b81ec2d"
+  },
+  {
+    "date": "2026-10-06",
+    "title": "只修坏掉的一小块：Moser–Tardos 重抽样与见证树记账",
+    "sourceSha256": "7df30cc3d576460f4c27b4b1c767c52127d645187e7d0aa5d150e101407073ba",
+    "projectionSha256": "3b0b359cfe4fbf0b2203d7970a0d1c7996f23e002ad4e9a956c66179f05b9e99"
+  },
+  {
+    "date": "2026-09-25",
+    "title": "总风险很大却仍能避开：Lovász 局部引理与依赖图的真正含义",
+    "sourceSha256": "44907c7a8dacf848a1d16a422e2798b79c35692d7ceeaf6a4df1808f6866a0aa",
+    "projectionSha256": "93670fa4dfd6cbdbb8fbbee789afa3a518c2d4ad0305042c4b1204ade1d060dc"
+  },
+  {
+    "date": "2026-09-24",
+    "title": "何时能同时校正所有方程：多元 Hensel 提升与 Jacobian 的边界",
+    "sourceSha256": "88d91f5ff418a2a17d3cebaf16174138d19964b0485a1c12155d9ab21ae72305",
+    "projectionSha256": "8b5e3178d9d5c8ab66bb52e78871e3d0da04452ab0bc205f9b8cac1eeae50050"
+  },
+  {
+    "date": "2026-09-23",
+    "title": "从一枚近似根到整族精确根：完备局部环与形式隐函数",
+    "sourceSha256": "3d9ba8011e5a466eace260bea1ce12d5f2899e1602f04d2951d79a4c3a41554f",
+    "projectionSha256": "b696ec43b653101a6f552046b540418dbf89bbaf1623020e793bb88965813861"
+  },
+  {
+    "date": "2026-09-22",
+    "title": "导数不再是单位时：强 Hensel 引理、Newton 盆地与二进平方判据",
+    "sourceSha256": "a84fd574d3d5c9f59b90b6b0b78b63656df607456b9b716402eecc8654cc3c4e",
+    "projectionSha256": "f4243c14614d33eadeb8ebac798ea44a5681c2f8b692f022763021154a3883c9"
+  },
+  {
+    "date": "2026-09-21",
+    "title": "让密度随流动变得均匀：Moser 体积形式定理、Jacobian 方程与质量输运",
+    "sourceSha256": "471e80e917244cadafa3e1012ff47419ae82d02a8e15623a6e137b2c5905475a",
+    "projectionSha256": "b9c25aacee8d8f258a28c0757faee2f1f27b96a45401a09c35f41a4c5c3bdcc3"
+  },
+  {
+    "date": "2026-09-16",
+    "title": "没有低维频率，稠密乘积便近乎独立：准随机群、卷积混合与无积集",
+    "sourceSha256": "31004739f67120cca0e9a47e238a18cc226f92b476b36c70ef892f42086e1466",
+    "projectionSha256": "a0f4931cd0438feaa66a280a05270f661925d03efd1803358d30b90fec0bb685"
+  },
+  {
+    "date": "2026-09-15",
+    "title": "卷积幂何时忘记起点：有限群随机游走、表示块与谱混合",
+    "sourceSha256": "b79e7cf0b2516b6ca2e4b52c84753105f800c58a95e2ae5aa1f8a767bee963bd",
+    "projectionSha256": "aa5451c8fd491f9457ec6cc79d6255f4fab4a367362e21b09382b8fe7c378bdf"
+  },
+  {
+    "date": "2026-09-14",
+    "title": "当频率不再是一个数：有限群 Fourier 变换、矩阵块与卷积",
+    "sourceSha256": "e0daeabd79babc07242399888de1c8096816cfb3f2555bb59667db32bf96190a",
+    "projectionSha256": "a24f2c405c891ca249144c2ad10d29ba6c52cbbe3f33c4438b3e7657dc25bc9f"
+  },
+  {
+    "date": "2026-09-13",
+    "title": "让孔洞变成零特征值：图上的 Hodge 分解、调和流与上同调",
+    "sourceSha256": "3de750584a19b450c6305ac5827fda74c039322fac0336f1de05acf9f6aa68d7",
+    "projectionSha256": "734a791ac7266d9c38049c29935de7a5dbbfca82a65156318ada203be4189f1e"
+  },
+  {
+    "date": "2026-09-12",
+    "title": "边界质量可以隐身：Poisson 积分、弱星极限与 Fatou 定理",
+    "sourceSha256": "56ce3c007604efcaaa53ed4986d21aa468b0d08866d24dd67a6543a59cd3c92a",
+    "projectionSha256": "37da94049d80b1ec94fa36fad626afad826a606116be887884c3332aa4ccaca7"
+  },
+  {
+    "date": "2026-09-11",
+    "title": "从边界走进圆盘：Poisson 核、Abel 求和与 Dirichlet 问题",
+    "sourceSha256": "ad403e70924330755fc3f6a1d5c7407b9b66f640ac847387840a6cb6b4986da0",
+    "projectionSha256": "c77051fa7309fcd0b3a30599c73411efc0da9752e6b3b69eafb0da0d6c435211"
+  },
+  {
+    "date": "2026-09-10",
+    "title": "平均为何能驯服振荡：Fejér 核、Cesàro 求和与正逼近恒等族",
+    "sourceSha256": "5423d0c3729b15c5633682a10e0bc250f74a07ad9297a53fcf0c32eeae1df85a",
+    "projectionSha256": "bc91ca106cb6c570747a7537b94849ced438c19518d194e05f5363fc5688070a"
+  },
+  {
+    "date": "2026-09-08",
+    "title": "三种视角为何只留下两条级数：组合物种、循环指标与自同构权重",
+    "sourceSha256": "f329cb28a1373ba38c6e7c86f00e191720c4985cfccba555c77feb82e612c351",
+    "projectionSha256": "b422a153fa341b4fa11ed6541c86b3bb1590fb4540885d2ccec0127e4149a1e6"
+  },
+  {
+    "date": "2026-09-07",
+    "title": "让顶点置换接管边：无标号图、诱导循环与图同构计数",
+    "sourceSha256": "654b65f0c3327b31f3aaf05bf6d93fdc08bff1bf3995591538556abaf1beb346",
+    "projectionSha256": "dd957dddc003afb7dd03ba035c5ea44b4b40e84eaf792b49452eb6703de31d10"
+  },
+  {
+    "date": "2026-09-06",
+    "title": "让对称作用在生成函数上：循环指标、Pólya 枚举与加权轨道",
+    "sourceSha256": "f1565e7a35c38c1f4f500bc4e8820838391e7b0e1e0bc02fbb4f00ffaa740f3a",
+    "projectionSha256": "ea255ea0dc612e49ee30c77da90360e33de0a0056a41f510aa0d3c46b046e2d6"
+  },
+  {
+    "date": "2026-09-05",
+    "title": "树上临界点为何一眼可见：渗流、分枝过程与 θ(pc)=0 的边界",
+    "sourceSha256": "0b140b6af31c74899aa16fb5a3b31b17f800bdb30740a99b3b15a9a4a8cca8fb",
+    "projectionSha256": "f343bce9c156ad56501ca9904440ed4c55d3ac81200282aba4c24bc1da8392f9"
+  },
+  {
+    "date": "2026-09-04",
+    "title": "把所有稀有状态同时求和：Varadhan 引理、Laplace 原理与自由能",
+    "sourceSha256": "661d4b506e9e6b590b67c5a29d2bf222c669890e5bc595c65c34f0ee558de575",
+    "projectionSha256": "234d75eade06a521eab42eb59d65f81536c8a44a12eaefde4975b646db80ef98"
+  },
+  {
+    "date": "2026-09-03",
+    "title": "让整张经验分布偏航：Sanov 定理、类型方法与相对熵代价",
+    "sourceSha256": "7565ed30bba7f4da6bf1378e2b514f32064f159a73d1ec94d4cc7a740785fffa",
+    "projectionSha256": "6d6420d75d82b0784cb8402346aae930d7155dc68b672574fa7697f74ce0e602"
+  },
+  {
+    "date": "2026-09-02",
+    "title": "让稀有事件变成典型事件：Cramér 定理、指数倾斜与率函数",
+    "sourceSha256": "006e0874f2e53ad894d48589fe373ff6ecda4833c4e5f7a777e68f55a17f0096",
+    "projectionSha256": "7b2299323b45025c09f5c412b0ea4a285053ffd708b385326947b0319d363185"
+  },
+  {
+    "date": "2026-09-01",
+    "title": "让所有维数的回声相消：Lefschetz 数、交错迹与不动点",
+    "sourceSha256": "1e764ea60a98c19b251e6d12385eb4edb7f3b18ba799f3937fd400b50a0afa2c",
+    "projectionSha256": "6775c19e7236d318897b5722173d266a89bafdff65df819e986fc94b8d3d58c4"
+  },
+  {
+    "date": "2026-08-31",
+    "title": "把连续变形压成一个整数：映射度、奇映射与 Borsuk–Ulam 定理",
+    "sourceSha256": "9171448206b70c90da177076a9d29ea40e8143b0b7db2135e7bb70ed6fbcfa59",
+    "projectionSha256": "adfa25ebeaf145d01a22c3811ff00af488a6e39c96046cc7a32cd3f292fe5c88"
+  },
+  {
+    "date": "2026-08-30",
+    "title": "给每个小单形涂色：Sperner 引理如何逼出 Brouwer 不动点",
+    "sourceSha256": "dfd5ae1c82996e2cdd59505c54e41b478a041990b2d9d64043975864d7a183e5",
+    "projectionSha256": "7807ce605580c8bb73df23c75f1eff07dfca53b40b6f1cf10002203b3fca5159"
+  },
+  {
+    "date": "2026-08-29",
+    "title": "零体积为何仍能满维：Kakeya 集、Minkowski 尺度与管重叠",
+    "sourceSha256": "ee96b0a471f7ac7b64d5270f5e9775d0bb1c32f5a965c09cbadfa9a98c2b3465",
+    "projectionSha256": "42819702a2ea6336dc43722e8a20235b9e9161ffc25bfdebfdbb8ae17f5d9211"
+  },
+  {
+    "date": "2026-08-28",
+    "title": "让终值闭合整条鞅：一致可积、L1 收敛与 Lévy 向上定理",
+    "sourceSha256": "d9801c28ad92ab92e13577556d8e54b698b60a616c80249e7fa5aa7ad6cee734",
+    "projectionSha256": "5aba1654b0b87fde294f4052630f39c97bc02600a1dba5cb476a0df7ad8d882f"
+  },
+  {
+    "date": "2026-08-27",
+    "title": "用一个终值控制整条路径：Doob 最大不等式与 Lp 鞅收敛",
+    "sourceSha256": "12147449940d7790c73c3b695c2132401f329f56f81e095e110e7f12d511f2ac",
+    "projectionSha256": "c5ad52c4cdd11b45f5a7edb25f7be5ed1f0991f73c8e8fb0ab01fdfa50d76f7b"
+  },
+  {
+    "date": "2026-08-26",
+    "title": "用有限穿越消灭无限振荡：Doob 上穿不等式与鞅的几乎处处收敛",
+    "sourceSha256": "44c55d9ec501e2cc69a4b91db3ef5d62c1af5c4c09c7bade790626f2512406df",
+    "projectionSha256": "7ca7101db2528b191e1db76c4afd2833cbf5652c5fd34650220ec79052c711d6"
+  },
+  {
+    "date": "2026-08-25",
+    "title": "把元证明送回算术内部：可导条件、第二不完备定理与反思阶梯",
+    "sourceSha256": "e316cfb23da6afc76fc6aa84973eb8d6454e5cee3def48f7fbbf4f7523fc50d6",
+    "projectionSha256": "36d5b93dcb6ac60be70c2e1094f4d656748c4ef25918837cbe310f099dfb30d3"
+  },
+  {
+    "date": "2026-08-23",
+    "title": "让证明编号彼此赛跑：第一不完备定理、1-一致性与 Rosser 改进",
+    "sourceSha256": "da9c864a2fe3fcc53b6d5cae7cc32de8abdae9bf1f2c82586a911cf061f2f216",
+    "projectionSha256": "6efa2e19b6ed38c43e153afe4a47907a47136aebeb9a56bb55d864e8c12b99ab"
+  },
+  {
+    "date": "2026-08-22",
+    "title": "让公式指向自己的编号：Gödel 编码、可表示性与对角引理",
+    "sourceSha256": "041011527cffad43fe7a74a8cb586a432677e21db6092fe6a454bbcf7078f22e",
+    "projectionSha256": "c7048776a887d65bf3015d61533c36d7e2d73763f0f32102b049d554c3c92a2f"
+  },
+  {
+    "date": "2026-08-21",
+    "title": "让面积元素指挥运动：辛形式、Hamilton 流与 Darboux 标准形",
+    "sourceSha256": "d3560a52012ce091188f42df2edd9245393d7f3d4eb09ed09bc887d00ba64f7b",
+    "projectionSha256": "300439486d5d7f68d4d641788bcb16a9db4175ba0999f64eeeb6b9854bde0b63"
+  },
+  {
+    "date": "2026-08-19",
+    "title": "把极限变成随机生成器：graphon 抽样、可交换性与 Aldous–Hoover 表示",
+    "sourceSha256": "5ca584b451f72f9f04bf06207db320dc271487ab7c9abaa0894161c7206b4af4",
+    "projectionSha256": "afdb8ecd0838f17335ea8943d84ffde555d3a86788cd3b7f2bb2c5806515e709"
+  },
+  {
+    "date": "2026-08-18",
+    "title": "让大块误差决定距离：截割范数、弱正则性与 counting lemma",
+    "sourceSha256": "9ab1457404146c0f7dfa7069ccf305468d835069a3e4414447717fdf04a9fea1",
+    "projectionSha256": "71bae465e96b85ccb67425bb71501924cfc469e9e74bbb464b82493ed4957883"
+  },
+  {
+    "date": "2026-08-17",
+    "title": "把有限图压成可测函数：同态密度、graphon 与稠密图的极限",
+    "sourceSha256": "7a516b6dbbf090cf3b27ecf6b5caa1642ce045009fda4a5f3bd2218412362141",
+    "projectionSha256": "6c5d17a0ca0e356474d521115a20dd869bdb3f73afd0603949dbefa0b1e6ab9d"
+  },
+  {
+    "date": "2026-08-16",
+    "title": "把乘法拉直到加法：p-adic 指数、对数与主单位的局部坐标",
+    "sourceSha256": "e91304abeebd91a6ec68ad40c0e878a218c4ddc38b94b42a8ad8f50aad0bada1",
+    "projectionSha256": "9cd523c4f20a2f903cc30ad060d6a91c8fc8dcbe2f6811d643520a004e857f07"
+  },
+  {
+    "date": "2026-08-15",
+    "title": "让模 p 的根长成精确根：Hensel 提升、Newton 迭代与导数单位条件",
+    "sourceSha256": "7dee4d1619764c95f0cd77ee8b1a7f7313994a0ee9cda4838b9a90567476bc7e",
+    "projectionSha256": "1cdea526d531d4482357d5d3b3bbaf09f9637a235922d5af1863bcd9bd9a0e22"
+  },
+  {
+    "date": "2026-08-14",
+    "title": "让被 p 整除变成距离：p-adic 赋值、完备化与超度量几何",
+    "sourceSha256": "da376c361b62850b19e7674ed46e1e7aeddfe05d1c67c5bcd977cfd228e46577",
+    "projectionSha256": "7711f4b4d1cb1d147b3239b7ba1002913463a573e4267a65a05fd2844f259c32"
+  },
+  {
+    "date": "2026-08-13",
+    "title": "让闭路搬动纤维：单值化、提升障碍与复对数分支",
+    "sourceSha256": "890950770ce72ffd77a67caabbb13dafc3a6e52ab4eb4dcbf49aa2e0c2041c01",
+    "projectionSha256": "7f5fdeef2f6fe64557559b5026fc37e1659134cac380814ba4b468e35be6c530"
+  },
+  {
+    "date": "2026-08-12",
+    "title": "把闭路展开成空间：普遍覆盖、子群分类与甲板变换",
+    "sourceSha256": "9510a3523e0e80a6148febc951aff1e916bfb8d0a72d317acea5ee48672d7d85",
+    "projectionSha256": "5b738d2617751a8136396493fe4948605c585640323be86748dbc5c546d9418d"
+  },
+  {
+    "date": "2026-08-11",
+    "title": "把闭路变成整数：基本群、路径提升与圆周绕数",
+    "sourceSha256": "6f5c5b83ec68646db5d7de92c5dfc7e5083d210663e7e0c08c5f93ff887f65b1",
+    "projectionSha256": "7facea03d987c9f4ca0f8b323d8c4e64e2ef7441066827553a0b4e111bd36b44"
+  },
+  {
+    "date": "2026-08-10",
+    "title": "只检查每个有限片段：逻辑紧致性、无限图染色与有限模型边界",
+    "sourceSha256": "08969ffb5d2ff3d97c27eb0df72df174924ec8442a267edfd9bd8e597d20c8ec",
+    "projectionSha256": "445451c2829c949d2c8445433f5375bbcbad3767ea86aeda99a937ed1f52f98d"
+  },
+  {
+    "date": "2026-08-09",
+    "title": "当指数代价压过候选数：Chernoff 率函数、组合熵与随机图割",
+    "sourceSha256": "b17379b3a98802f502703c2bbcda066c5de1b694c48554d6cb52b41b9002d3d1",
+    "projectionSha256": "49a6a039543d20cea2cbedcfaf55e244a161b28c89a0f260d6ba3fd568ed29a2"
+  },
+  {
+    "date": "2026-08-08",
+    "title": "平均度越过一时：分枝过程、巨分量与临界双跃迁",
+    "sourceSha256": "062d7862f172c9967354940fd7bfd94cb3d795bac949a3318faa87516ce36fef",
+    "projectionSha256": "84128b9c1170d9ebb5c65fca09c7e89403fda9ec1a29c7ea05fc7705b1da4346"
+  },
+  {
+    "date": "2026-08-07",
+    "title": "最后一个孤点消失时：Erdős–Rényi 连通阈值与 Poisson 临界窗",
+    "sourceSha256": "1bfb57a2578162ec6e334abbbd426009f00e8f6f501ed3441460cde17bfeb11d",
+    "projectionSha256": "d46bb5d43e4d6a5b508f449457a64eea07ce1141159fa57c2ad2db2c1b42b436"
+  },
+  {
+    "date": "2026-08-06",
+    "title": "让曲率推动测地线：Jacobi 场、共轭点与指数映射",
+    "sourceSha256": "44e9bcb127032a19a1cafe4218a1dae81c1ff638de6f95a69f84bd029df254ec",
+    "projectionSha256": "f03933f7bc6f248c53908f3ea70db7b176389abcdd1d11b6e6bc216df0ae5530"
+  },
+  {
+    "date": "2026-08-05",
+    "title": "曲率不是弯在外面：Riemann 度量、截面曲率与小圆偏差",
+    "sourceSha256": "67e863da76beb471ac8e32503566549bc9491ad1395ddd617db7780b56f17906",
+    "projectionSha256": "32da868e7147f1d17777abca2628abd94f11fe3a8301b9f4080288b8e0ef3595"
+  },
+  {
+    "date": "2026-08-04",
+    "title": "从奇点读出增长：平方根展开、迁移定理与 Catalan 渐近",
+    "sourceSha256": "f0b1cf4db03e9bc3c31f2345279413bb20143caba29781b61ef40c301317cace",
+    "projectionSha256": "6d420d43555a3f91036d34c703aaedf98d0dce221e0746f43f2dc4ff0bee1e39"
+  },
+  {
+    "date": "2026-08-03",
+    "title": "从递归结构到显式系数：符号方法、Lagrange 反演与平面树",
+    "sourceSha256": "288f680a74edda511797be708e36faeac1db9c440414a660be9781156daf4a66",
+    "projectionSha256": "2ff18ce4e6e8f6c7fcebc194fdbf63bb942a12f3f79b7e45cfc88bc00b967b39"
+  },
+  {
+    "date": "2026-08-02",
+    "title": "把序列挂到函数上：生成函数、递推与系数抽取",
+    "sourceSha256": "68801be971c817dc9af9cadaebe2b1ad49f7fb0aa147311a5c3bcd7f8b5e2485",
+    "projectionSha256": "11b29d1ef9909d3fe54c28a7e6ee750009ba55d34ed1016949759a2e7a7776a2"
+  },
+  {
+    "date": "2026-07-31",
+    "title": "让公平性穿过随机时间：鞅、停时与可选停止的边界",
+    "sourceSha256": "499d5260b9e96203f5e90222b9b8da95ca87ddc4ad4c745471aedd5e1bdc6417",
+    "projectionSha256": "14ce10a254935a9f52d0c19aa728d787e6c57aa55af148b1982e7f52976fb32b"
+  },
+  {
+    "date": "2026-07-30",
+    "title": "把随机变量压到可见信息：条件期望、塔式性质与正交投影",
+    "sourceSha256": "f2198e7022264173245fef963e925a9acabada46914caf0d8812e93443244f8c",
+    "projectionSha256": "9c898698e5efb26d51b1d3eacf775b4423badfe2e450e2ca541cdad33931ea3a"
+  },
+  {
+    "date": "2026-07-29",
+    "title": "把集合函数变成密度：Radon–Nikodym 定理与条件期望的测度入口",
+    "sourceSha256": "999773d1590d5735ce028d92b82b6438b84f7477664bf0930e5ed6026ccee483",
+    "projectionSha256": "1e93487415aa743452c94878557e630c2e03fdac30e2cac5cdd0223e326bbb16"
+  },
+  {
+    "date": "2026-07-28",
+    "title": "边界为何记得内部：微分形式、广义 Stokes 定理与上同调的入口",
+    "sourceSha256": "d191d72e94e8e4d7c8d66b3c2f2367599966aa9fa8340d5095bc925c6d906abb",
+    "projectionSha256": "d53ba781aef267c63064ded3968380750d1fb31b169ebe7ea1c8eb8328156977"
+  },
+  {
+    "date": "2026-07-27",
+    "title": "把连续频率折回整数格：Poisson 求和、theta 反演与模形式入口",
+    "sourceSha256": "92b0f5a0edc0f71cc0408bd3370f2a3a1d6ac07e7d980de2ee4fa0644241b385",
+    "projectionSha256": "584d356f56c5d37cfeb4e4d9a1c18106bc56ae840c9d03e7602a8b134397d525"
+  },
+  {
+    "date": "2026-07-26",
+    "title": "把能量搬到频率侧：Plancherel 定理与 L2 热半群",
+    "sourceSha256": "2b0047878ca9c7a9ceeb2d3ac396c0b6bf67925b138b41bd9bdd1d614b4d25ce",
+    "projectionSha256": "0e546436ecde13cadc6d676693b61dc98515131c721f619d1842d3c6539cfcaf"
+  },
+  {
+    "date": "2026-07-25",
+    "title": "把扩散拆成频率：Fourier 变换如何解开热方程",
+    "sourceSha256": "7d442dd22756303b423ddf30576b0a875c90d9ca838550497e8a85cce27d1a1f",
+    "projectionSha256": "e51f391486829aaec089b343914751d1a206bf74e0e02fa36fb7618d8583ae91"
+  },
+  {
+    "date": "2026-07-24",
+    "title": "从禁三角形到密度阈值：Mantel 定理与极值图论的第一步",
+    "sourceSha256": "1e74b4b5c0f2d32f8697831865c60cd83c651f4c375a8fe7f15c0bec1b7c5c6b",
+    "projectionSha256": "fa5ecfddfbcadbecd336563b8096e77964407bed170b19e37ca6c58875128664"
+  },
+  {
+    "date": "2026-07-23",
+    "title": "把固定点变成迹：置换表示、特征标与平均投影",
+    "sourceSha256": "9fca7853f3f850581c94f99c856da11ee75a14f98f1f49ee51fc5cc40dab0494",
+    "projectionSha256": "88998078aadd595c054e4ad46cdbabcc19722e4265b797bde22a4bf8f485688e"
+  },
+  {
+    "date": "2026-07-22",
+    "title": "让固定量反推出结构：Galois 对应、反序格与正规子群",
+    "sourceSha256": "f1248efbfc866a506245963b20511caf2249864e8bbbdf3035a24ef2f9269dd0",
+    "projectionSha256": "6e5eefb58a0d45d1494b97dd6eeb5a7e81632ed8dec2de7b8bc46587653e4005"
+  },
+  {
+    "date": "2026-07-21",
+    "title": "把对称变成等价类：群作用、轨道—稳定子与 Burnside 计数",
+    "sourceSha256": "21e5d17c123cdbd91d63df8da34f6e2d3b575b49bead981e33bcba8690119933",
+    "projectionSha256": "a9118f29db3453d975cf361262d21563afcc97141cfcd1417f5cab3c4d8b0302"
+  },
+  {
+    "date": "2026-07-20",
+    "title": "把概率收敛升级为积分收敛：Vitali 定理与一致可积的闭环",
+    "sourceSha256": "36e33358525bbd55925070ddc35646111ceee5d938c837431169757ebb138857",
+    "projectionSha256": "6319ac704309ce914514784ade13f57ffdf573288f5b6571fe0da4bffd2089b5"
+  },
+  {
+    "date": "2026-07-19",
+    "title": "不让质量藏进尖峰：一致可积性、尾部控制与弱紧致性",
+    "sourceSha256": "9fb5999030b07821893b3b5c3b9da6e8a4a50fed252ac12f05c8219d7585cabf",
+    "projectionSha256": "7cc0a6caa4977e29aa6b8ced0b85d4867f9c875331920beb42d5c0aad9090dd2"
+  },
+  {
+    "date": "2026-07-18",
+    "title": "把无限压回有限：紧致性、全有界性与子列极限",
+    "sourceSha256": "f79bd62d9b41e904d1d02078e64732e1097a03829c689e8d237cff62b2da3867",
+    "projectionSha256": "ad001225d69cfc1e55702aaa8caf9acc30d2c3c98826d8647113671ddf67b2ea"
+  },
+  {
+    "date": "2026-07-17",
+    "title": "把 Euler 公式局部化：平面图、离散曲率与 Gauss–Bonnet",
+    "sourceSha256": "274327f1832472b6a85b7eddc164c0f38f82832eee01096f96435dbb93ce2234",
+    "projectionSha256": "df8e0e301113d8b548021342dfc0556004293df0c66ec421adb874939680b346"
+  }
+]
