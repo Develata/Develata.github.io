@@ -140,13 +140,24 @@ export function syncJournal(archive, repo = root) {
   const index = ['---', 'title: 每日数学', 'description: 数学概念、证明、反例与思想的每日札记；完整历史归档。', '---', '', '# 每日数学', '',
     '数学概念的来路、证明的机制、假设的边界，以及值得继续追问的问题。', '',
     '[订阅每日数学 RSS（全部历史、摘要与原文链接）](/rss/daily-math.xml) · [全部订阅](/about/rss)', '',
-    `共 **${records.length}** 期，按原始日期倒序排列。`, ''];
+    `共 **${records.length}** 期，按年份、月份、原始日期倒序排列。`, ''];
+  let year = '';
   let month = '';
   for (const r of records) {
-    if (r.date.slice(0, 7) !== month) { month = r.date.slice(0, 7); index.push('', `## ${month}`, ''); }
+    if (r.date.slice(0, 7) !== month) {
+      if (month) index.push('', '</details>', '');
+      if (r.date.slice(0, 4) !== year) {
+        year = r.date.slice(0, 4);
+        index.push('', `## ${year}`, '');
+      }
+      const open = !month ? ' open' : '';
+      month = r.date.slice(0, 7);
+      index.push('', `<details${open}><summary>${month}</summary>`, '');
+    }
     const title = websiteTitle(r.date, r.title).replace(/[\\[\]<>]/g, c => `&#${c.charCodeAt(0)};`);
     index.push(`- [${title}](./${r.date})`);
   }
+  if (month) index.push('', '</details>', '');
   write('index.md', `${index.join('\n')}\n`);
   write('manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);
   return { count: records.length, changed, oldest: records.at(-1).date, newest: records[0].date };

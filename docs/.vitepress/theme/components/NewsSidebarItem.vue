@@ -106,6 +106,7 @@ function resolveDefaultChildKey(): string | null {
       class="item"
       :role="isExpandableTrigger ? 'button' : undefined"
       :tabindex="isExpandableTrigger ? 0 : undefined"
+      :aria-expanded="isExpandableTrigger ? !collapsed : undefined"
       @click="onItemClick"
       @keydown="onKeydown"
     >
@@ -126,15 +127,18 @@ function resolveDefaultChildKey(): string | null {
       </VPLink>
       <component :is="headingTag" v-else class="text">{{ item.text }}</component>
 
-      <button
+      <component
+        :is="isExpandableTrigger ? 'span' : 'button'"
         v-if="item.collapsed != null && hasChildren"
         class="caret"
-        type="button"
-        aria-label="toggle section"
+        :type="isExpandableTrigger ? undefined : 'button'"
+        :aria-hidden="isExpandableTrigger ? true : undefined"
+        :aria-label="`${collapsed ? '展开' : '收起'} ${item.text}`"
+        :aria-expanded="!collapsed"
         @click="onCaretClick"
       >
         <span class="caret-icon">&gt;</span>
-      </button>
+      </component>
     </div>
 
     <div v-if="hasChildren && !collapsed" class="items">

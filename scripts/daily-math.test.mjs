@@ -229,6 +229,38 @@ test('RSS full-text window retains all history, renders only five and preserves 
   }
 });
 
+test('archive navigation disables speculative article-body downloads', () => {
+  const config = fs.readFileSync(new URL('../docs/.vitepress/config.mts', import.meta.url), 'utf8');
+  assert.match(config, /router:\s*\{\s*prefetchLinks:\s*false\s*\}/);
+});
+
+test('year/month archives stay descending and metadata-only as history grows', async t => {
+  const f = fixture(t);
+  for (const date of ['2025-12-31', '2027-02-03', '2027-01-01', '2027-02-01', '2026-01-02']) f.issue(date);
+  syncJournal(f.archive, f.root);
+  const index = fs.readFileSync(path.join(f.target, 'index.md'), 'utf8');
+  assert.deepEqual([...index.matchAll(/^## (\d{4})$/gm)].map(m => m[1]), ['2027', '2026', '2025']);
+  assert.deepEqual([...index.matchAll(/<summary>([^<]+)<\/summary>/g)].map(m => m[1]), ['2027-02', '2027-01', '2026-07', '2026-01', '2025-12']);
+  assert.deepEqual([...index.matchAll(/\]\(\.\/(\d{4}-\d{2}-\d{2})\)/g)].map(m => m[1]), f.records.map(r => r.date).sort().reverse());
+  assert.equal((index.match(/<details open>/g) ?? []).length, 1);
+  assert.doesNotMatch(index, /\$x|Proof|import\(|fetch\(/);
+  assert.equal(syncJournal(f.archive, f.root).changed, 0);
+  const { calendarArchive, calendarSidebar } = await import('../docs/.vitepress/utils/calendar-archive.ts');
+  for (const count of [0, 76, 4000]) {
+    const entries = Array.from({ length: count }, (_, i) => {
+      const date = new Date(Date.UTC(2020, 0, i + 1)).toISOString().slice(0, 10);
+      return { title: date, url: `/journal/${date}`, timestamp: Date.parse(date), year: date.slice(0, 4), monthKey: date.slice(0, 7) };
+    });
+    const tree = calendarArchive(entries);
+    assert.deepEqual(tree.flatMap(y => y.months.flatMap(m => m.items)), [...entries].reverse());
+    const sidebar = calendarSidebar(entries);
+    const visibleMonths = sidebar.filter(y => !y.collapsed).flatMap(y => y.items.filter(m => !m.collapsed));
+    assert.equal(visibleMonths.length, count ? 1 : 0);
+    assert.ok(visibleMonths.flatMap(m => m.items).length <= 31);
+    assert.equal(sidebar.flatMap(y => y.items.flatMap(m => m.items)).length, count);
+  }
+});
+
 test('journal MathML is compact and deterministic across cache eviction', async () => {
   const { default: MarkdownIt } = await import('markdown-it');
   const { boundedMath } = await import('../docs/.vitepress/utils/bounded-math.ts');

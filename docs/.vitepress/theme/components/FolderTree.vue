@@ -96,7 +96,7 @@ const indentStyle = computed(() => {
     <div v-for="(item, index) in currentDirItems" :key="index" class="tree-item" :style="indentStyle">
 
       <!-- 情况 A: 是文件夹 (有 items) -->
-      <template v-if="item.items && item.items.length > 0">
+      <template v-if="item.items && item.items.length > 0 && !item.link">
         <details class="folder-details" :open="false">
           <summary class="folder-summary">
             <span class="text folder-text">{{ item.text }}</span>

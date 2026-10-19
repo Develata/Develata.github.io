@@ -40,7 +40,8 @@ const resolvedGroups = computed(() => {
 
 const key = computed(() => `${page.value.relativePath}:${resolvedGroups.value.length}`);
 const activePath = computed(() => normalizeSidebarPath(route.path));
-const isNewsPage = computed(() => page.value.relativePath.startsWith('news/'));
+// Reuse the news accordion's mount-on-expand tree for the growing math archive.
+const useArchiveSidebar = computed(() => page.value.relativePath.startsWith('news/') || page.value.relativePath.startsWith('knowledge/math/'));
 </script>
 
 <template>
@@ -57,7 +58,7 @@ const isNewsPage = computed(() => page.value.relativePath.startsWith('news/'));
 
       <slot name="sidebar-nav-before" />
       <NewsSidebarGroup
-        v-if="isNewsPage"
+        v-if="useArchiveSidebar"
         :items="resolvedGroups"
         :active-path="activePath"
         :key="key"

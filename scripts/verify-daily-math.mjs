@@ -27,6 +27,17 @@ const index = fs.readFileSync(path.join(dist, base, 'index.html'), 'utf8');
 const rssPage = fs.readFileSync(path.join(dist, 'about/rss.html'), 'utf8');
 assert.ok(rssPage.includes('/rss/daily-math.xml'));
 assert.ok(index.includes('/rss/daily-math.xml'));
+const indexBody = index.split('<main')[1]?.split('</main>')[0] ?? '';
+const archiveLinks = [...indexBody.matchAll(/href="(?:\.\/|\/knowledge\/math\/daily-math\/)(\d{4}-\d{2}-\d{2})"/g)].map(m => m[1]);
+assert.deepEqual(archiveLinks, manifest.map(r => r.date), 'SSR archive links: all history exactly once, descending');
+assert.deepEqual([...indexBody.matchAll(/<summary>(\d{4}-\d{2})<\/summary>/g)].map(m => m[1]), [...new Set(manifest.map(r => r.date.slice(0, 7)))]);
+const mathIndex = fs.readFileSync(path.join(dist, 'knowledge/math/index.html'), 'utf8');
+assert.ok(mathIndex.includes('NewsSidebarGroup'), 'Math reuses news mount-on-expand navigation');
+assert.ok(mathIndex.includes('href="/knowledge/math/daily-math/"'));
+assert.doesNotMatch(mathIndex, /href="\/knowledge\/math\/daily-math\/\d{4}-\d{2}-\d{2}"/, 'Math landing must not eagerly duplicate the journal');
+for (const html of [mathIndex, index]) {
+  assert.doesNotMatch(html, /<link[^>]+modulepreload[^>]+(?:localSearchIndex|daily-math_\d{4})/, 'No eager full text/search index preload');
+}
 for (let i = 0; i < manifest.length; i++) {
   const r = manifest[i];
   const title = websiteTitle(r.date, r.title);
@@ -51,7 +62,7 @@ for (let i = 0; i < manifest.length; i++) {
   assert.ok(html.includes(`<title>${escapeXml(title)} |`), `Page title missing: ${r.date}`);
   assert.ok(html.match(/<h1\b[^>]*>[\s\S]*?<\/h1>/)?.[0].includes(escapeXml(title)), `H1 missing: ${r.date}`);
   assert.ok(index.includes(escapeXml(title)), `Index title missing: ${r.date}`);
-  assert.ok(index.match(new RegExp(`<a[^>]+href="${base}${r.date}"[^>]*>[\\s\\S]*?</a>`))?.[0].includes(escapeXml(title)), `Sidebar title missing: ${r.date}`);
+  assert.ok(indexBody.includes(`href="./${r.date}"`), `Archive link missing: ${r.date}`);
   assert.ok(index.includes(r.date));
 }
 for (const name of ['knowledge.xml', 'knowledge-math.xml', 'all.xml']) {

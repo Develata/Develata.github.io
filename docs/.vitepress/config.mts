@@ -69,6 +69,10 @@ export default defineConfig({
   description: 'Math & Code',
   base: '/',
   cleanUrls: true,
+  // VitePress 1.x has no per-link prefetch opt-out. Visible archive links were
+  // downloading whole article chunks on idle (13 journal bodies on its index).
+  // Keep navigation on demand; native links and SPA routing are unchanged.
+  router: { prefetchLinks: false },
   // 构建时生成 /sitemap.xml，随页面增删自动更新；不开 lastUpdated（CI 浅克隆下 git 时间不可信）。
   sitemap: { hostname: 'https://develata.me' },
   // 页面 hash map 抽成共享 chunk；否则每个 HTML 内联一份，dist 体积随页数平方增长。

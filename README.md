@@ -113,7 +113,17 @@ bun run dev
 manifest，原有 description 保持。除首个 H1 外正文保持不变，仅修复历史 TeX 中已确认的 form-feed + `rac`、backspace + `igl`
 转义损坏；原归档及 Telegram 回执不改动。内部编辑元数据不写入网站 pageData。
 
-首页按原日期倒序列出全部历史；`/rss/daily-math.xml` 保留全部条目，最近 5 篇
+归档首页与侧栏统一按年份倒序 → 月份倒序 → 原日期倒序组织；URL 不迁移。
+导入器生成原生可折叠月份（默认展开最新月），全部历史链接在 SSR HTML 中可用，
+禁用 JavaScript 也能浏览。Math 目录只链接归档，不再重复渲染整份每日数学目录；
+Math 侧栏直接复用 NewsSidebarGroup / NewsSidebarItem 的按展开挂载机制，
+两者共用 calendar-archive 元数据分组，不加载文章正文。News 的最近 20 条加载器
+和分类导航语义不变；不为同步静态数据添加假加载动画或额外网络请求。
+VitePress 1.x 没有逐链接预取开关，故关闭全站 speculative link prefetch：点击时
+仍按原有 SPA 路由加载，避免目录可见链接在空闲时下载整篇文章。此项也减少 News
+的后台预取，不改变 News 最近 20 条、分组和展开规则。全文搜索索引仍按需加载。
+
+`/rss/daily-math.xml` 保留全部条目，最近 5 篇
 （不足 5 篇时为全部）通过 `content:encoded` 内嵌完整 HTML/MathML；其余仅含标题、
 原日期（Asia/Shanghai）、稳定文章 URL/GUID 与简短纯文本摘要。新文章加入后第六篇
 转为摘要，但身份与日期不变，不创建新条目。Knowledge/Math/All 聚合复用同一窗口，
