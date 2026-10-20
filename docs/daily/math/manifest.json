@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-10-20",
+    "title": "剪开为何多出一整圈：割弧端点、曲率转账与 Euler 增量",
+    "sourceSha256": "525986f437a4ff9244b9bc4a679d858766b5c9fc84b0561e3702b45bffc7f885",
+    "projectionSha256": "5a231f82bb265ade9d496ca307a2a9c01ea86a88060d558d3a0d5658de4cb245"
+  },
+  {
     "date": "2026-10-19",
     "title": "边界不是少算半圈：带边曲面的角亏、转角与加倍法",
     "sourceSha256": "7da77a1b71592b5b84daf5c7d2bf8c0a42965b83cc40c036ab1a467305b23306",
