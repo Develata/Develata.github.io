@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-10-21",
+    "title": "角亏预算能造出球面吗：切线多边形、加倍构造与不唯一性",
+    "sourceSha256": "ab81f9bc3afa1cbf8c6de9cc3b3c822b738f52a1a99f519382c2a54d6526439d",
+    "projectionSha256": "bb8aac239c660bdd2b21549115f3f8a2e45865d4ebc5118269f9472842087987"
+  },
+  {
     "date": "2026-10-20",
     "title": "剪开为何多出一整圈：割弧端点、曲率转账与 Euler 增量",
     "sourceSha256": "525986f437a4ff9244b9bc4a679d858766b5c9fc84b0561e3702b45bffc7f885",
