@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-10-23",
+    "title": "平方之后为何更简单：van der Corput 差分与二次轨道",
+    "sourceSha256": "035caae897c4e921cd377c0c10f702f9d4cf2907627bef3200fd417aa5bbd838",
+    "projectionSha256": "6e83c4a48de10f4961023305be95d0d596ce8dd519d6988599e82527890e4017"
+  },
+  {
     "date": "2026-10-22",
     "title": "每个频率都安静，点列便均匀吗：Weyl 判别与量词的边界",
     "sourceSha256": "65f9322e6f8c0af7907807bba06e2f7ad6dafa5bb8119ef24b61574045cb5cfd",
