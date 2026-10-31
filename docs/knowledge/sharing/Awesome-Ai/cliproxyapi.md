@@ -37,7 +37,7 @@ OpenAI-compatible / Gemini / Claude / Codex API
 
 Docker Compose 模板：
 
-* [CLIProxyAPI Docker Compose](/knowledge/sharing/docker/compose/cliproxyapi)
+* [CLIProxyAPI Docker Compose](https://help.router-for.me/docker/docker-compose.html)
 
 本文主推二进制部署：
 
