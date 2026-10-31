@@ -1,5 +1,53 @@
 [
   {
+    "date": "2026-10-31",
+    "title": "弱极限怎样成为最优解：直接法的三道关与球面逃逸",
+    "sourceSha256": "01b0c8ee12cd71e81761b802d7fcfa555b277d3dee2af9fb9b36a8bc6591bf89",
+    "projectionSha256": "7d081f486c52497ae6912279301ed80dfa39f18284b9935773930c8369d1019b"
+  },
+  {
+    "date": "2026-10-30",
+    "title": "平均能修复弱收敛吗：近正交抽取、凸组合与能量缺口",
+    "sourceSha256": "f1607eff770b8867db2d222afa3ee53c79f08c168c852dd38242f48fb55ca99c",
+    "projectionSha256": "6ad5ee13d944f49f65729f1e64fdf8b8474b93a311eb8f4e4b30b3372fb24e26"
+  },
+  {
+    "date": "2026-10-29",
+    "title": "距离不肯收敛，观测可以：ℓ² 弱子列与能量下半连续性",
+    "sourceSha256": "f294bd5667ca1700c8437561250b3338999083361f36a70b79478aa4c1227dc5",
+    "projectionSha256": "bee9c1eec31ab6e84e64e21e01d2e2c90ea5eef8e5cbcff216806c914e8a15c9"
+  },
+  {
+    "date": "2026-10-28",
+    "title": "同样零测，为何厚薄不同：简单根、奇异根与同余计数",
+    "sourceSha256": "27ca3de99be6b5cef0a1d0c96bf432cb5471f2eecf7c9b0c3d5f87da7134a7dd",
+    "projectionSha256": "bbc9c63ae7efaf50618d3a03e5971dee7f2d2d1be1c3c30d9716a0508d2d23bc"
+  },
+  {
+    "date": "2026-10-27",
+    "title": "有限位均匀，如何长成无限位概率：Z_p 上的 Haar 测度",
+    "sourceSha256": "6944f44dc65789ae586564a68af2cc77fd6d06ebd83ef13128a622079cad1339",
+    "projectionSha256": "db2597af1be1573a807484410fd21563c134ea3e5039e9b245ebf254c647135b"
+  },
+  {
+    "date": "2026-10-26",
+    "title": "每层都有解，为何能选成一条路：p-adic 紧致性与相容根塔",
+    "sourceSha256": "0d9edce009d940ac60fa677e66352cb162da157adf98e2e9c9bac4f0e283a07e",
+    "projectionSha256": "b94b7970f6aee3a961345b9f63b6b53b64746c34314172771cd81f3db7e4b1c4"
+  },
+  {
+    "date": "2026-10-25",
+    "title": "一条边为何像一只电阻：随机生成树、配分函数与负相关",
+    "sourceSha256": "2ddfd2951e5d31c29098c46066af41bb1f5dc83d9bea9ef73a2ee5d03e0ecb04",
+    "projectionSha256": "df987d1a18341f5d247b5358f87c83f341ae3849f1ecf8c4b63b0554277651aa"
+  },
+  {
+    "date": "2026-10-24",
+    "title": "极限不给误差条：有限频谱、边界平滑与差异度",
+    "sourceSha256": "aa6841f936ff6f03df706d2be1c1b2debbc7d87e3465d568f315794b9a045db3",
+    "projectionSha256": "dad5cccfe96145cb6a504e2b02cd021ae2b68a4b19bb11c935aba38b41554ce5"
+  },
+  {
     "date": "2026-10-23",
     "title": "平方之后为何更简单：van der Corput 差分与二次轨道",
     "sourceSha256": "035caae897c4e921cd377c0c10f702f9d4cf2907627bef3200fd417aa5bbd838",
