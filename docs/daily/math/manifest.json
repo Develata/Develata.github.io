@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-01",
+    "title": "平均一串行列式，数出所有次数：Molien 公式与不变量环的盲区",
+    "sourceSha256": "5451d4b9a36b2da96263e6d9d12fa4e402d3ccb4f6a921b70979d66c66e78199",
+    "projectionSha256": "d4a2fe7a69e871853edf81f5275fc95eca2a32d841bf0c927f92c8782aec9992"
+  },
+  {
     "date": "2026-10-31",
     "title": "弱极限怎样成为最优解：直接法的三道关与球面逃逸",
     "sourceSha256": "01b0c8ee12cd71e81761b802d7fcfa555b277d3dee2af9fb9b36a8bc6591bf89",
