@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-02",
+    "title": "给每点一个平面，未必拼得出曲面：Frobenius 条件与不可积约束",
+    "sourceSha256": "20cb1b678b92536f7971835b7f25fe940eb60d91e8217ef2ded293823d7fd3e4",
+    "projectionSha256": "1d33d93d33c830c566aa9838574ab43145e21d2865b86a81b56a1876951a113d"
+  },
+  {
     "date": "2026-11-01",
     "title": "平均一串行列式，数出所有次数：Molien 公式与不变量环的盲区",
     "sourceSha256": "5451d4b9a36b2da96263e6d9d12fa4e402d3ccb4f6a921b70979d66c66e78199",
