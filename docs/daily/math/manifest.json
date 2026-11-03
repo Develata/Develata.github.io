@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-03",
+    "title": "局部能乘出一个势函数，为何绕一圈就失败：积分因子与回归映射",
+    "sourceSha256": "7efe1fd43efee8321c785872b49d0da3d6e784a9ee9203c9bdd845e7d0e0642f",
+    "projectionSha256": "49c8d0cd9a5d5bbea397f48ccc3ee6ebe4d14ea16f22e681fce1e870ab61d71d"
+  },
+  {
     "date": "2026-11-02",
     "title": "给每点一个平面，未必拼得出曲面：Frobenius 条件与不可积约束",
     "sourceSha256": "20cb1b678b92536f7971835b7f25fe940eb60d91e8217ef2ded293823d7fd3e4",
