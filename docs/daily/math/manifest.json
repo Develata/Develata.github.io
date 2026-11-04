@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-04",
+    "title": "不能瞬时向上，却能绕路升高：Lie 括号与可达方向",
+    "sourceSha256": "8233013185caa83a87383fdb19c51a83817a1b6aa0de34f3ab8ed583a5721776",
+    "projectionSha256": "ea39f4d25ed8bda404ba40ce9868b21756519196bf14d63f437c65c7b613a81a"
+  },
+  {
     "date": "2026-11-03",
     "title": "局部能乘出一个势函数，为何绕一圈就失败：积分因子与回归映射",
     "sourceSha256": "7efe1fd43efee8321c785872b49d0da3d6e784a9ee9203c9bdd845e7d0e0642f",
