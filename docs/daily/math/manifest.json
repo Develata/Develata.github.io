@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-05",
+    "title": "不能同时挤窄两端：Fourier 方差、分部积分与高斯极值",
+    "sourceSha256": "d0e241c19aeecdc28209fb11779a060eabbae256e8bd21dd7c1014f57de87ccb",
+    "projectionSha256": "c92010f07ac1823ffc29d98bacb1b5c4c26bf9f570cf779cfff2acf5937d78ec"
+  },
+  {
     "date": "2026-11-04",
     "title": "不能瞬时向上，却能绕路升高：Lie 括号与可达方向",
     "sourceSha256": "8233013185caa83a87383fdb19c51a83817a1b6aa0de34f3ab8ed583a5721776",
