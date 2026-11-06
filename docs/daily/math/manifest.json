@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-06",
+    "title": "精确截断为何不可能：紧支撑、解析延拓与频谱的零点",
+    "sourceSha256": "7d219b4974fb7bd3c07e88860e6bd9d661e10a08e04754d4745913177e49c7e9",
+    "projectionSha256": "ba6f1082a4b8f74b9f081dd4ef9705d0a23e06224a58bf42f55843acc7318774"
+  },
+  {
     "date": "2026-11-05",
     "title": "不能同时挤窄两端：Fourier 方差、分部积分与高斯极值",
     "sourceSha256": "d0e241c19aeecdc28209fb11779a060eabbae256e8bd21dd7c1014f57de87ccb",
