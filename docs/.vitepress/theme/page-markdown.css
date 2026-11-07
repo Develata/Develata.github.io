@@ -1,0 +1,141 @@
+/**
+ * @file page-markdown.css
+ * @description `layout: page` 页面（游戏、实验、博客索引）的 Markdown 正文排版。
+ *
+ * VitePress 只给 `layout: doc` 套 `.vp-doc` 排版；`layout: page` 的 Markdown 会以浏览器默认样式
+ * 贴在内容区左上角。这里不给整页加 `.vp-doc`，因为它的后代选择器会波及游戏组件内部的
+ * p / ul / table / button。
+ *
+ * 不变量：
+ * 1. 只命中 Markdown 根容器的直接子元素（`.VPPage > div > div > …`），组件内部不受影响；
+ * 2. 根选择器包在 `:where()` 里，特异性只有元素级，页面或组件自带样式可以直接覆盖；
+ * 3. 只限制文字块的宽度，`.game-wrapper`、`.blog-grid` 等布局块保持原宽度；
+ * 4. 文字列与 `.game-wrapper`（max-width 1200px，居中）共用左边缘，行宽另外限制在 720px。
+ *    width 与 padding 的百分比都相对同一个包含块，所以右侧 padding 恰好把行宽截到 720px。
+ */
+
+:where(.VPPage > div > div) > :is(h1, h2, h3, p, blockquote, ul, ol) {
+  --page-md-width: min(1200px, 100% - 48px);
+  box-sizing: border-box;
+  width: var(--page-md-width);
+  margin-inline: auto;
+  padding-inline: 0 max(0px, var(--page-md-width) - 720px);
+  color: var(--vp-c-text-1);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+:where(.VPPage > div > div) > h1:first-child {
+  margin-top: 40px;
+}
+
+:where(.VPPage > div > div) > h1 {
+  margin-bottom: 12px;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+:where(.VPPage > div > div) > h2 {
+  margin-top: 32px;
+  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+:where(.VPPage > div > div) > h3 {
+  margin-top: 24px;
+  margin-bottom: 4px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+:where(.VPPage > div > div) > p {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+/* 引言块作为导语：只降低文字层级，不再加额外的框。 */
+:where(.VPPage > div > div) > blockquote {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: var(--vp-c-text-2);
+  font-size: 16px;
+}
+
+:where(.VPPage > div > div) > blockquote > p {
+  margin: 0;
+}
+
+/* VitePress base.css 把 ul/ol 重置成 list-style: none，这里恢复列表符号。 */
+:where(.VPPage > div > div) > :is(ul, ol) {
+  margin-top: 8px;
+  margin-bottom: 0;
+  padding-left: 1.25em;
+}
+
+:where(.VPPage > div > div) > ul,
+:where(.VPPage > div > div) > :is(ul, ol) ul {
+  list-style: disc;
+}
+
+:where(.VPPage > div > div) > ol,
+:where(.VPPage > div > div) > :is(ul, ol) ol {
+  list-style: decimal;
+}
+
+:where(.VPPage > div > div) > :is(ul, ol) :is(ul, ol) {
+  padding-left: 1.25em;
+}
+
+:where(.VPPage > div > div) > :is(ul, ol) li + li {
+  margin-top: 4px;
+}
+
+:where(.VPPage > div > div) > :is(h1, h2, h3, p, blockquote, ul, ol) code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--vp-code-bg);
+  color: var(--vp-code-color);
+  font-size: 0.875em;
+}
+
+:where(.VPPage > div > div) > :is(p, blockquote, ul, ol) a {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* 标题锚点：与文档页一致，悬停时才出现。 */
+:where(.VPPage > div > div) > :is(h1, h2, h3) .header-anchor {
+  margin-left: 6px;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+:where(.VPPage > div > div) > :is(h1, h2, h3):hover .header-anchor,
+:where(.VPPage > div > div) > :is(h1, h2, h3) .header-anchor:focus-visible {
+  opacity: 1;
+}
+
+:where(.VPPage > div > div) > :is(h1, h2, h3, p, blockquote, ul, ol) + .game-wrapper {
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  :where(.VPPage > div > div) > :is(h1, h2, h3, p, blockquote, ul, ol) {
+    --page-md-width: calc(100% - 32px);
+  }
+
+  :where(.VPPage > div > div) > h1:first-child {
+    margin-top: 24px;
+  }
+
+  :where(.VPPage > div > div) > h1 {
+    font-size: 26px;
+  }
+}
