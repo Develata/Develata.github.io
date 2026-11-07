@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-07",
+    "title": "不能无限逼近双截断：紧算子把定性禁止变成泄漏下界",
+    "sourceSha256": "2e4ae2b4f4be9ba90cd92e88c85252de901d4d67517fc790f01ce47de7bdfe10",
+    "projectionSha256": "761ce85c09a5d2bdb03b88f676f42114a2533ebf1cb9cc4d5e8ef93719fe1abe"
+  },
+  {
     "date": "2026-11-06",
     "title": "精确截断为何不可能：紧支撑、解析延拓与频谱的零点",
     "sourceSha256": "7d219b4974fb7bd3c07e88860e6bd9d661e10a08e04754d4745913177e49c7e9",
