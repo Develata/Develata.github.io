@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-08",
+    "title": "不删零模，给每个分量一个根：矩阵森林公式与随机根数",
+    "sourceSha256": "7a0a463dda1d766b86dd0779770f71d26c42f5e8dab8c82462cf94ff431f7568",
+    "projectionSha256": "da5420f15fe296c35182ada1510f16d8faaf9bf015d0fc7f29d116ef6d2f2d90"
+  },
+  {
     "date": "2026-11-07",
     "title": "不能无限逼近双截断：紧算子把定性禁止变成泄漏下界",
     "sourceSha256": "2e4ae2b4f4be9ba90cd92e88c85252de901d4d67517fc790f01ce47de7bdfe10",
