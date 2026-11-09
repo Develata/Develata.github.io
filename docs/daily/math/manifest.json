@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-09",
+    "title": "迹为零不等于看不见：可分性、迹配对与特征 p 的陷阱",
+    "sourceSha256": "725c96d7a1b2ab5dc2b66c14bf6c0b41402b1128c1eea0cd1ce9ca6398e49cc6",
+    "projectionSha256": "cdc071470339374220baf91b24345fce1f231eedad32024a63a511ed89797b98"
+  },
+  {
     "date": "2026-11-08",
     "title": "不删零模，给每个分量一个根：矩阵森林公式与随机根数",
     "sourceSha256": "7a0a463dda1d766b86dd0779770f71d26c42f5e8dab8c82462cf94ff431f7568",
