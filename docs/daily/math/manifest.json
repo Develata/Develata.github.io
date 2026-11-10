@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-10",
+    "title": "非零还不够：判别式、整格对偶与伪装成分歧的坏素数",
+    "sourceSha256": "dfb83ee2d399c1cf658282baae50bdde2df28059db2fbcba845ba25845508252",
+    "projectionSha256": "50437641ecbf0364af8d04937f2f7565f9bfb8c1e2498c31573022a47e120ad5"
+  },
+  {
     "date": "2026-11-09",
     "title": "迹为零不等于看不见：可分性、迹配对与特征 p 的陷阱",
     "sourceSha256": "725c96d7a1b2ab5dc2b66c14bf6c0b41402b1128c1eea0cd1ce9ca6398e49cc6",
