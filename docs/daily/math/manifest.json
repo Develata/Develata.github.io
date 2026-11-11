@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-11",
+    "title": "能读出坐标，不代表能自己读自己：有限域的迹对偶、正规基与自对偶障碍",
+    "sourceSha256": "2d84c751b3d5db3f19de2e91ee53dc7c0c6dee9b4281a4997488d3d5eca88dd5",
+    "projectionSha256": "d25a7d62f7b3ece2092ca7d86bbba15cc381f828b6940fe296c2945b51a8d37e"
+  },
+  {
     "date": "2026-11-10",
     "title": "非零还不够：判别式、整格对偶与伪装成分歧的坏素数",
     "sourceSha256": "dfb83ee2d399c1cf658282baae50bdde2df28059db2fbcba845ba25845508252",
