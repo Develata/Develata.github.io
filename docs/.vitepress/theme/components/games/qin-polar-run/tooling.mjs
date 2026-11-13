@@ -23,8 +23,9 @@ export const BINDGEN_VERSION = lockedVersion('wasm-bindgen')
 
 const cargoBin = join(process.env.CARGO_HOME || join(homedir(), '.cargo'), 'bin')
 // Versioned and outside CARGO_HOME: never replaces a developer's global wasm-bindgen.
-const bindgenBin = join(process.env.NORTHERN_RUN_TOOLS || join(homedir(), '.cache', 'northern-run-tools'),
-  'wasm-bindgen-' + BINDGEN_VERSION, 'bin')
+const bindgenRoot = join(process.env.NORTHERN_RUN_TOOLS || join(homedir(), '.cache', 'northern-run-tools'),
+  'wasm-bindgen-' + BINDGEN_VERSION)
+const bindgenBin = join(bindgenRoot, 'bin')
 const unix = process.platform !== 'win32'
 
 function lockedVersion(name) {
@@ -90,10 +91,16 @@ const steps = {
   bindgen() {
     const expected = 'wasm-bindgen ' + BINDGEN_VERSION
     if (probe('wasm-bindgen', ['--version']) !== expected) {
-      // crate-meta-data only: the crate's upstream release binaries. No third-party
-      // quick-install mirror, no compile fallback: a missing binary is a hard failure.
-      run('cargo-binstall', ['wasm-bindgen-cli@' + BINDGEN_VERSION, '--no-confirm', '--strategies', 'crate-meta-data',
-        '--install-path', bindgenBin, '--disable-telemetry', '--no-discover-github-token'])
+      // Prefer upstream release binaries. If unavailable, compile the same
+      // version from crates.io using its published lockfile and the pinned Rust toolchain.
+      try {
+        run('cargo-binstall', ['wasm-bindgen-cli@' + BINDGEN_VERSION, '--no-confirm', '--strategies', 'crate-meta-data',
+          '--install-path', bindgenBin, '--disable-telemetry', '--no-discover-github-token'])
+      } catch (error) {
+        console.warn('Prebuilt wasm-bindgen install failed; falling back to cargo install: ' + error.message)
+        run('cargo', ['install', '--locked', '--version', BINDGEN_VERSION, '--root', bindgenRoot, 'wasm-bindgen-cli'],
+          { cwd: rustDir })
+      }
     }
     const found = probe('wasm-bindgen', ['--version'])
     if (found !== expected) throw new Error('Expected ' + expected + ', found ' + (found ?? 'none'))
