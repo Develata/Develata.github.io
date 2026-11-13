@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-13",
+    "title": "没有平方矩，预测仍能收敛：截断、统一尾界与信息极限",
+    "sourceSha256": "099303b6f6346d7d44408abc64c70603ff9aa9240486965d324c2bb19387394b",
+    "projectionSha256": "aa9772be3eb556ebfb97c7856ac2fdb63160b7f9c31673b9409d802ffdc80cc9"
+  },
+  {
     "date": "2026-11-12",
     "title": "信息越来越多，预测就能还原真相吗：递增条件期望与终极可见性",
     "sourceSha256": "49ca48eb0162bc6dfc7a191677a99ef4d4a9110c014008ce6e1ea03b14179dbd",
