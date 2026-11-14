@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-14",
+    "title": "不断遗忘，最终留下什么：反向鞅、尾信息与零一律",
+    "sourceSha256": "d6de0ab2c58dce984dc04f99c0572d68e7c9c9abc6b84456992c5d19328e4379",
+    "projectionSha256": "63bb47d73e16a1789da7006b64d2a4e8a6e9ad38c34f8cbaa7367be5931bbf5c"
+  },
+  {
     "date": "2026-11-13",
     "title": "没有平方矩，预测仍能收敛：截断、统一尾界与信息极限",
     "sourceSha256": "099303b6f6346d7d44408abc64c70603ff9aa9240486965d324c2bb19387394b",
