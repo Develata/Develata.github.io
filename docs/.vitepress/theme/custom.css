@@ -1,0 +1,477 @@
+/* docs/.vitepress/theme/custom.css */
+
+:root {
+  /* 默认是 272px，我们把它改窄一点，比如 220px */
+  --vp-sidebar-width: 220px; 
+}
+
+/* 针对大屏幕（宽屏显示器）的调整 */
+@media (min-width: 1440px) {
+  :root {
+    /* 在超大屏幕上，默认会变宽，我们也限制它 */
+    --vp-sidebar-width: 240px;
+  }
+}
+
+/* 可选：如果你觉得右侧大纲栏（On this page）也太宽，可以一起改 */
+/*
+:root {
+  --vp-right-sidebar-width: 200px; 
+}
+*/
+
+/* 右侧页面目录：允许长标题完整换行，避免默认省略号截断。 */
+.VPDocAsideOutline .outline-link {
+  box-sizing: border-box;
+  display: block !important;
+  line-height: 1.45 !important;
+  overflow: visible !important;
+  padding: 6px 0 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  text-overflow: clip !important;
+}
+
+.VPDocAsideOutline .outline-link.nested {
+  padding-left: 13px !important;
+}
+
+@media (min-width: 1280px) {
+  /* doc-top slot 位于 VitePress 内容容器之外；复刻正文列的宽度与居中规则。 */
+  .VPDoc.has-aside > .doc-date {
+    width: min(688px, calc(100% - 320px));
+    margin-left: max(32px, (100% - 944px) / 2);
+  }
+}
+
+/* 首页 CTA：与导航控件共用轻量 Liquid Glass 语法。 */
+.home-page .VPHomeHero {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-page .VPHomeHero::before {
+  position: absolute;
+  z-index: 0;
+  top: 156px;
+  left: 18px;
+  width: min(430px, 42vw);
+  height: 210px;
+  background:
+    radial-gradient(circle at 28% 48%, rgba(87, 129, 242, 0.13), transparent 54%),
+    radial-gradient(circle at 72% 58%, rgba(83, 199, 195, 0.09), transparent 50%);
+  content: '';
+  filter: blur(20px);
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.home-page .VPHomeHero > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.dark .home-page .VPHomeHero::before {
+  background:
+    radial-gradient(circle at 28% 48%, rgba(105, 135, 236, 0.17), transparent 54%),
+    radial-gradient(circle at 72% 58%, rgba(82, 189, 187, 0.11), transparent 50%);
+  opacity: 0.82;
+}
+
+.home-page .VPHomeHero .actions {
+  gap: 14px;
+  padding-top: 26px;
+}
+
+.home-page .VPHomeHero .VPButton {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 1px solid rgba(76, 99, 145, 0.2);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 -1px 0 rgba(76, 99, 145, 0.08),
+    0 5px 18px rgba(36, 56, 94, 0.07);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.home-page .VPHomeHero .VPButton::before {
+  position: absolute;
+  top: 1px;
+  right: 10px;
+  bottom: 1px;
+  left: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.04) 52%,
+    transparent
+  );
+  content: '';
+  opacity: 0.62;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.home-page .VPHomeHero .VPButton::after {
+  position: absolute;
+  top: -45%;
+  bottom: -45%;
+  left: -45%;
+  width: 36%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.52),
+    transparent
+  );
+  content: '';
+  opacity: 0.72;
+  pointer-events: none;
+  transform: translateX(-160%) skewX(-18deg);
+  transition: transform 680ms cubic-bezier(0.2, 0.72, 0.22, 1);
+}
+
+.home-page .VPHomeHero .VPButton.brand {
+  border-color: rgba(60, 96, 193, 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(110, 145, 244, 0.2),
+    rgba(72, 108, 210, 0.11)
+  );
+  color: #173b91;
+}
+
+.home-page .VPHomeHero .VPButton.alt {
+  border-color: rgba(76, 88, 112, 0.16);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.42),
+    rgba(245, 248, 255, 0.2)
+  );
+  color: var(--vp-c-text-1);
+}
+
+.dark .home-page .VPHomeHero .VPButton {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.17),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.16),
+    0 5px 18px rgba(0, 0, 0, 0.12);
+}
+
+.dark .home-page .VPHomeHero .VPButton::before {
+  border-top-color: rgba(255, 255, 255, 0.24);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.075),
+    rgba(255, 255, 255, 0.018) 52%,
+    transparent
+  );
+  opacity: 0.86;
+}
+
+.dark .home-page .VPHomeHero .VPButton.brand {
+  border-color: rgba(154, 174, 255, 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(119, 145, 255, 0.18),
+    rgba(71, 91, 184, 0.1)
+  );
+  color: #edf1ff;
+}
+
+.dark .home-page .VPHomeHero .VPButton.alt {
+  border-color: rgba(255, 255, 255, 0.13);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.075),
+    rgba(255, 255, 255, 0.035)
+  );
+}
+
+@media (hover: hover) {
+  .home-page .VPHomeHero .VPButton:hover {
+    border-color: rgba(73, 105, 196, 0.38);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.86),
+      inset 0 -1px 0 rgba(76, 99, 145, 0.08),
+      0 7px 20px rgba(36, 56, 94, 0.09);
+    transform: translateY(-1px);
+  }
+
+  .home-page .VPHomeHero .VPButton:hover::before {
+    opacity: 0.88;
+  }
+
+  .home-page .VPHomeHero .VPButton:hover::after {
+    transform: translateX(520%) skewX(-18deg);
+  }
+
+  .home-page .VPHomeHero .VPButton.alt:hover {
+    color: var(--vp-c-brand-1);
+  }
+
+  .dark .home-page .VPHomeHero .VPButton:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.16),
+      0 7px 20px rgba(0, 0, 0, 0.16);
+  }
+
+  .dark .home-page .VPHomeHero .VPButton:hover::before {
+    opacity: 1;
+  }
+}
+
+.home-page .VPHomeHero .VPButton:active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.64),
+    inset 0 -1px 0 rgba(76, 99, 145, 0.1),
+    0 2px 8px rgba(36, 56, 94, 0.07);
+  transform: translateY(0) scale(0.985);
+}
+
+.home-page .VPHomeHero .VPButton:focus-visible {
+  outline: 3px solid var(--vp-c-brand-soft);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .home-page .VPHomeHero::before {
+    top: 108px;
+    left: -32px;
+    width: min(360px, calc(100vw + 32px));
+    height: 220px;
+  }
+
+  .home-page .VPHomeHero .actions {
+    gap: 12px;
+    padding-top: 22px;
+  }
+}
+
+@media (max-width: 360px) {
+  /* Long site titles must yield space without shrinking the 48px menu target. */
+  .VPNavBar .content {
+    min-width: 0;
+  }
+
+  .VPNavBarHamburger {
+    flex-shrink: 0;
+  }
+
+  .home-page .VPHomeHero .actions {
+    gap: 8px;
+  }
+
+  .home-page .VPHomeHero .action {
+    padding: 0;
+  }
+
+  .home-page .VPHomeHero .VPButton {
+    padding-inline: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .VPHomeHero .VPButton,
+  .home-page .VPHomeHero .VPButton::before,
+  .home-page .VPHomeHero .VPButton::after {
+    transition: none;
+  }
+
+  .home-page .VPHomeHero .VPButton::after {
+    display: none;
+  }
+
+  .home-page .VPHomeHero .VPButton:hover,
+  .home-page .VPHomeHero .VPButton:active {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .home-page .VPHomeHero .VPButton {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .home-page .VPHomeHero .VPButton.brand {
+    background: #e7edff;
+  }
+
+  .home-page .VPHomeHero .VPButton.alt {
+    background: var(--vp-c-bg-soft);
+  }
+
+  .dark .home-page .VPHomeHero .VPButton.brand {
+    background: #29365c;
+  }
+
+  .dark .home-page .VPHomeHero .VPButton.alt {
+    background: #27282d;
+  }
+}
+
+/* 全局修复：移动端下的 Grid 布局边距问题 */
+@media (max-width: 768px) {
+  /* 针对博客、书单等使用 Grid 的容器 */
+  .blog-grid, 
+  .book-grid, 
+  .game-grid { /* 👈 修改这里：将 .game-hub 改为 .game-grid */
+    grid-template-columns: 1fr !important;
+    padding-left: 0 !important;
+  }
+  
+  /* 单独处理 .game-hub 的内边距 */
+  .game-hub {
+    padding-left: 0 !important;
+  }
+
+  /* 针对五子棋等游戏容器的适配 */
+  .board-wrapper {
+    padding: 5px !important;
+  }
+}
+
+/* --- 游戏容器统一通用样式 --- */
+.game-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 32px auto 40px;
+  width: 100%;
+  max-width: 1200px;
+  min-height: min(70vh, 720px);
+}
+
+/* 为井字棋单独定义一个特殊类，或者统一所有游戏风格 */
+.game-wrapper-bordered {
+  padding: 40px;
+  background: var(--vp-c-bg-alt);
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .game-wrapper-bordered {
+    padding: 20px; /* 手机端减小内边距 */
+  }
+}
+
+/* --- Convergence 专用：控制整体可视区域比例 --- */
+.game-wrapper--convergence {
+  max-width: 1280px;
+  min-height: min(70vh, 780px);
+}
+
+.game-wrapper--convergence .game-container {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+@media (max-width: 960px) {
+  .game-wrapper--convergence {
+    margin-top: 16px;
+    min-height: 540px;
+  }
+}
+
+/* ========================================================================
+   全局卡片透明化样式 (Glassmorphism Unified)
+   ======================================================================== */
+
+/* 我们将以下所有组件的背景样式合并处理：
+   1. .VPFeature: 首页的功能介绍卡片
+   2. .game-card: 游戏中心的卡片
+   3. .blog-card: 博客列表的卡片
+   4. .news-card: 新闻列表的卡片
+   5. .root-tree: 目录导航树的外框
+   6. .header-card: 扫雷/数独等游戏的头部计分板
+   7. .settings-panel, .game-over-panel: 游戏内的弹窗面板
+*/
+.VPFeature,
+.game-card,
+.blog-card,
+.news-card,
+.root-tree,
+.header-card,
+.settings-panel,
+.game-over-panel,
+.buff-panel,    /* 收敛游戏的Buff面板 */
+.network-panel  /* 收敛游戏的拓扑面板 */
+{
+  /* 1. 统一背景：极低透明度的蓝灰色，兼容深色/浅色模式 */
+  background-color: rgba(142, 150, 170, 0.1) !important;
+  
+  /* 2. 核心：毛玻璃模糊效果 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* 3. 统一边框：半透明白/灰线 */
+  border: 1px solid rgba(128, 128, 128, 0.15) !important;
+  
+  /* 4. 统一样式细节 */
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05); /* 轻微阴影增加层次感 */
+  transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* --- 交互状态：鼠标悬停效果 --- */
+/* 注意：排除了 .root-tree 和游戏面板，因为它们通常不需要悬停上浮 */
+.VPFeature:hover,
+.game-card:not(.is-disabled):hover,
+.blog-card:hover,
+.news-card:hover {
+  /* 悬停时背景稍微加深 */
+  background-color: rgba(142, 150, 170, 0.18) !important;
+  /* 边框变亮（品牌色） */
+  border-color: var(--vp-c-brand-1) !important;
+  /* 上浮效果 */
+  transform: translateY(-4px);
+  /* 阴影加重 */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 特殊微调 --- */
+
+/* 目录树内部不需要太强的阴影，保持扁平 */
+.root-tree {
+  box-shadow: none !important;
+  padding: 20px !important; /* 增加一点内边距让透明感更舒服 */
+}
+
+/* 游戏卡片的装饰背景球 (那个模糊的圆) 需要淡化，否则会透过透明背景显得太乱 */
+.game-card .card-bg-decoration {
+  opacity: 0.05 !important;
+}
+.game-card:hover .card-bg-decoration {
+  opacity: 0.15 !important;
+}
+
+/* 动态光晕背景 */
+body {
+  background-image: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+  background-attachment: fixed;
+  
+  /* 3. 防止背景重复 */
+  background-repeat: no-repeat;
+  
+  /* 4. 确保过渡平滑 (切换深色/浅色模式时) */
+  transition: background-image 0.5s ease;
+}
