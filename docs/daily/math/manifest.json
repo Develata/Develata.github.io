@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-15",
+    "title": "不用数清所有问题：VC 维、幽灵样本与大集合的统一命中",
+    "sourceSha256": "cdb1a819a80d5baecb36d8b8479e7efd1babd294bada6cabf8e68694fbfde7af",
+    "projectionSha256": "41e2c45ab36ded829bacaac44bdf933d3e0f0f112eb3fdac1fe0c7bce37b9376"
+  },
+  {
     "date": "2026-11-14",
     "title": "不断遗忘，最终留下什么：反向鞅、尾信息与零一律",
     "sourceSha256": "d6de0ab2c58dce984dc04f99c0572d68e7c9c9abc6b84456992c5d19328e4379",
