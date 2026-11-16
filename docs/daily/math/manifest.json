@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-16",
+    "title": "局部没有洞，整体仍能有洞：van Kampen 定理与交叠处的路径信息",
+    "sourceSha256": "4644115335e28fce596f6ebec0e1576f94032b2f3c2f05bd1e6f802b920e209f",
+    "projectionSha256": "7c2535ea51605f9393733b7dd6fdf7ddd2f977c486edc0b10358b31974c98dda"
+  },
+  {
     "date": "2026-11-15",
     "title": "不用数清所有问题：VC 维、幽灵样本与大集合的统一命中",
     "sourceSha256": "cdb1a819a80d5baecb36d8b8479e7efd1babd294bada6cabf8e68694fbfde7af",
