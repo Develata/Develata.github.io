@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-17",
+    "title": "填一张圆盘，究竟杀掉什么：胞腔附着、正规闭包与曲面群",
+    "sourceSha256": "cac36fc6a5b62fd2a36627326b07ebfe3be84a3bd768900a1c6f7ccf6d52ecc8",
+    "projectionSha256": "cf6f86e0ba668a2e800213a0cc0a17c54216fe856b35d718c969e20fef9c951f"
+  },
+  {
     "date": "2026-11-16",
     "title": "局部没有洞，整体仍能有洞：van Kampen 定理与交叠处的路径信息",
     "sourceSha256": "4644115335e28fce596f6ebec0e1576f94032b2f3c2f05bd1e6f802b920e209f",
