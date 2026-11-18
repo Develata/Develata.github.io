@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-18",
+    "title": "只记次数，不记次序：基本群的阿贝尔化与一维同调",
+    "sourceSha256": "7a904e7846a2f49a5b4175f115a4a1fe3e0c09e9c5813bfbc1298f78ce18a523",
+    "projectionSha256": "3f9c794cea0310926ca3615a6c63782add5b4d741dbc67655213472c054a99fc"
+  },
+  {
     "date": "2026-11-17",
     "title": "填一张圆盘，究竟杀掉什么：胞腔附着、正规闭包与曲面群",
     "sourceSha256": "cac36fc6a5b62fd2a36627326b07ebfe3be84a3bd768900a1c6f7ccf6d52ecc8",
