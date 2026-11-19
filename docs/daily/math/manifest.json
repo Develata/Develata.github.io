@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-19",
+    "title": "两个坐标系里能同时剩下几个非零项？有限 Fourier 支撑的乘积界",
+    "sourceSha256": "0e6119c626583edc1cd1722b16e3f25b0b9bc0ae60e5c3102b1a5ece6faf73c6",
+    "projectionSha256": "803cef98ede62061b202935c6d2c3013584309a472e8626255d978afea5a67b6"
+  },
+  {
     "date": "2026-11-18",
     "title": "只记次数，不记次序：基本群的阿贝尔化与一维同调",
     "sourceSha256": "7a904e7846a2f49a5b4175f115a4a1fe3e0c09e9c5813bfbc1298f78ce18a523",
