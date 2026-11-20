@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-20",
+    "title": "任取几个频率，都能读回同样多个已知位置上的系数吗？",
+    "sourceSha256": "db413564bc01b7963a81ba8b76b5aafd4fc073067dd955952fe7fe3d8f21ca0a",
+    "projectionSha256": "a0e63bf0b9f22a0c59260f6edf0ad8d6cee94f4cfa18a908465e44f9bce57eae"
+  },
+  {
     "date": "2026-11-19",
     "title": "两个坐标系里能同时剩下几个非零项？有限 Fourier 支撑的乘积界",
     "sourceSha256": "0e6119c626583edc1cd1722b16e3f25b0b9bc0ae60e5c3102b1a5ece6faf73c6",
