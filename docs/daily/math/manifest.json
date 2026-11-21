@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-21",
+    "title": "两个频率怎样选，才能最稳地读回两个系数？",
+    "sourceSha256": "5faeabb8f17cfe289d44c05bc78a6d84f144c0dffc7e7b1b72b90601a964365c",
+    "projectionSha256": "dafbde6d0e855c3f3e838578fdc7e7e5f4b90b9cc14d270356343339d809d065"
+  },
+  {
     "date": "2026-11-20",
     "title": "任取几个频率，都能读回同样多个已知位置上的系数吗？",
     "sourceSha256": "db413564bc01b7963a81ba8b76b5aafd4fc073067dd955952fe7fe3d8f21ca0a",
