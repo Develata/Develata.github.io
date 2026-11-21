@@ -1,0 +1,2 @@
+# Imported journal Markdown preserves source hard line breaks and TeX spacing.
+docs/daily/math/*.md whitespace=-trailing-space,-space-before-tab
