@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-22",
+    "title": "两个相同的部件换成一个：从奇数分拆到互异分拆",
+    "sourceSha256": "fa73e6f5b296bd7292e50e9d20ff37b50872e327fb736e0e9b389991cb7ccfaa",
+    "projectionSha256": "29a51b1b4db4e81b1a2c346e3ef241d5f4779112e2364c0b7662042bb0836097"
+  },
+  {
     "date": "2026-11-21",
     "title": "两个频率怎样选，才能最稳地读回两个系数？",
     "sourceSha256": "5faeabb8f17cfe289d44c05bc78a6d84f144c0dffc7e7b1b72b90601a964365c",
