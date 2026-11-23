@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-23",
+    "title": "模一个素数以后，哪些轨道还数得见？",
+    "sourceSha256": "9b7128dd14c7dfa3224dfe6361aa0941fea49d876a554c481ad4e4acaa3f4734",
+    "projectionSha256": "035cd330d221af2a5672fd230547a3ea751e936bd555c52529d1fe37c1c827e2"
+  },
+  {
     "date": "2026-11-22",
     "title": "两个相同的部件换成一个：从奇数分拆到互异分拆",
     "sourceSha256": "fa73e6f5b296bd7292e50e9d20ff37b50872e327fb736e0e9b389991cb7ccfaa",
