@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-24",
+    "title": "一个固定陪集，为什么足以证明 Sylow 子群共轭？",
+    "sourceSha256": "94d9d0ddacdd716bf5285fde23519a47a788dc5b977a8beeaa82ababa6963a2a",
+    "projectionSha256": "5ff8e9f73430103b49b0f6e01c4e663ec38a4e379b5b0614b9ede5541f1bd2b9"
+  },
+  {
     "date": "2026-11-23",
     "title": "模一个素数以后，哪些轨道还数得见？",
     "sourceSha256": "9b7128dd14c7dfa3224dfe6361aa0941fea49d876a554c481ad4e4acaa3f4734",
