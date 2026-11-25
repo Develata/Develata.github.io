@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-25",
+    "title": "零相关的观测，为什么仍能给出零误差预测？",
+    "sourceSha256": "7ac5905c5dbc7facd2f5b4b5bf75eb114218bb94353e78fb56f7275408859614",
+    "projectionSha256": "22e8b95efca700712d4a8106401ea71118da9e8190edfe926ebc19a6f29ca618"
+  },
+  {
     "date": "2026-11-24",
     "title": "一个固定陪集，为什么足以证明 Sylow 子群共轭？",
     "sourceSha256": "94d9d0ddacdd716bf5285fde23519a47a788dc5b977a8beeaa82ababa6963a2a",
