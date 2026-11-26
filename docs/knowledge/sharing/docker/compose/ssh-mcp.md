@@ -2,15 +2,11 @@
 title: ssh-mcp
 ---
 
-## Github Repo
+[上游仓库](https://github.com/tufantunc/ssh-mcp) · 更新：2026-11-26
 
-[SSH MCP Github Repo](https://github.com/Develata/ssh-mcp) · [上游项目](https://github.com/tufantunc/ssh-mcp) · [GHCR 镜像](https://github.com/Develata/ssh-mcp/pkgs/container/ssh-mcp)
+## Compose
 
-compose更新日期: 2026-10-15
-
-## docker-compose
-
-保存为 `compose.yaml`（直接使用 `ghcr.io/develata/ssh-mcp:latest` 预构建镜像）：
+从上游 Git 源码构建，不依赖预构建镜像。保存为 `compose.yaml`：
 
 ```yaml
 networks:
@@ -20,7 +16,9 @@ networks:
 services:
     ssh-mcp:
         container_name: ssh-mcp
-        image: ghcr.io/develata/ssh-mcp:latest
+        pull_policy: build
+        build:
+            context: "https://github.com/tufantunc/ssh-mcp.git#${SSH_MCP_REF:?Set an upstream tag or commit}"
         restart: unless-stopped
         init: true
         user: "65532:65532"
@@ -51,7 +49,7 @@ services:
         networks:
             - 1panel-network
         ports:
-            - "127.0.0.1:${SSH_MCP_HOST_PORT:-35486}:3000"
+            - "127.0.0.1:${SSH_MCP_HOST_PORT:-18080}:3000"
         volumes:
             - ./config:/home/appuser/.config/ssh-mcp:ro
             - ./secrets/id_ed25519:/run/secrets/ssh-mcp-id_ed25519:ro
@@ -78,49 +76,29 @@ services:
                 max-file: "3"
 ```
 
-## env
+## `.env`
 
-保存为同目录的 `.env`：
-
-```env
-TIME_ZONE=Asia/Shanghai
-SSH_MCP_HOST_PORT=35486
-
-# 必填：本机执行 openssl rand -hex 32 生成，不要提交到仓库
+```dotenv
+SSH_MCP_REF=v2.28.0
 SSH_MCP_BEARER_TOKEN=
-
-# HTTP Host 白名单；修改宿主机端口时同步修改，反代时添加实际 Host
-# 127.0.0.1:3000 用于容器内健康检查，ssh-mcp:3000 用于同网络反代
-SSH_MCP_ALLOWED_HOSTS=127.0.0.1:35486,localhost:35486,127.0.0.1:3000,ssh-mcp:3000
-
-# 私钥有口令才填；含 $、# 或空格时用单引号包住
-SSH_MCP_TRIAL_PASSPHRASE=
-
-SSH_MCP_CPUS=1.0
-SSH_MCP_MEMORY=512M
+SSH_MCP_ALLOWED_HOSTS=127.0.0.1:18080,127.0.0.1:3000
 ```
 
-## config.toml
+用 `openssl rand -hex 32` 生成 token，填入 `.env`。`SSH_MCP_REF` 填实际发布 tag 或完整提交 SHA；`latest` 不会自动解析为 GitHub 的最新 Release。换宿主机端口时同步更新 Host 白名单；使用反向代理时，把其实际转发的 `Host` 加入白名单。保留 `127.0.0.1:3000` 供容器健康检查使用。
 
-保存为 `config/config.toml`，替换主机、账号、目录和指纹；指纹须通过目标机可信控制台核对。
+## SSH 配置
+
+保存为 `config/config.toml`。示例只允许只读排查；使用专用低权限 SSH 账号，并从可信渠道核对主机指纹。
 
 ```toml
 [defaults]
 defaultProfile = "trial"
 approvalMode = "ask-all"
 approvalGrantTtlMs = 0
-commandTimeoutMs = 30000
-commandMaxChars = 5000
-commandMaxOutputBytes = 1048576
-commandQuotaPerDay = 100
-sessionMaxPerConnection = 1
-sessionIdleTimeoutMs = 300000
-sessionBackgroundMaxMs = 300000
-connectionIdleReapMs = 300000
 
 [[profiles]]
 name = "trial"
-host = "192.0.2.10"
+host = "server.example.com"
 port = 22
 user = "mcp-observer"
 auth = "key"
@@ -128,53 +106,34 @@ keyRef = "/run/secrets/ssh-mcp-id_ed25519"
 workdir = "/home/mcp-observer"
 trustedHostKey = "SHA256:REPLACE_WITH_VERIFIED_FINGERPRINT"
 role = "viewer"
-group = "prod"
 readOnly = true
 approvalPolicy = "ask-all"
 tty = false
 ```
 
-## 使用
+## 部署与更新
 
-在 **1Panel 当前节点的终端**准备目录；以下命令用 root 执行：
-
-```bash
-mkdir -p /opt/ssh-mcp
-cd /opt/ssh-mcp
-mkdir -p config secrets data
-```
-
-将上述 `compose.yaml`、`.env`、`config/config.toml` 保存到对应位置，填好 token 和实际 SSH 配置，再放入专用私钥 `secrets/id_ed25519`。对应公钥须已配置到目标账号。
-
-`volumes` 使用短语法字符串列表，兼容当前 1Panel 的卷字段解析。短语法不提供 `create_host_path: false`：启动前必须先创建 `config/`、`data/`，并确认 `config/config.toml` 和 `secrets/id_ed25519` 是实际文件。尤其不要让缺失的私钥路径被自动创建成目录。
+在部署目录下创建 `config/`、`secrets/`、`data/`，把专用私钥放到 `secrets/id_ed25519`，在目标账号配置对应公钥。确认私钥路径是文件，再执行以下命令（普通 Linux Docker，以 root 运行）：
 
 ```bash
-cd /opt/ssh-mcp
-test -d config && test -d data && test -f config/config.toml && test -f secrets/id_ed25519 || {
-    echo "请先准备配置目录、数据目录、config.toml 和私钥文件"
-    exit 1
-}
-printf '%s\n' '.env' 'config/' 'secrets/' 'data/' > .gitignore
-chmod 600 .env config/config.toml secrets/id_ed25519
-chmod 700 config secrets data
-chown 65532:65532 config config/config.toml secrets/id_ed25519 data
-
-# 同时检查 1Panel 所用的 Compose 解析参数；不输出含 token 的配置
-docker compose config --format json --no-normalize >/dev/null
-docker compose pull ssh-mcp
+test -f config/config.toml && test -f secrets/id_ed25519 && \
+  chmod 600 .env config/config.toml secrets/id_ed25519 && \
+  chmod 700 config secrets data && \
+  chown 65532:65532 config config/config.toml secrets/id_ed25519 data && \
+  docker compose config -q
 ```
 
-以上全部成功后，再到 **容器 → 编排 → 创建编排 → 路径选择**，选择 `/opt/ssh-mcp/compose.yaml`。确认环境变量栏已加载同目录 `.env`，然后创建。终端与 1Panel 必须使用同一个 Docker daemon。
+使用 1Panel 时，从「容器 → 编排 → 创建编排 → 路径选择」选中保存的 `compose.yaml`，确认加载同目录的 `.env`，并且已有 `1panel-network`。不使用 1Panel 时，可将该外部网络改成自己的可信网络，再在同目录执行：
 
-不用 1Panel 时，在同目录执行 `docker compose up -d`。目录可以更换，但配置、私钥、数据目录必须与 Compose 文件保持上述相对位置。UID/GID `65532:65532` 适用于普通 Linux Docker；rootless / userns 环境按实际映射调整。
+```bash
+docker compose up -d --build ssh-mcp
+docker compose ps ssh-mcp
+```
 
-若仍出现 `cannot unmarshal !!map into string`，确认 1Panel 读取的是这份已保存的 Compose，`volumes` 下每项都是上述短语法字符串，且没有残留 `type/source/target/bind` 映射；再检查 `.env` 必填项和上述 Compose 解析命令。
+更新时先把 `.env` 改为已审核的 tag 或 SHA，再运行同一条 `up` 命令。不要用 `docker compose pull` 来更新这份源码构建配置。若报 `repository does not contain ref latest`，改用实际版本；若 1Panel 报卷字段类型不符，确认 `volumes` 没有改成长语法。
 
-`latest` 是可变标签。更新时在同目录执行 `docker compose pull ssh-mcp && docker compose up -d ssh-mcp`；仅重启容器不会拉取新镜像。首次部署和更新都应先确认拉取成功。
+## 验收
 
-MCP：`http://127.0.0.1:35486/`，Streamable HTTP，请求头 `Authorization: Bearer <token>`。1Panel 同网络反代地址：`http://ssh-mcp:3000`，保留认证头并同步 Host 白名单。
+MCP 地址为 `http://127.0.0.1:18080/`，选择 Streamable HTTP，并发送 `Authorization: Bearer <token>`。同网络反代可使用 `http://ssh-mcp:3000`，保留认证头。宿主机的回环地址只限制发布端口，不隔离同网容器；外部网络只加入可信容器。
 
-验收：先看容器为 `healthy`；再用支持 elicitation 的 MCP 客户端连接，调用 `list-connections` 和 `read-command`（`profile="trial"`、`command="pwd"`），确认审批后返回目标机目录。`healthy` 只检查服务和配置，实际 SSH 连通与认证以这次命令为准。
-
-- 示例使用专用低权限账号，并启用应用层 `readOnly`、`viewer` 和逐次审批；这些设置不构成目标服务器操作系统级的只读保证，实际权限仍由目标账号和服务器策略决定。保留严格指纹校验，`ask-all` 需要客户端支持 elicitation。未配置公网入口或 OAuth。不要公开 `.env`、私钥及 `docker inspect` 完整输出
-- 使用 Docker Engine ≥28 和支持上述解析参数的 Compose V2；已有 `1panel-network` 应为可信容器专用的 bridge/NAT 网络，禁用直连容器路由。同网络容器仍可访问端口，`127.0.0.1` 不隔离它们
+先确认容器 `healthy`，再用支持审批提示的 MCP 客户端调用 `list-connections`，并在 `trial` 上执行只读的 `pwd`。健康检查通过不代表 SSH 认证成功。不要提交 `.env`、私钥或真实 SSH 配置，也不要公开完整的 `docker inspect` 输出。
