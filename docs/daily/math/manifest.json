@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-26",
+    "title": "多加一个特征，均方误差究竟下降多少？",
+    "sourceSha256": "b4f0324578de71ff857f535643b3b436e38ef3d58ed22282e09290b96abbf1c4",
+    "projectionSha256": "363555174db8f5a250e441f5ef5923da061ddd4c0dea0926cef93f391d49f5ac"
+  },
+  {
     "date": "2026-11-25",
     "title": "零相关的观测，为什么仍能给出零误差预测？",
     "sourceSha256": "7ac5905c5dbc7facd2f5b4b5bf75eb114218bb94353e78fb56f7275408859614",
