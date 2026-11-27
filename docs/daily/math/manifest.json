@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-27",
+    "title": "第一次返回之前能走多远？用一伏电压读出逃逸概率",
+    "sourceSha256": "9dee9319178e6b2329d8497b36b8b871431e93bbd7d972a7f19de40eda7318eb",
+    "projectionSha256": "b7bc7bb60a6cb23f350d982219dedfd272228cf44b5b546c3b04acaa7ffb80e5"
+  },
+  {
     "date": "2026-11-26",
     "title": "多加一个特征，均方误差究竟下降多少？",
     "sourceSha256": "b4f0324578de71ff857f535643b3b436e38ef3d58ed22282e09290b96abbf1c4",
