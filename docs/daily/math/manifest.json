@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-28",
+    "title": "两个生成元压成一个：哪些系数会让共轭值相撞？",
+    "sourceSha256": "dd55dda001bcbb1c5dbda4907a331b3eaa97239ce38fd2e584d91d4566c7ce68",
+    "projectionSha256": "1f29a8c993d7dba0d0adb316eb6434199beb7c2ab872f70229cf8db275ddfc4b"
+  },
+  {
     "date": "2026-11-27",
     "title": "第一次返回之前能走多远？用一伏电压读出逃逸概率",
     "sourceSha256": "9dee9319178e6b2329d8497b36b8b871431e93bbd7d972a7f19de40eda7318eb",
